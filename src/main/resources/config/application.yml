@@ -22,7 +22,7 @@ spring:
       - dev
       - ops
   application:
-    name: saas-be-catalog
+    name: iop-ci-catalog
 
 server:
   port: 9991

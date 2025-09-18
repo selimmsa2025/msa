@@ -1,0 +1,105 @@
+#jenkins JUnit 테스트 
+spring:
+  config:
+    activate:
+      on-profile:
+      - jenkins-junit
+
+  redis:
+    host: ENC(Gd8+iDSgwQJEXwWI+5C3TUYldUzYLB49wJ1vE0Ae1Dm3Jo48E/kU9UhFMwGxZBPmcRVGVW8uniOViRDcpN6oOVpTbGa/6hfmUp9dd98SOY4=)
+    port: 6379
+    password: ENC(Xs6uYQ8v6cCS1B0UEXYyNUSUcjQdvagy+XwI36+AktPY4mwkQKTUu/DTxgEoZrFQ)
+
+junit-datasource: ENC(uFXj3dEhIhIUwDy/txxseN3Rnpw8d5xKylAcL0y+kUzhioPACKJDxl+ungR28Xy2XPTo6mk6miOYRBTPaklF8+DlhMjQBZduW3GLXU7OOIE=)
+---
+#1. 사용자 DB
+spring:
+  config:
+    activate:
+      on-profile:
+      - us-onnara-db-local
+  datasource:
+    driver-class-name: com.tmax.tibero.jdbc.TbDriver
+    url: ${junit-datasource:ENC(mv2VcrKRL/0P6evphFJ/MxHr5wDzBfdjAvBdANseDrQHZwI7TBCM/9Mlqn+FBz2z+I29QQKHFMv5VxEkHLRBvdtqke5KWz3wkjZAZkL7zzA=)}
+    username: ENC(xKmRue1yIu4xHSQwatjBRLG842/QA3ZdhiC+61buMKkXvhBEv3Wyu/85CEe4h75c)
+    password: ENC(PEi7albLdCmG+msKHPuVLk4IVxP8cSf30LYat4fx+2JWpUco5XFezI728cr/uYxM)
+---
+#2. 협업소통 DB
+spring:
+  config:
+    activate:
+      on-profile:
+      - cc-onnara-db-local
+  datasource:
+    driver-class-name: com.tmax.tibero.jdbc.TbDriver
+    url: ${junit-datasource:ENC(a3/kFciz0tut0JFqRhXL4XBcR75kK49/Y0MItFedtp2TbxrV1XtH7tFY/h7YecPA6Xfnjui+zwcaeISQ9vtOsqdvsrGbduE57o0rHWR4Xuo=)}
+    username: ENC(zZXYzwuMTAM3mGXWKB8AAmQhtSBzroh89xFWQthW/43Vy6VpqaqVwUpncH5ydOWQ)
+    password: ENC(vIgACn80KYIqgh7LPQUKAsbu2sB7GVh3z8dyvH3y75DjK4HC0HFKBhOwGsmulJ6C)
+---
+#3. 지식 DB
+spring:
+  config:
+    activate:
+      on-profile:
+      - kn-onnara-db-local
+  datasource:
+    driver-class-name: com.tmax.tibero.jdbc.TbDriver
+    url: ${junit-datasource:ENC(4TrmCXiqvmiKIVcRrLJ73JARREHCQuK8ktACG1H5uidxDQeHzZDqT4E9IvcHvVJn7cgMB3WfheYzsBexuNyE/Uo8HKdPZSgqDmTok/5hb+M=)}
+    username: ENC(H10qgLBAtszHXwM2a0SVErenAQnchrYAdAmV/iStHRzuAL91EgV8YUsjXxVFCtK9)
+    password: ENC(H9irIdGVoiL2XEdSkGuAMXpXrF0ZNTUKu1B7bF92XkpBXg62+G+sciakL+NSkVIq)
+---
+#4. 게시판 DB
+spring:
+  config:
+    activate:
+      on-profile:
+      - nb-onnara-db-local
+  datasource:
+    driver-class-name: com.tmax.tibero.jdbc.TbDriver
+    url: ${junit-datasource:ENC(WhU2eQR+HId05TtnfCtyhyAHPeUCCPKfak0uqVfmGvP6aSuk04jm8JTezmxnFMWekQo+yhTjU9XeLKdL0gU6R2rDbB7ZTbs6AtVlKY70Auw=)}
+    username: ENC(V5TjJLQJyHmGO6ISZZXxIFjmw00LDHWIiy1e0N/f6wM+HzEBiTs77wHyPkoDSmGD)
+    password: ENC(NeFrfXvkGkEB/ptPt0nF4oTQk9micx9huswVRJLSLXD2gFwfX28QpKPa31uvBGep)
+---
+#5. 지식공통 DB
+spring:
+  config:
+    activate:
+      on-profile:
+      - kc-onnara-db-local
+  datasource:
+#    driver-class-name: com.tmax.tibero.jdbc.TbDriver
+#    url: ${junit-datasource:ENC(ouETuRHBmQtQJPq22Whi33iNegXvUVlcXgalilp/se7C6dca6TKKf/AZ4MzxlxWwFiJ8rsrWvOdrfEl/Mnjh9aEjrkRhIrEDIV4fX7XSP50=)}
+#    username: ENC(WrGLW7+npIk8Jd1//kqF+o2uZLy8sHanaBtbatGKRdbIjwHu0OdLFwyjoJwh+fqA)
+#    password: ENC(oiMYAOhOZFiWbNfj7Yzo0/eZiPPGN1nFx8tnUC+noGS2Hhzz/ON7bg+MAJ5osNc6)d
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:~/test_kc
+    username: sa
+    password:
+---
+#6. SaaS DB local
+spring:
+  config:
+    activate:
+      on-profile:
+      - saas-db-local
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://192.168.1.2:5432/postgres
+    username: postgres
+    password: selim0516!
+    #username: ENC(MEKlT1Z0XIsNdQFR2WjkAg8QxCBHWKDw57VwhsLmnVO0xZKfN5JMeKpbvRNEYXH7)
+    #password: ENC(HMB6gcJ1NRb2RTc6yojG6h/kBsn2C3+qm//bfALTFN/L9Hxm9piMnuYlLptFy3al)
+
+---
+#6. SaaS DB dev
+spring:
+  config:
+    activate:
+      on-profile:
+      - saas-db-dev
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://192.168.1.2:5432/postgres
+    username: postgres
+    password: selim0516!
+    

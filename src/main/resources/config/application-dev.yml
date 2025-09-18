@@ -1,0 +1,15 @@
+spring:
+  config:
+    import:
+    - application-db.yml
+    - optional:configserver:${CONFIG_SERVER_HOST} 
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+      
+mybatis:
+  mapper-locations:
+  - classpath*:mapper/**/**_SQL.xml
+  config-location: classpath:mapper/config/mapper-config.xml

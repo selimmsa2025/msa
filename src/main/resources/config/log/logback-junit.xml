@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property name="PATTERN_FIXED" value="%-130(%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%-17thread] %logger{60}:%method:%line) - %msg%n" />
+    <property name="PATTERN_EGOV" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) %magenta(%-4relative) - [%thread{10}, %X{traceId:-}, %X{spanId:-}] %cyan(%logger{20}): %msg%n" />
+    <property name="PATTERN_LOCAL" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread{10}, %X{traceId:-}, %X{spanId:-}] %logger{20}: %msg%n" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${PATTERN_FIXED}</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+</configuration>

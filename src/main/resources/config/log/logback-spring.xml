@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property name="PATTERN_FIXED" value="%-130(%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%-17thread] %logger{60}:%method:%line) - %msg%n" />
+    <property name="PATTERN_EGOV" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) %magenta(%-4relative) - [%thread{10}, %X{traceId:-}, %X{spanId:-}] %cyan(%logger{20}): %msg%n" />
+    <property name="PATTERN_LOCAL" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread{10}, %X{traceId:-}, %X{spanId:-}] %logger{20}: %msg%n" />
+
+    <springProperty scope="context" name="app_name" source="spring.application.name" defaultValue="application"/>
+    <springProperty scope="context" name="system_info" source="system-info" defaultValue="onnara"/>
+
+    <property name="logger_name" value="%logger:%method:%line" />
+    <property name="log_path" value="${LOG_PATH}" />
+    <property name="pod_name" value="${POD_NAME}" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${PATTERN_FIXED}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <immediateFlush>true</immediateFlush>
+        <file>${log_path}/${app_name}/${app_name}-json.log</file>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"appName":"${app_name}","system":"${system_info}","podName":"${pod_name}"}</customFields>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log_path}/${app_name}/${app_name}-%d{yyyy-MM-dd}.%i-json.log</fileNamePattern>
+            <maxHistory>5</maxHistory>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>20MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <springProfile name="local,default">
+        <root level="DEBUG">
+            <appender-ref ref="STDOUT" />
+        </root>
+    </springProfile>
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="FILE" />
+        </root>
+    </springProfile>
+    <springProfile name="ops">
+        <root level="INFO">
+            <appender-ref ref="FILE" />
+        </root>
+    </springProfile>
+
+</configuration>

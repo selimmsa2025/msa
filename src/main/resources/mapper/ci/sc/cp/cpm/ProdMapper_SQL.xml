@@ -553,7 +553,7 @@
 		</if>
 		<choose>
 			<when test="'rate'.equals(sortCd)">
-				ORDER BY D.SAAS_PRDCT_REV_SCR_AVG DESC
+				ORDER BY D.SAAS_PRDCT_REV_SCR_AVG DESC NULLS LAST, D.SAAS_PRDCT_REV_CNT DESC
 			</when>
 			<when test="'asc'.equals(sortCd)">
 				ORDER BY ROWNUM ASC

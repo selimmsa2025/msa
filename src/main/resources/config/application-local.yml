@@ -1,0 +1,125 @@
+spring:
+  # RabbitMQ 연결 정보 (로컬)
+  rabbitmq:
+    host: ${rabbitmq.hostname:localhost}
+    port: ${rabbitmq.port:5672}
+    virtual-host: /${rabbitmq.vhost:onnara}
+    username: ${rabbitmq.username:guest}
+    password: ${rabbitmq.password:guest}
+
+  # 추적 서비스 (로컬)
+  sleuth:
+    otel:
+      exporter:
+        otlp:
+          enabled: false
+    enabled: false
+    
+  servlet: 
+    multipart: 
+      location: /DATA/msa-attach-volume
+      max-file-size: 50MB
+      max-request-size: 50MB
+ 
+
+file:
+  allowed-file-ext: jpg|jpeg|gif|png|bmp|txt|pdf|hwp|hwpx|gul|docx|doc|zip|xls|xlsx|ppt|pptx|mp4|avi|wmv|asf|flv|mov|mkv|mpeg|mpg|3gp|wmv|webm|ogm|asx|m2t|m2ts|mts|tif|tiff|wav|mp3
+  upload-base-path: /uploadData/
+  upload-file-path: /file
+  system-file-path: /iop
+  upload-total-size-limit: 52428800 #한번에 올릴수 있는 파일 용량 50MB
+  upload-size-limit: 52428800 #파일 한개당 용량 50메가
+    
+#rabbitmq:
+#  queue.name: queue.${spring.application.name} #queue.프로젝트명, application.yml
+#  fanoutexchange.name: ${system-info} #전 프로젝트 동일, application.yml
+#  exchange.name: exchange.${spring.application.name} #exchange.프로젝트명, application.yml
+#  routing.key: key.${spring.application.name} #key.프로젝트명, application.yml
+
+logging:
+  config: classpath:config/log/logback-spring.xml
+  file:
+    path: /data01/log
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, refresh, busrefresh
+
+web-url:
+  onnara:
+    frontend:
+      web: localhost:8001
+      api: localhost:8000
+  prism:
+    frontend:
+      web: localhost:8501
+      api: localhost:8000
+
+svc-url:
+  iop:
+    frontend:
+      sw: http://localhost:8002
+    backend:
+      tosaas: http://localhost:9993
+
+
+#svc-url:
+#  onnara:
+#    frontend:
+#      sw: http://localhost:8002
+#    backend:
+#      file: http://localhost:8101
+#      auth: http://localhost:8102    #1. 인증
+#      sys: http://localhost:8103     #2. 시스템 관리
+#      prtl: http://localhost:8104    #3. 포털정보
+#      bbs: http://localhost:8105     #4. 게시판
+#      kndg: http://localhost:8107    #5. 지식
+#      cmnty: http://localhost:8109   #6. 커뮤니티
+#      wiki: http://localhost:8113    #7. 업무위키
+#      blg: http://localhost:8114     #8. 블로그
+#      pnt: http://localhost:8115     #9. 협업포인트
+#
+#  prism:
+#    frontend:
+#      sw: http://localhost:8502
+#    backend:
+#      file: http://localhost:8101
+#      auth: http://localhost:8601     #1. 인증
+#      sys: http://localhost:8602      #2. 시스템 관리
+#      prtl: http://localhost:8603     #3. 포털정보
+#      bscs: http://localhost:8604     #4. 기초정보관리
+#      asmt: http://localhost:8605     #5. 과제관리
+#      stats: http://localhost:8607    #6. 통계관리
+#      chck: http://localhost:8608     #7. 성과점검
+#
+#  onpas:
+#    backend:
+#      evnt: http://localhost:8110     #1. 행사관리
+#      ondt: http://localhost:8111     #2. 당직근무
+#      aply: http://localhost:8112     #3. 신청관리
+#      schdl: http://localhost:8106    #4. 일정
+#      srvy: http://localhost:8108     #5. 설문조사
+#      evnti: http://localhost:8609    #6. 행사관리(인터넷)
+#      ondti: http://localhost:8610    #7. 당직근무(인터넷)
+
+auth:
+  token-secret: onnara_cloud_dev
+
+mybatis:
+  mapper-locations:
+  - classpath*:mapper/**/**_SQL.xml
+  config-location: classpath:mapper/config/mapper-config.xml
+
+health:
+  message: hello-${spring.profiles.active} #application.yml
+
+jasypt:
+  encryptor:
+    bean: jasyptEncryptorAES
+    
+jwt:
+  secret: mySuperSecretKeyForJWTGenerationChangeThisIsLongEnough123!
+  access-expiration: 600000 #3600000        # 1시간 (밀리초)  60000  10분
+  refresh-expiration: 2592000000    # 30일 (밀리초)

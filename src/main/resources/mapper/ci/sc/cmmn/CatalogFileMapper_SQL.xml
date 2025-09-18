@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.go.iop.ci.sc.cmmn.file.mapper.CatalogFileMapper">
+  <insert id="insertFile" parameterType="catalogFileSVO">
+    INSERT	/* SQL_ID: ci.sc.cmmn.file.fileMapper.insert.insertFile -- 첨부파일 등록*/ 
+    INTO USCM.TBCM_ARCH_FILE_L 	/* 첨부파일내역 */
+    (
+     ATCH_FILE_GROUP_NO
+     ,ATCH_FILE_SN				/* 첨부파일일련번호 */ 
+     ,ATCH_FILE_NM				/* 첨부파일명 */ 
+     ,ORGNL_FILE_NM				/* 원본파일명 */ 
+     ,ATCH_FILE_PATH_NM			/* 첨부파일경로명 */ 
+     ,EXTN_NM					/* 확장자명 */ 
+     ,FILE_SZ					/* 파일크기 */ 
+     ,USE_YN					/* 사용여부 */ 
+     ,ATCH_FILE_CN				/* 첨부파일내용 */ 
+     ,FRST_CRT_PRCR_ID			/* 최초생성처리자아이디 */ 
+     ,FRST_CRT_DT				/* 최초생성일시 */ 
+     ,LAST_CHG_PRCR_ID			/* 최종변경처리자아이디 */ 
+     ,LAST_CHG_DT				/* 최종변경일시 */ 
+    ) VALUES (
+      #{atchFileGroupNo}
+      ,#{atchFileSn}
+      ,#{atchFileNm}
+      ,#{orgnlFileNm}
+      ,#{atchFilePathNm}
+      ,#{extnNm}
+      ,#{fileSz}
+      ,#{useYn}
+      ,#{atchFileCn}
+      ,#{frstCrtPrcrId}
+      ,TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+      ,#{lastChgPrcrId}
+      ,TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+    )
+  </insert>
+
+  <select id="selectFileList" parameterType="catalogFileSVO" resultType="catalogFileDVO">
+    SELECT /* SQL_ID: ci.sc.cmmn.file.fileMapper.select.selectFileList -- 파일 조회 */
+      ATCH_FILE_GROUP_NO
+      ,ATCH_FILE_SN				/* 첨부파일일련번호 */ 
+      ,ATCH_FILE_NM				/* 첨부파일명 */ 
+      ,ORGNL_FILE_NM			/* 원본파일명 */ 
+      ,ATCH_FILE_PATH_NM		/* 첨부파일경로명 */ 
+      ,EXTN_NM					/* 확장자명 */ 
+      ,FILE_SZ					/* 파일크기 */ 
+      ,USE_YN					/* 사용여부 */ 
+      ,ATCH_FILE_CN				/* 첨부파일내용 */ 
+      ,FRST_CRT_PRCR_ID			/* 최초생성처리자아이디 */ 
+      ,TO_CHAR( TO_TIMESTAMP(FRST_CRT_DT, 'YYYYMMDDHH24MISS'),  'YYYY-MM-DD HH24:MI:SS' ) AS FRST_CRT_DT /* 최초생성일시 */
+      ,LAST_CHG_PRCR_ID			/* 최종변경처리자아이디 */ 
+      ,TO_CHAR( TO_TIMESTAMP(LAST_CHG_DT, 'YYYYMMDDHH24MISS'),  'YYYY-MM-DD HH24:MI:SS' ) AS LAST_CHG_DT /* 최종변경일시 */ 
+    FROM USCM.TBCM_ARCH_FILE_L	/* 첨부파일내역 */
+    WHERE USE_YN = 'Y'				/* 사용여부 */
+      AND ATCH_FILE_GROUP_NO = #{atchFileGroupNo} 
+    ORDER BY ATCH_FILE_SN		/* 첨부파일일련번호 */
+  </select>
+
+  <update id="deleteFile" parameterType="catalogFileSVO">
+	  UPDATE /* SQL_ID: ci.sc.cmmn.file.fileMapper.delete.deleteFile -- 파일 삭제*/ 
+	  		USCM.TBCM_ARCH_FILE_L		/* 첨부파일내역 */
+	  SET USE_YN = 'N'						/* 사용여부 */
+	  	  ,LAST_CHG_PRCR_ID=#{lastChgPrcrId}	/*최종변경처리자아이디 */
+	      ,LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')	/* 최종변경일시 */ 
+	  WHERE ATCH_FILE_GROUP_NO = #{atchFileGroupNo}
+	  AND USE_YN = 'Y' 
+    <if test="(atchFileSn != null and atchFileSn != '')">
+      AND ATCH_FILE_SN = #{atchFileSn}	/* 첨부파일일련번호 */
+    </if>	
+  </update>
+	  
+  <select id="selectFileInfo" parameterType="catalogFileSVO" resultType="catalogFileDVO">
+    SELECT	/* SQL_ID: ci.sc.cmmn.file.fileMapper.select.selectFileInfo -- 파일 다운로드 */ 
+      ATCH_FILE_GROUP_NO
+      ,ATCH_FILE_SN				/* 첨부파일일련번호 */ 
+      ,ATCH_FILE_NM				/* 첨부파일명 */ 
+      ,ORGNL_FILE_NM			/* 원본파일명 */ 
+      ,ATCH_FILE_PATH_NM		/* 첨부파일경로명 */ 
+      ,EXTN_NM					/* 확장자명 */ 
+      ,FILE_SZ					/* 파일크기 */ 
+      ,USE_YN					/* 사용여부 */ 
+      ,ATCH_FILE_CN				/* 첨부파일내용 */ 
+      ,FRST_CRT_PRCR_ID			/* 최초생성처리자아이디 */ 
+      ,TO_CHAR( TO_TIMESTAMP(FRST_CRT_DT, 'YYYYMMDDHH24MISS'),  'YYYY-MM-DD HH24:MI:SS' ) AS FRST_CRT_DT /* 최초생성일시 */ 
+      ,LAST_CHG_PRCR_ID			/* 최종변경처리자아이디 */ 
+      ,TO_CHAR( TO_TIMESTAMP(LAST_CHG_DT, 'YYYYMMDDHH24MISS'),  'YYYY-MM-DD HH24:MI:SS' ) AS LAST_CHG_DT /* 최종변경일시 */
+    FROM USCM.TBCM_ARCH_FILE_L		/* 첨부파일내역 */
+    WHERE ATCH_FILE_GROUP_NO = #{atchFileGroupNo} 
+    <if test="(atchFileSn != null and atchFileSn != '')">
+      AND ATCH_FILE_SN = #{atchFileSn}	/* 첨부파일일련번호 */
+    </if>
+      AND USE_YN = 'Y'					/* 사용여부 */ 
+      LIMIT 1
+  </select>
+  
+  <select id="selectMaxFileSnTest" resultType="long">
+	SELECT 	/* SQL_ID: ci.sc.cmmn.file.fileMapper.select.selectMaxFileSn -- 첨부파일 일련번호 생성용 */ 
+		COALESCE(MAX(ATCH_FILE_SN), 0)
+	FROM USCM.TBCM_ARCH_FILE_L
+	WHERE ATCH_FILE_GROUP_NO = #{atchFileGroupNo} 
+  </select>
+  
+  <select id="selectMaxFileSn" resultType="long">
+  <choose>
+    <when test="atchFileGroupNo != null and atchFileGroupNo != ''">
+      SELECT COALESCE(MAX(ATCH_FILE_SN), 0)
+      FROM USCM.TBCM_ARCH_FILE_L
+      WHERE ATCH_FILE_GROUP_NO = #{atchFileGroupNo}
+    </when>
+    <otherwise>
+      SELECT 0
+    </otherwise>
+  </choose>
+</select>
+
+  <select id="selectMaxFileGroupSn" resultType="string">
+	SELECT  	/* SQL_ID: ci.sc.cmmn.file.fileMapper.select.selectMaxFileGroupSn -- (임시)첨부파일 그룹번호 생성용 */ 
+      'FILE_' || LPAD(NEXTVAL('USCM.sqcm_file_01')::text,7,'0') as ATCH_FILE_GROUP_NO
+  </select>
+
+</mapper>

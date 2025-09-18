@@ -1,0 +1,564 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.go.iop.ci.sc.cp.cpm.mapper.ProdMapper">  
+
+	<select id="selectInstBasedSubscrProdList" parameterType="ProdSVO" resultType="ProdDVO">
+	   	SELECT /* SQL_ID : kr.go.iop.ci.sc.cp.cpm.ProdMapper.select.selectInstBasedSubscrProdList - 부처별 구독 상품 목록 조회 */ 
+		       I.INSTITUTION_CODE         			/* 기관코드 */
+		      ,I.INSTITUTION_NAME 	           		/* 기관명 */
+		      ,B.SAAS_PRDCT_ID   		       		/* SAAS제품아이디 */
+		      ,USCM.SF_COMM_CD_NM(B.SAAS_PRDCT_PVSN_MTH_SE_CD) AS SAAS_PRDCT_PVSN_MTH_SE_NM /* SAAS제품제공방식구분명 */
+		      ,B.SAAS_PRDCT_PVSN_MTH_SE_CD        	/* SAAS제품제공방식구분코드 */
+		      ,USCM.SF_COMM_CD_NM(B.SAAS_PRDCT_TYPE_CD) AS SAAS_PRDCT_TYPE_NM               /* SAAS제품유형명 */
+		      ,B.SAAS_PRDCT_TYPE_CD               	/* SAAS제품유형코드 */
+		      ,B.SAAS_PRDCT_NM                    	/* SAAS제품명 */
+		      ,B.SAAS_PRDCT_SMRY_CN               	/* SAAS제품요약내용 */
+		      ,B.PRDCT_IMG_ATCH_FILE_GROUP_NO      	/* 제품이미지첨부파일그룹번호 */
+		FROM USCM.TBCM_INST_M I
+		LEFT JOIN USCM.TBCM_PRDSBSC_L A 
+		ON I.INSTITUTION_CODE = A.INST_USER_INTG_ID 
+		AND A.PRDSBSC_STTS_CD = 'A0040002'         	/* 구독상태(구독중) */
+		LEFT JOIN USCM.TBCM_SAAS_PRDCT_M B 
+		ON A.SAAS_PRDCT_ID = B.SAAS_PRDCT_ID 
+		AND B.USE_YN = 'Y'               			/* 사용여부 */
+		WHERE 1 = 1;
+
+	</select>	
+	
+	<select id="selectProdSubscrInfo" parameterType="SubscrProdSVO" resultType="SubscrProdDVO">
+		SELECT /* SQL_ID: ci.sc.cp.cpm.mapper.ProdMapper.select.selectProdSubscrInfo - 상품 구독 정보 조회 */
+			SAAS_PRDCT_ID	                       /* SAAS제품아이디 */
+			, INST_USER_INTG_ID	                   /* 기관사용자통합아이디 */
+			, INST_USER_SE_CD	                   /* 기관사용자구분코드 */
+			, PRDSBSC_SN	                       /* 제품구독일련번호 */
+			, PRDSBSC_STTS_CD	                   /* 제품구독상태코드 */
+			, USCM.SF_COMM_CD_NM(PRDSBSC_STTS_CD) AS PRDSBSC_STTS_NM   /* 제품구독상태명 */
+			, PRDSBSC_BGNG_YMD	                   /* 제품구독시작일자 */
+			, PRDSBSC_END_YMD	                   /* 제품구독종료일자 */
+			, FRST_CRT_DT	                       /* 최초생성일시 */
+			, FRST_CRT_PRCR_ID	                   /* 최초생성처리자아이디 */
+			, LAST_CHG_DT	                       /* 최종변경일시 */
+			, LAST_CHG_PRCR_ID	                   /* 최종변경처리자아이디 */
+		FROM USCM.TBCM_PRDSBSC_L
+		WHERE 1 = 1
+		<if test="instUserIntgId !=null and !instUserIntgId.equals('')">
+			AND INST_USER_INTG_ID=#{instUserIntgId}
+		</if>
+		<if test="saasPrdctId !=null and !saasPrdctId.equals('')">
+			AND SAAS_PRDCT_ID=#{saasPrdctId}
+		</if>
+		<if test="instUserSeCd !=null and !instUserSeCd.equals('')">
+			AND INST_USER_SE_CD=#{instUserSeCd}
+		</if>
+		ORDER BY PRDSBSC_SN DESC
+		LIMIT 1
+	</select>
+	
+	<update id="insertProdSubscrReq" parameterType="SubscrSVO">
+		/* SQL_ID: ci.sc.cp.cpm.mapper.ProdMapper.insert.insertProdSubscrReq - 상품 구독 요청 (구독내역) */
+		<selectKey keyProperty="prdsbscSn" resultType="java.lang.Integer" order="BEFORE">
+			SELECT
+				COALESCE(MAX(PRDSBSC_SN) + 1, 1)
+			FROM USCM.TBCM_PRDSBSC_L
+			WHERE SAAS_PRDCT_ID  = #{saasPrdctId}
+			AND INST_USER_INTG_ID = #{instUserIntgId}
+			AND INST_USER_SE_CD = #{instUserSeCd}
+		</selectKey>
+		INSERT INTO USCM.TBCM_PRDSBSC_L (
+			SAAS_PRDCT_ID                         	/* SAAS제품아이디 */
+			, INST_USER_INTG_ID                     /* 기관사용자통합아이디 */
+			, INST_USER_SE_CD                       /* 기관사용자구분코드 */
+			, PRDSBSC_SN                         	/* 제품구독일련번호 */
+			, PRDSBSC_STTS_CD                       /* 제품구독상태코드 */
+			, PRDSBSC_BGNG_YMD                      /* 제품구독시작일자 */
+			, PRDSBSC_END_YMD                       /* 제품구독종료일자 */
+			, FRST_CRT_DT                         	/* 최초생성일시 */
+			, FRST_CRT_PRCR_ID                      /* 최초생성처리자아이디 */
+			, LAST_CHG_DT                         	/* 최종변경일시 */
+			, LAST_CHG_PRCR_ID                      /* 최종변경처리자아이디 */
+		) VALUES (
+			#{saasPrdctId}
+			, #{instUserIntgId}
+			, #{instUserSeCd}
+			, #{prdsbscSn}
+			, #{prdsbscSttsCd}
+			, ''
+			, ''
+			, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+			, #{accountId}
+			, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+			, #{accountId}
+		)
+	</update>
+	
+	<update id="insertProdSubscrHistoryReq" parameterType="SubscrSVO">
+		/* SQL_ID: ci.sc.cp.cpm.mapper.ProdMapper.insert.insertProdSubscrHistoryReq - 상품 구독 요청 (구독이력) */
+		<selectKey keyProperty="prdsbscHstrySn" resultType="java.lang.Integer" order="BEFORE">
+			SELECT
+				COALESCE(MAX(PRDSBSC_HSTRY_SN)+1, 1)
+			FROM USCM.TBCM_PRDSBSC_H 
+			WHERE SAAS_PRDCT_ID   = #{saasPrdctId}
+			AND INST_USER_INTG_ID = #{instUserIntgId}
+			AND INST_USER_SE_CD = #{instUserSeCd}
+		</selectKey>
+		INSERT INTO USCM.TBCM_PRDSBSC_H (
+			SAAS_PRDCT_ID        /* SAAS제품아이디 */
+			, INST_USER_INTG_ID    /* 기관사용자통합아이디 */
+			, INST_USER_SE_CD      /* 기관사용자구분코드 */
+			, PRDSBSC_SN           /* 제품구독일련번호 */
+			, PRDSBSC_HSTRY_SN     /* 제품구독이력일련번호 */
+			, PRDSBSC_STTS_CD      /* 제품구독상태코드 */
+			, PRDSBSC_BGNG_YMD     /* 제품구독시작일자 */
+			, PRDSBSC_END_YMD      /* 제품구독종료일자 */
+			, FRST_CRT_DT          /* 최초생성일시 */
+			, FRST_CRT_PRCR_ID     /* 최초생성처리자아이디 */
+			, LAST_CHG_DT          /* 최종변경일시 */
+			, LAST_CHG_PRCR_ID     /* 최종변경처리자아이디 */
+		) VALUES (
+			#{saasPrdctId} 
+			, #{instUserIntgId} 
+			, #{instUserSeCd} 
+			, #{prdsbscSn}
+			, #{prdsbscHstrySn}
+			, #{prdsbscSttsCd}
+			, ''
+			, ''
+			, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS') 
+			, #{accountId} 
+			, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS') 
+			, #{accountId}
+		)
+	</update>
+	
+	<update id="updateProdSubscrReq" parameterType="SubscrSVO">
+		UPDATE /* SQL_ID: ci.sc.cp.cpm.mapper.ProdMapper.update.updateProdSubscrReq - 상품 구독 취소 요청 */
+			USCM.TBCM_PRDSBSC_L
+		SET
+			PRDSBSC_STTS_CD= #{prdsbscSttsCd}	                             /* 제품구독일련번호 */
+			, LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')    /* 최종변경일시 */
+			, LAST_CHG_PRCR_ID = #{accountId}                                /* 최종변경처리자아이디 */
+		WHERE 
+			PRDSBSC_SN = #{prdsbscSn}
+			<if test="saasPrdctId != null and !saasPrdctId.equals('')">
+				AND SAAS_PRDCT_ID = #{saasPrdctId}
+			</if>
+			<if test="instUserIntgId != null and !instUserIntgId.equals('')">
+				AND INST_USER_INTG_ID = #{instUserIntgId}
+			</if>
+			<if test="instUserSeCd != null and !instUserSeCd.equals('')">
+				AND INST_USER_SE_CD = #{instUserSeCd}
+			</if>
+	</update>
+
+	<select id="selectProdReviewList" parameterType="ReviewSVO" resultType="ReviewDVO">
+		SELECT /* SQL_ID: ci.sc.cp.cpm.mapper.ProdMapper.select.selectProdReviewList - 상품 후기 목록 조회 */
+			SAAS_PRDCT_ID                              /* saas제품아이디    */
+			, EVLTR_ID                                 /* 평가자아이디       */
+			, SAAS_PRDCT_EVL_SCR                       /* saas제품평가점수   */
+			, SAAS_PRDCT_EVL_CN                        /* saas제품평가내용   */
+			, COALESCE(B.USER_NAME, '') AS USER_NM     /* 사용자명          */
+			, FRST_CRT_DT                              /* 최초생성일시       */
+			, FRST_CRT_PRCR_ID                         /* 최초생성처리자아이디  */
+			, LAST_CHG_DT                              /* 최종변경일시       */
+			, LAST_CHG_PRCR_ID                         /* 최종변경처리자아이디  */
+		FROM USCM.TBCM_SAAS_PRDCT_EVL_L A
+			LEFT OUTER JOIN USCM.TBCM_USER_M B 
+				ON A.EVLTR_ID = B.ACCOUNT_ID
+		WHERE 1=1
+		<if test="saasPrdctId != null and !saasPrdctId.equals('')">
+			AND SAAS_PRDCT_ID = #{saasPrdctId}
+		</if>
+		<choose>
+			<when test="sortCrtr != null and !sortCrtr.equals('') and sortCrtr == 'latest'">
+				ORDER BY 
+					CASE WHEN EVLTR_ID = #{accountId} THEN 0 ELSE 1 END
+					, FRST_CRT_DT DESC
+			</when>
+			<when test="sortCrtr != null and !sortCrtr.equals('') and sortCrtr == 'rating'">
+				ORDER BY 
+					CASE WHEN EVLTR_ID = #{accountId} THEN 0 ELSE 1 END
+					, SAAS_PRDCT_EVL_SCR DESC, FRST_CRT_DT DESC
+			</when>
+			<otherwise>
+				ORDER BY 
+					CASE WHEN EVLTR_ID = #{accountId} THEN 0 ELSE 1 END
+					, FRST_CRT_DT DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="selectProdReviewInfo" parameterType="ReviewSVO" resultType="ReviewDVO">
+		SELECT /* SQL_ID: ci.sc.cp.cpm.mapper.ProdMapper.select.selectProdReviewInfo - 상품 리뷰 정보 조회 */
+			COUNT(*) AS SAAS_PRDCT_EVL_CNT
+			, COALESCE(TRUNC(AVG(SAAS_PRDCT_EVL_SCR)::numeric, 1), 0) AS SAAS_PRDCT_EVL_SCR_AVG
+		FROM USCM.TBCM_SAAS_PRDCT_EVL_L
+		WHERE 1=1
+		<if test="saasPrdctId != null and !saasPrdctId.equals('')">
+			AND SAAS_PRDCT_ID = #{saasPrdctId}
+		</if>
+	</select>
+	
+	<select id="existProdReviewInfo" parameterType="ReviewSVO" resultType="java.lang.Integer">
+		SELECT /* SQL_ID: ci.sc.cp.cpm.mapper.ProdMapper.select.existProdReviewInfo - 리뷰 조회 - 리뷰 존재 여부 확인 */
+			COUNT(*)
+		FROM USCM.TBCM_SAAS_PRDCT_EVL_L
+		WHERE 1=1 
+		<if test="evltrId != null and !evltrId.equals('')">
+			AND EVLTR_ID = #{evltrId}
+		</if>
+		<if test="saasPrdctId != null and !saasPrdctId.equals('')">
+			AND SAAS_PRDCT_ID = #{saasPrdctId}
+		</if>
+	</select>
+
+	<update id="insertProdReview" parameterType="ReviewSVO">
+		/* SQL_ID: ci.sc.cp.cpm.mapper.ProdMapper.insert.insertProdReview - 상품 후기 등록 요청 */
+		INSERT INTO USCM.TBCM_SAAS_PRDCT_EVL_L (
+			SAAS_PRDCT_ID                              /* saas제품아이디    */
+			, EVLTR_ID                                 /* 평가자아이디       */
+			, SAAS_PRDCT_EVL_SCR                       /* saas제품평가점수   */
+			, SAAS_PRDCT_EVL_CN                        /* saas제품평가내용   */
+			, FRST_CRT_DT                              /* 최초생성일시       */
+			, FRST_CRT_PRCR_ID                         /* 최초생성처리자아이디  */
+			, LAST_CHG_DT                              /* 최종변경일시       */
+			, LAST_CHG_PRCR_ID                         /* 최종변경처리자아이디  */
+		) VALUES (
+			#{saasPrdctId}
+			, #{evltrId}
+			, #{saasPrdctEvlScr}
+			, #{saasPrdctEvlCn}
+			, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+			, #{evltrId}
+			, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+			, #{evltrId}
+		)
+	</update>
+
+	<update id="updateProdReview" parameterType="ReviewSVO">
+		UPDATE /* SQL_ID: ci.sc.cp.cpm.mapper.ProdMapper.update.updateProdReview - 상품 후기 수정 요청 */
+			USCM.TBCM_SAAS_PRDCT_EVL_L
+		SET
+			SAAS_PRDCT_EVL_SCR= #{saasPrdctEvlScr}	                        /* saas제품평가점수 */
+			,SAAS_PRDCT_EVL_CN = #{saasPrdctEvlCn}	                        /* saas제품평가내용 */
+			,LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')    /* 최종변경일시 */
+		WHERE EVLTR_ID = #{evltrId}
+		AND SAAS_PRDCT_ID = #{saasPrdctId}
+	</update>
+
+	<update id="deleteProdReview" parameterType="ReviewSVO">
+		DELETE /* SQL_ID: ci.sc.cp.cpm.mapper.ProdMapper.delete.deleteProdReview - 상품 후기 삭제 요청 */
+		FROM USCM.TBCM_SAAS_PRDCT_EVL_L
+		WHERE EVLTR_ID = #{evltrId}
+		AND SAAS_PRDCT_ID = #{saasPrdctId}
+	</update>
+	
+	<select id="selectProdInfo" parameterType="ProdSVO" resultType="ProdDVO">
+		SELECT /* kr.go.iop.ci.sc.cp.cpm.mapper.ProdMapper.select.selectProdInfo - 카탈로그 상품 상세 조회 */
+                A.SAAS_PRDCT_ID	               /* SAAS제품아이디 */
+               ,B.SAAS_PRDCT_REV_SCR_AVG	   /* SAAS제품평균평점 */
+               ,B.SAAS_PRDCT_REV_CNT	       /* SAAS제품리뷰수 */
+               ,C.SAAS_PRDCT_SUB_CNT	       /* SAAS제품이용자수 */
+               ,A.SAAS_PRDCT_PVSN_MTH_SE_CD	   /* SAAS제품제공방식구분코드 */
+               ,USCM.SF_COMM_CD_NM(A.SAAS_PRDCT_PVSN_MTH_SE_CD) AS SAAS_PRDCT_PVSN_MTH_SE_NM /* SAAS제품제공방식구분명 */
+               ,A.SAAS_PRDCT_TYPE_CD	       /* SAAS제품유형코드 */
+               ,USCM.SF_COMM_CD_NM(A.SAAS_PRDCT_TYPE_CD) AS SAAS_PRDCT_TYPE_NM /* SAAS제품유형명 */
+               ,A.SAAS_PRDCT_NM	               /* SAAS제품명 */
+               ,A.SAAS_PRDCT_DTL_CN	           /* SAAS제품상세내용 */
+               ,A.SAAS_PRDCT_SMRY_CN	       /* SAAS제품요약내용 */
+               ,A.SAAS_PRDCT_MKR_CD	           /* SAAS제품제조사코드 */
+               ,USCM.SF_COMM_CD_NM(A.SAAS_PRDCT_MKR_CD) AS SAAS_PRDCT_MKR_NM /* SAAS제품제조사명 */
+               ,A.SAAS_PRDCT_API_VER_SN	       /* SAAS제품API버전일련번호 */
+               ,A.SAAS_PRDCT_SRVC_DMN_ADDR	   /* SAAS제품서비스도메인주소 */
+               ,A.SAAS_PRDCT_SRVC_DTL_URL_ADDR /* SAAS제품서비스상세URL주소 */
+               ,A.SAAS_PRDCT_FAQ_ADDR          /* SAAS제품FAQ주소 */
+               ,A.USE_YN	                   /* 사용여부 */
+               ,A.GDS_GDNTC_REG_YN	           /* 상품안내문등록여부 */
+               ,A.PRDCT_IMG_ATCH_FILE_GROUP_NO /* 제품이미지첨부파일그룹번호 */
+               ,A.SCRN_IMG_ATCH_FILE_GROUP_NO  /* 화면이미지첨부파일그룹번호 */
+               ,A.EXPLN_IMG_ATCH_FILE_GROUP_NO /* 설명이미지첨부파일그룹번호 */
+               ,A.FRST_CRT_PRCR_ID	           /* 최초생성처리자아이디 */
+               ,A.FRST_CRT_DT	               /* 최초생성일시 */
+               ,A.LAST_CHG_PRCR_ID	           /* 최종변경처리자아이디 */
+               ,A.LAST_CHG_DT	               /* 최종변경일시 */
+		FROM USCM.TBCM_SAAS_PRDCT_M A
+		LEFT JOIN (SELECT /* 상품의 리뷰 점수 평균을 반환한다.*/ 
+		                  SAAS_PRDCT_ID
+		                 ,AVG(SAAS_PRDCT_EVL_SCR) AS SAAS_PRDCT_REV_SCR_AVG /* SAAS제품평가점수평균 */
+		                 ,COUNT(*) AS SAAS_PRDCT_REV_CNT
+		           FROM USCM.TBCM_SAAS_PRDCT_EVL_L 
+		           WHERE SAAS_PRDCT_ID = #{saasPrdctId}
+		           GROUP BY SAAS_PRDCT_ID
+		          ) B
+		ON A.SAAS_PRDCT_ID = B.SAAS_PRDCT_ID
+		LEFT JOIN (SELECT /* 상품 이용자 수를 반환한다.*/
+		                 SAAS_PRDCT_ID 
+		                ,COUNT(*) AS SAAS_PRDCT_SUB_CNT 
+		           FROM USCM.TBCM_PRDSBSC_L
+		           WHERE 1=1
+		           AND PRDSBSC_STTS_CD ='A0040002' /* 구독중 고정 값 */
+		           AND SAAS_PRDCT_ID =#{saasPrdctId}
+		           GROUP BY SAAS_PRDCT_ID
+		           ) C
+		ON A.SAAS_PRDCT_ID = C.SAAS_PRDCT_ID
+        WHERE 1=1
+        AND A.USE_YN ='Y'       
+<!--         AND A.GDS_GDNTC_REG_YN ='Y' -->
+        AND A.SAAS_PRDCT_ID = #{saasPrdctId}
+	</select>
+	
+	<select id ="selectProdServiceList" parameterType="ProdSVO" resultType="ProdDVO">
+        SELECT /* SQL_ID : kr.go.iop.ci.sc.cp.cpm.mapper.ProdMapper.select.selectProdServiceList - 제품 서비스 조회 */
+                B.SAAS_PRDCT_ID                  /* SAAS제품아이디 */
+               ,B.SRVC_ID                        /* 서비스아이디 */
+               ,B.SRVC_NM                        /* 서비스명 */
+               ,B.SRVC_CN                        /* 서비스내용 */
+               ,B.SRVC_SMRY_CN                   /* 서비스요약내용 */
+               ,B.SRVC_DTL_URL_ADDR              /* 서비스상세URL주소 */
+               ,B.USE_YN                         /* 사용여부 */
+               ,B.ATCH_FILE_GROUP_NO             /* 첨부파일그룹번호 */
+               ,C.ATCH_FILE_SN                   /* 첨부파일일련번호 */
+               ,B.FRST_CRT_DT                    /* 최초생성일시 */
+               ,B.FRST_CRT_PRCR_ID               /* 최초생성처리자아이디 */
+               ,B.LAST_CHG_DT                    /* 최종변경일시 */
+               ,B.LAST_CHG_PRCR_ID               /* 최종변경처리자아이디 */
+         FROM USCM.TBCM_SAAS_PRDCT_M A          
+         LEFT JOIN USCM.TBCM_SAAS_PRDCT_SRVC_L B 
+         ON A.SAAS_PRDCT_ID = B.SAAS_PRDCT_ID
+         LEFT JOIN USCM.TBCM_ARCH_FILE_L C
+ 		 ON B.ATCH_FILE_GROUP_NO = C.ATCH_FILE_GROUP_NO
+         WHERE 1=1
+         AND A.USE_YN = 'Y'
+         AND A.GDS_GDNTC_REG_YN = 'Y'
+         AND B.USE_YN = 'Y'
+         AND B.SAAS_PRDCT_ID = #{saasPrdctId}
+	</select>
+
+	<select id="selectProdServiceInfo" parameterType="ProdSVO" resultType="ProdDVO">
+         SELECT /* SQL_ID : kr.go.iop.ci.sc.cp.cpm.mapper.ProdMapper.select.selectProdServiceInfo - 제품 서비스 상세 조회 */
+                A.SAAS_PRDCT_ID                  /* SAAS제품아이디 */
+               ,A.SRVC_ID                        /* 서비스아이디 */
+               ,A.SRVC_NM                        /* 서비스명 */
+               ,A.SRVC_CN                        /* 서비스내용 */
+               ,A.SRVC_SMRY_CN                   /* 서비스요약내용 */
+               ,A.SRVC_DTL_URL_ADDR              /* 서비스상세URL주소 */
+               ,A.USE_YN                         /* 사용여부 */
+               ,A.ATCH_FILE_GROUP_NO             /* 첨부파일그룹번호 */
+               ,A.FRST_CRT_DT                    /* 최초생성일시 */
+               ,A.FRST_CRT_PRCR_ID               /* 최초생성처리자아이디 */
+               ,A.LAST_CHG_DT                    /* 최종변경일시 */
+               ,A.LAST_CHG_PRCR_ID               /* 최종변경처리자아이디 */
+         FROM USCM.TBCM_SAAS_PRDCT_SRVC_L A      
+         WHERE 1=1
+         AND A.USE_YN = 'Y'
+         AND A.SAAS_PRDCT_ID = #{saasPrdctId}
+         AND A.SRVC_ID = #{srvcId}
+	</select>
+
+	
+	<select id="selectProdSubscrInstList" parameterType="ProdSVO" resultType="ProdDVO">
+	  	SELECT /* SQL_ID : kr.go.iop.ci.sc.cp.cpm.mapper.ProdMapper.select.selectProdSubscrInstList - 제품 구독 기관 목록 조회*/
+	  	       AA.INSTITUTION_NAME AS INSTITUTION_NAME    /* 기관명 */
+	 	      ,AA.INSTITUTION_CODE AS INSTITUTION_CODE  /* 기관번호 */
+	 	FROM USCM.TBCM_PRDSBSC_L AB
+	 	LEFT JOIN (
+                   SELECT /* 기관명칭을 반환한다. */
+				          A.INSTITUTION_NAME
+                         ,A.INSTITUTION_CODE
+                   FROM USCM.TBCM_INST_M A
+                   WHERE 1=1
+                   GROUP BY A.INSTITUTION_NAME, A.INSTITUTION_CODE
+	 		      ) AA
+	 	ON AB.INST_USER_INTG_ID = AA.INSTITUTION_CODE
+	 	JOIN USCM.TBCM_SAAS_PRDCT_M AC
+	 	ON AC.SAAS_PRDCT_ID = AB.SAAS_PRDCT_ID
+	 	WHERE 1=1
+	 	AND AC.SAAS_PRDCT_PVSN_MTH_SE_CD ='A0010001'  /* 상품제공형태코드 : 기관(SAAS) */
+	 	/* AND AB.PRDSBSC_STTS_CD = 'A0040002'        /* 구독상태 : 구독중 */ */
+	 	AND AC.USE_YN ='Y'
+	 	AND AC.SAAS_PRDCT_ID = #{saasPrdctId}
+	</select>
+	
+	<select id="selectInstSubscrProdList" parameterType="ProdSVO" resultType="ProdDVO">
+		SELECT /* SQL_ID: ci.sc.cp.cpm.ProdMapper.select.selectInstSubscrProdList - 기관 구독 상품 목록 조회 */
+			   A.SAAS_PRDCT_ID	/* SAAS제품아이디 */
+			 , A.SAAS_PRDCT_PVSN_MTH_SE_CD	/* SAAS제품제공방식구분코드 */
+			 , USCM.SF_COMM_CD_NM(SAAS_PRDCT_PVSN_MTH_SE_CD) AS SAAS_PRDCT_PVSN_MTH_SE_NM	/* SAAS제품제공방식구분명 */
+			 , A.SAAS_PRDCT_TYPE_CD	/* SAAS제품유형코드 */
+			 , USCM.SF_COMM_CD_NM(SAAS_PRDCT_TYPE_CD) AS SAAS_PRDCT_TYPE_NM	/* SAAS제품유형명 */
+			 , A.SAAS_PRDCT_NM	/* SAAS제품명 */
+			 , A.SAAS_PRDCT_DTL_CN	/* SAAS제품상세내용 */
+			 , A.SAAS_PRDCT_SMRY_CN	/* SAAS제품요약내용 */
+			 , A.SAAS_PRDCT_MKR_CD	/* SAAS제품제조사코드 */
+			 , USCM.SF_COMM_CD_NM(SAAS_PRDCT_MKR_CD) AS SAAS_PRDCT_MKR_NM	/* SAAS제품제조사명 */
+			 , A.SAAS_PRDCT_API_VER_SN	/* SAAS제품API버전일련번호 */
+			 , A.SAAS_PRDCT_SRVC_DMN_ADDR	/* SAAS제품서비스도메인주소 */ 
+			 , A.SAAS_PRDCT_SRVC_DTL_URL_ADDR	/* SAAS제품서비스상세URL주소 */
+			 , A.SAAS_PRDCT_FAQ_ADDR	/* SAAS제품FAQ주소 */
+			 , A.USE_YN	/* 사용여부 */
+			 , A.GDS_GDNTC_REG_YN	/* 상품안내문등록여부 */
+			 , A.PRDCT_IMG_ATCH_FILE_GROUP_NO	/* 제품이미지첨부파일그룹번호 */
+			 , A.FRST_CRT_DT	/* 최초생성일시 */
+			 , B.API_CMNC_SCS_YN	/* API통신성공여부 */
+			 , C.ATCH_FILE_SN	/* 첨부파일일련번호 */
+			 , D.SAAS_PRDCT_REV_CNT	/* 후기수 */
+			 , D.SAAS_PRDCT_REV_SCR_AVG	/* 평균별점 */
+			 , E.PRDSBSC_STTS_CD	/* 제품구독상태코드 */
+		  FROM USCM.TBCM_SAAS_PRDCT_M A
+		  LEFT JOIN USCM.TBCM_CMNC_MNG_L B ON A.SAAS_PRDCT_ID = B.SAAS_PRDCT_ID AND B.SRVR_SE_CD = 'A0060002'	/* 운영서버 */
+		  LEFT JOIN USCM.TBCM_ARCH_FILE_L C ON A.PRDCT_IMG_ATCH_FILE_GROUP_NO  = C.ATCH_FILE_GROUP_NO
+		  LEFT JOIN (
+		  	SELECT SAAS_PRDCT_ID
+		  		 , COUNT(1) AS SAAS_PRDCT_REV_CNT
+		  		 , AVG(SAAS_PRDCT_EVL_SCR) AS SAAS_PRDCT_REV_SCR_AVG
+		  	  FROM USCM.TBCM_SAAS_PRDCT_EVL_L
+		  	 GROUP BY SAAS_PRDCT_ID
+		  ) D ON A.SAAS_PRDCT_ID  = D.SAAS_PRDCT_ID
+		  LEFT JOIN USCM.TBCM_PRDSBSC_L E ON A.SAAS_PRDCT_ID = E.SAAS_PRDCT_ID
+		 WHERE A.USE_YN = 'Y'
+		   AND E.PRDSBSC_STTS_CD = 'A0040002'	/* 구독중 */
+		   AND E.INST_USER_INTG_ID = #{institutionCode}
+	</select>
+	
+	<select id="selectPopularProdList" parameterType="ProdSVO" resultType="ProdDVO">
+		SELECT /* SQL_ID: ci.sc.cp.cpm.ProdMapper.select.selectPopularProdList - 인기 상품 목록 조회 */
+			   A.SAAS_PRDCT_ID	/* SAAS제품아이디 */
+			 , A.SAAS_PRDCT_PVSN_MTH_SE_CD	/* SAAS제품제공방식구분코드 */
+			 , USCM.SF_COMM_CD_NM(SAAS_PRDCT_PVSN_MTH_SE_CD) AS SAAS_PRDCT_PVSN_MTH_SE_NM	/* SAAS제품제공방식구분명 */
+			 , A.SAAS_PRDCT_TYPE_CD	/* SAAS제품유형코드 */
+			 , USCM.SF_COMM_CD_NM(SAAS_PRDCT_TYPE_CD) AS SAAS_PRDCT_TYPE_NM	/* SAAS제품유형명 */
+			 , A.SAAS_PRDCT_NM	/* SAAS제품명 */
+			 , A.SAAS_PRDCT_DTL_CN	/* SAAS제품상세내용 */
+			 , A.SAAS_PRDCT_SMRY_CN	/* SAAS제품요약내용 */
+			 , A.SAAS_PRDCT_MKR_CD	/* SAAS제품제조사코드 */
+			 , USCM.SF_COMM_CD_NM(SAAS_PRDCT_MKR_CD) AS SAAS_PRDCT_MKR_NM	/* SAAS제품제조사명 */
+			 , A.SAAS_PRDCT_API_VER_SN	/* SAAS제품API버전일련번호 */
+			 , A.SAAS_PRDCT_SRVC_DMN_ADDR	/* SAAS제품서비스도메인주소 */ 
+			 , A.SAAS_PRDCT_SRVC_DTL_URL_ADDR	/* SAAS제품서비스상세URL주소 */
+			 , A.SAAS_PRDCT_FAQ_ADDR	/* SAAS제품FAQ주소 */
+			 , A.USE_YN	/* 사용여부 */
+			 , A.GDS_GDNTC_REG_YN	/* 상품안내문등록여부 */
+			 , A.PRDCT_IMG_ATCH_FILE_GROUP_NO	/* 제품이미지첨부파일그룹번호 */
+			 , A.FRST_CRT_DT	/* 최초생성일시 */
+			 , B.API_CMNC_SCS_YN	/* API통신성공여부 */
+			 , C.ATCH_FILE_SN	/* 첨부파일일련번호 */
+			 , D.SAAS_PRDCT_REV_CNT	/* 후기수 */
+			 , D.SAAS_PRDCT_REV_SCR_AVG	/* 평균별점 */
+		  FROM USCM.TBCM_SAAS_PRDCT_M A
+		  LEFT JOIN USCM.TBCM_CMNC_MNG_L B ON A.SAAS_PRDCT_ID = B.SAAS_PRDCT_ID AND SRVR_SE_CD = 'A0060002'	/* 운영서버 */
+		  LEFT JOIN USCM.TBCM_ARCH_FILE_L C ON A.PRDCT_IMG_ATCH_FILE_GROUP_NO  = C.ATCH_FILE_GROUP_NO
+		 INNER JOIN (
+		  	SELECT SAAS_PRDCT_ID
+		  		 , COUNT(1) AS SAAS_PRDCT_REV_CNT
+		  		 , AVG(SAAS_PRDCT_EVL_SCR) AS SAAS_PRDCT_REV_SCR_AVG
+		  	  FROM USCM.TBCM_SAAS_PRDCT_EVL_L
+		  	 GROUP BY SAAS_PRDCT_ID
+		  ) D ON A.SAAS_PRDCT_ID  = D.SAAS_PRDCT_ID
+		 WHERE A.USE_YN = 'Y'
+		 ORDER BY D.SAAS_PRDCT_REV_SCR_AVG, D.SAAS_PRDCT_REV_CNT DESC
+		 LIMIT 5
+	</select>
+	
+	<select id="selectUseProdList" parameterType="ProdSVO" resultType="ProdDVO">
+		SELECT /* SQL_ID: ci.sc.cp.cpm.ProdMapper.select.selectUseProdList - 사용 상품 목록 조회 */
+			   A.SAAS_PRDCT_ID	/* SAAS제품아이디 */
+			 , A.SAAS_PRDCT_PVSN_MTH_SE_CD	/* SAAS제품제공방식구분코드 */
+			 , USCM.SF_COMM_CD_NM(SAAS_PRDCT_PVSN_MTH_SE_CD) AS SAAS_PRDCT_PVSN_MTH_SE_NM	/* SAAS제품제공방식구분명 */
+			 , A.SAAS_PRDCT_TYPE_CD	/* SAAS제품유형코드 */
+			 , USCM.SF_COMM_CD_NM(SAAS_PRDCT_TYPE_CD) AS SAAS_PRDCT_TYPE_NM	/* SAAS제품유형명 */
+			 , A.SAAS_PRDCT_NM	/* SAAS제품명 */
+			 , A.SAAS_PRDCT_DTL_CN	/* SAAS제품상세내용 */
+			 , A.SAAS_PRDCT_SMRY_CN	/* SAAS제품요약내용 */
+			 , A.SAAS_PRDCT_MKR_CD	/* SAAS제품제조사코드 */
+			 , USCM.SF_COMM_CD_NM(SAAS_PRDCT_MKR_CD) AS SAAS_PRDCT_MKR_NM	/* SAAS제품제조사명 */
+			 , A.SAAS_PRDCT_API_VER_SN	/* SAAS제품API버전일련번호 */
+			 , A.SAAS_PRDCT_SRVC_DMN_ADDR	/* SAAS제품서비스도메인주소 */ 
+			 , A.SAAS_PRDCT_SRVC_DTL_URL_ADDR	/* SAAS제품서비스상세URL주소 */
+			 , A.SAAS_PRDCT_FAQ_ADDR	/* SAAS제품FAQ주소 */
+			 , A.USE_YN	/* 사용여부 */
+			 , A.GDS_GDNTC_REG_YN	/* 상품안내문등록여부 */
+			 , A.PRDCT_IMG_ATCH_FILE_GROUP_NO	/* 제품이미지첨부파일그룹번호 */
+			 , A.FRST_CRT_DT	/* 최초생성일시 */
+			 , B.API_CMNC_SCS_YN	/* API통신성공여부 */
+			 , C.ATCH_FILE_SN	/* 첨부파일일련번호 */
+			 , D.SAAS_PRDCT_REV_CNT	/* 후기수 */
+			 , D.SAAS_PRDCT_REV_SCR_AVG	/* 평균별점 */
+			 , E.PRDSBSC_CNT /* 제품구독수 */
+		  FROM USCM.TBCM_SAAS_PRDCT_M A
+		  LEFT JOIN USCM.TBCM_CMNC_MNG_L B ON A.SAAS_PRDCT_ID = B.SAAS_PRDCT_ID AND SRVR_SE_CD = 'A0060002'	/* 운영서버 */
+		  LEFT JOIN USCM.TBCM_ARCH_FILE_L C ON A.PRDCT_IMG_ATCH_FILE_GROUP_NO  = C.ATCH_FILE_GROUP_NO
+		  LEFT JOIN (
+		  	SELECT SAAS_PRDCT_ID
+		  		 , COUNT(1) AS SAAS_PRDCT_REV_CNT
+		  		 , AVG(SAAS_PRDCT_EVL_SCR) AS SAAS_PRDCT_REV_SCR_AVG
+		  	  FROM USCM.TBCM_SAAS_PRDCT_EVL_L
+		  	 GROUP BY SAAS_PRDCT_ID
+		  ) D ON A.SAAS_PRDCT_ID  = D.SAAS_PRDCT_ID
+		 INNER JOIN (
+			SELECT SAAS_PRDCT_ID
+				 , PRDSBSC_STTS_CD
+				 , COUNT(1) AS PRDSBSC_CNT
+		  	  FROM USCM.TBCM_PRDSBSC_L
+		  	 WHERE PRDSBSC_STTS_CD = 'A0040002'	/* 구독중 */
+		  	 GROUP BY SAAS_PRDCT_ID, PRDSBSC_STTS_CD
+		 ) E ON A.SAAS_PRDCT_ID = E.SAAS_PRDCT_ID
+		 WHERE A.USE_YN = 'Y'
+		 ORDER BY D.SAAS_PRDCT_REV_CNT DESC
+		 LIMIT 5
+	</select>
+	
+	<select id="selectProdList" parameterType="ProdSVO" resultType="ProdDVO">
+		SELECT /* SQL_ID: ci.sc.cp.cpm.ProdMapper.select.selectProdList - 상품 목록 조회 */
+			   ROW_NUMBER() OVER(ORDER BY A.SAAS_PRDCT_ID DESC) AS ROWNUM
+			 , A.SAAS_PRDCT_ID	/* SAAS제품아이디 */
+			 , A.SAAS_PRDCT_PVSN_MTH_SE_CD	/* SAAS제품제공방식구분코드 */
+			 , USCM.SF_COMM_CD_NM(SAAS_PRDCT_PVSN_MTH_SE_CD) AS SAAS_PRDCT_PVSN_MTH_SE_NM	/* SAAS제품제공방식구분명 */
+			 , A.SAAS_PRDCT_TYPE_CD	/* SAAS제품유형코드 */
+			 , USCM.SF_COMM_CD_NM(SAAS_PRDCT_TYPE_CD) AS SAAS_PRDCT_TYPE_NM	/* SAAS제품유형명 */
+			 , A.SAAS_PRDCT_NM	/* SAAS제품명 */
+			 , A.SAAS_PRDCT_DTL_CN	/* SAAS제품상세내용 */
+			 , A.SAAS_PRDCT_SMRY_CN	/* SAAS제품요약내용 */
+			 , A.SAAS_PRDCT_MKR_CD	/* SAAS제품제조사코드 */
+			 , USCM.SF_COMM_CD_NM(SAAS_PRDCT_MKR_CD) AS SAAS_PRDCT_MKR_NM	/* SAAS제품제조사명 */
+			 , A.SAAS_PRDCT_API_VER_SN	/* SAAS제품API버전일련번호 */
+			 , A.SAAS_PRDCT_SRVC_DMN_ADDR	/* SAAS제품서비스도메인주소 */ 
+			 , A.SAAS_PRDCT_SRVC_DTL_URL_ADDR	/* SAAS제품서비스상세URL주소 */
+			 , A.SAAS_PRDCT_FAQ_ADDR	/* SAAS제품FAQ주소 */
+			 , A.USE_YN	/* 사용여부 */
+			 , A.GDS_GDNTC_REG_YN	/* 상품안내문등록여부 */
+			 , A.PRDCT_IMG_ATCH_FILE_GROUP_NO	/* 제품이미지첨부파일그룹번호 */
+			 , A.FRST_CRT_DT	/* 최초생성일시 */
+			 , B.API_CMNC_SCS_YN	/* API통신성공여부 */
+			 , C.ATCH_FILE_SN	/* 첨부파일일련번호 */
+			 , D.SAAS_PRDCT_REV_CNT	/* 후기수 */
+			 , D.SAAS_PRDCT_REV_SCR_AVG	/* 평균별점 */
+			 , E.PRDSBSC_STTS_CD /* 제품구독상태코드 */
+		  FROM USCM.TBCM_SAAS_PRDCT_M A
+		  LEFT JOIN USCM.TBCM_CMNC_MNG_L B ON A.SAAS_PRDCT_ID = B.SAAS_PRDCT_ID AND SRVR_SE_CD = 'A0060002'
+		  LEFT JOIN USCM.TBCM_ARCH_FILE_L C ON A.PRDCT_IMG_ATCH_FILE_GROUP_NO  = C.ATCH_FILE_GROUP_NO
+		  LEFT JOIN (
+		  	SELECT SAAS_PRDCT_ID
+		  		 , COUNT(1) AS SAAS_PRDCT_REV_CNT
+		  		 , AVG(SAAS_PRDCT_EVL_SCR) AS SAAS_PRDCT_REV_SCR_AVG
+		  	  FROM USCM.TBCM_SAAS_PRDCT_EVL_L
+		  	 GROUP BY SAAS_PRDCT_ID
+		  ) D ON A.SAAS_PRDCT_ID  = D.SAAS_PRDCT_ID
+		  LEFT JOIN USCM.TBCM_PRDSBSC_L E ON A.SAAS_PRDCT_ID = E.SAAS_PRDCT_ID AND (E.INST_USER_INTG_ID = #{institutionCode} OR E.INST_USER_INTG_ID = #{accountId})
+		 WHERE A.USE_YN = 'Y'
+		<if test="saasPrdctTypeCd != null and !''.equals(saasPrdctTypeCd)">
+			AND A.SAAS_PRDCT_TYPE_CD = #{saasPrdctTypeCd}
+		</if>
+		<if test="saasPrdctNm != null and !''.equals(saasPrdctNm)">
+			AND A.SAAS_PRDCT_NM LIKE '%' || #{saasPrdctNm} || '%'
+		</if>
+		<choose>
+			<when test="'rate'.equals(sortCd)">
+				ORDER BY D.SAAS_PRDCT_REV_SCR_AVG DESC
+			</when>
+			<when test="'asc'.equals(sortCd)">
+				ORDER BY ROWNUM ASC
+			</when>
+		</choose>
+	</select>
+
+</mapper>

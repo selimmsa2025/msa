@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<settings>
+		<!-- 컬럼명을 카멜 표기법으로 변환하여 리턴 -->
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+		
+		<!-- parameter에 NULL이 있는 경우 처리 -->
+		<setting name="jdbcTypeForNull" value="VARCHAR"/>
+		
+		<!-- 리턴값이 NULL인 경우 처리 -->
+		<setting name="callSettersOnNulls" value="true"/>
+																									
+		<setting name="defaultFetchSize" value="1000"/>
+		
+		<setting name="cacheEnabled" value="true"/>
+		
+		<setting name="useColumnLabel" value="true"/>
+	</settings>
+	
+	<typeAliases>
+
+	    <!-- API 인증키 -->
+		<typeAlias type="kr.go.iop.ci.sc.cm.pc.mapper.vo.ApiCertKeyDVO" alias="apiCertKeyDVO"></typeAlias>
+		<typeAlias type="kr.go.iop.ci.sc.cm.pc.mapper.vo.CertInfoDVO" alias="certInfoDVO"></typeAlias>
+		<typeAlias type="kr.go.iop.ci.sc.cm.pc.svc.impl.vo.ApiCertKeyReqSVO" alias="apiCertKeyReqSVO"></typeAlias>
+		<typeAlias type="kr.go.iop.ci.sc.cm.pc.svc.impl.vo.CertInfoSVO" alias="certInfoSVO"></typeAlias>
+
+		<!-- 카탈로그 상품 메인 s -->
+		<typeAlias type="kr.go.iop.ci.sc.cp.cpm.mapper.vo.ProdDVO" alias="ProdDVO"/>
+		<typeAlias type="kr.go.iop.ci.sc.cp.cpm.svc.vo.ProdSVO" alias="ProdSVO"/>
+
+		<typeAlias type="kr.go.iop.ci.sc.cp.cpm.mapper.vo.ReviewDVO" alias="ReviewDVO"/>
+		<typeAlias type="kr.go.iop.ci.sc.cp.cpm.svc.vo.ReviewSVO" alias="ReviewSVO"/>
+
+		<typeAlias type="kr.go.iop.ci.sc.cp.cpm.mapper.vo.SubscrDVO" alias="SubscrDVO"/>
+		<typeAlias type="kr.go.iop.ci.sc.cp.cpm.svc.vo.SubscrSVO" alias="SubscrSVO"/>
+		
+		<typeAlias type ="kr.go.iop.ci.sc.cp.cpm.svc.vo.SubscrProdSVO" alias="SubscrProdSVO"/>
+		<typeAlias type ="kr.go.iop.ci.sc.cp.cpm.mapper.vo.SubscrProdDVO" alias="SubscrProdDVO"/>
+		<!-- 카탈로그 상품 메인 e -->
+
+		<!-- 공통: 파일 -->
+		<typeAlias type="kr.go.iop.ci.sc.cmmn.file.mapper.vo.CatalogFileDVO" alias="catalogFileDVO"></typeAlias>
+		<typeAlias type="kr.go.iop.ci.sc.cmmn.file.svc.vo.CatalogFileSVO" alias="catalogFileSVO"></typeAlias>
+		<!-- API관리 -->
+		<typeAlias type="kr.go.iop.ci.sc.cm.am.svc.vo.AmSVO" alias="amSVO"></typeAlias>
+		<typeAlias type="kr.go.iop.ci.sc.cm.am.mapper.vo.AmDVO" alias="amDVO"></typeAlias>
+		<typeAlias type="kr.go.iop.ci.sc.cm.am.svc.vo.AmArtcSVO" alias="amArtcSVO"></typeAlias>
+		<typeAlias type="kr.go.iop.ci.sc.cm.am.mapper.vo.AmArtcDVO" alias="amArtcDVO"></typeAlias>
+		<typeAlias type="kr.go.iop.ci.sc.cm.am.svc.vo.ApiVerSVO" alias="ApiVerSVO"></typeAlias>
+		<typeAlias type="kr.go.iop.ci.sc.cm.am.mapper.vo.ApiVerDVO" alias="ApiVerDVO"></typeAlias>
+		<typeAlias type="kr.go.iop.ci.sc.cm.am.svc.vo.AmProdSVO" alias="AmProdSVO"></typeAlias>
+		<typeAlias type="kr.go.iop.ci.sc.cm.am.mapper.vo.AmProdDVO" alias="AmProdDVO"></typeAlias>
+
+		<!-- 공통 : 코드리스트 -->
+		<typeAlias type ="kr.go.iop.ci.sc.cmmn.code.svc.vo.CodeSVO" alias="CodeSVO"/>
+		<typeAlias type ="kr.go.iop.ci.sc.cmmn.code.mapper.vo.CodeDVO" alias="CodeDVO"/>
+		<!-- 카탈로그 상품관리 -->
+		<typeAlias type ="kr.go.iop.ci.sc.cm.pm.svc.vo.ProdMngSVO" alias="ProdMngSVO"/>
+		<typeAlias type ="kr.go.iop.ci.sc.cm.pm.mapper.vo.ProdMngDVO" alias="ProdMngDVO"/>
+		
+		<!-- API 테스트  -->
+		<package name="kr.go.iop.ci.sc.cm.at.svc.vo"/>
+		<package name="kr.go.iop.ci.sc.cm.at.mapper.vo"/>
+		
+	</typeAliases>
+
+</configuration>

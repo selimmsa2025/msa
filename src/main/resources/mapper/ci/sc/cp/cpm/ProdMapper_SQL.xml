@@ -414,7 +414,23 @@
 		  	  FROM USCM.TBCM_SAAS_PRDCT_EVL_L
 		  	 GROUP BY SAAS_PRDCT_ID
 		  ) D ON A.SAAS_PRDCT_ID  = D.SAAS_PRDCT_ID
-		  LEFT JOIN USCM.TBCM_PRDSBSC_L E ON A.SAAS_PRDCT_ID = E.SAAS_PRDCT_ID
+		  LEFT JOIN (
+			SELECT SAAS_PRDCT_ID
+				 , INST_USER_INTG_ID
+				 , INST_USER_SE_CD
+				 , PRDSBSC_SN
+				 , PRDSBSC_STTS_CD
+			  FROM (
+				SELECT ROW_NUMBER() OVER (PARTITION BY SAAS_PRDCT_ID, INST_USER_INTG_ID, INST_USER_SE_CD ORDER BY PRDSBSC_SN  DESC) AS RN
+					 , SAAS_PRDCT_ID
+					 , INST_USER_INTG_ID
+					 , INST_USER_SE_CD
+					 , PRDSBSC_SN
+					 , PRDSBSC_STTS_CD
+				  FROM USCM.TBCM_PRDSBSC_L
+			  )
+			 WHERE RN = 1
+		  ) E ON A.SAAS_PRDCT_ID = E.SAAS_PRDCT_ID
 		 WHERE A.USE_YN = 'Y'
 		   AND E.PRDSBSC_STTS_CD = 'A0040002'	/* 구독중 */
 		   AND E.INST_USER_INTG_ID = #{institutionCode}
@@ -498,8 +514,17 @@
 			SELECT SAAS_PRDCT_ID
 				 , PRDSBSC_STTS_CD
 				 , COUNT(1) AS PRDSBSC_CNT
-		  	  FROM USCM.TBCM_PRDSBSC_L
-		  	 WHERE PRDSBSC_STTS_CD = 'A0040002'	/* 구독중 */
+		  	  FROM (
+				SELECT ROW_NUMBER() OVER (PARTITION BY SAAS_PRDCT_ID, INST_USER_INTG_ID, INST_USER_SE_CD ORDER BY PRDSBSC_SN  DESC) AS RN
+					 , SAAS_PRDCT_ID
+					 , INST_USER_INTG_ID
+					 , INST_USER_SE_CD
+					 , PRDSBSC_SN
+					 , PRDSBSC_STTS_CD
+				  FROM USCM.TBCM_PRDSBSC_L
+			  )
+		  	 WHERE RN = 1
+		  	   AND PRDSBSC_STTS_CD = 'A0040002'	/* 구독중 */
 		  	 GROUP BY SAAS_PRDCT_ID, PRDSBSC_STTS_CD
 		 ) E ON A.SAAS_PRDCT_ID = E.SAAS_PRDCT_ID
 		 WHERE A.USE_YN = 'Y'
@@ -509,8 +534,7 @@
 	
 	<select id="selectProdList" parameterType="ProdSVO" resultType="ProdDVO">
 		SELECT /* SQL_ID: ci.sc.cp.cpm.ProdMapper.select.selectProdList - 상품 목록 조회 */
-			   ROW_NUMBER() OVER(ORDER BY A.SAAS_PRDCT_ID DESC) AS ROWNUM
-			 , A.SAAS_PRDCT_ID	/* SAAS제품아이디 */
+			   A.SAAS_PRDCT_ID	/* SAAS제품아이디 */
 			 , A.SAAS_PRDCT_PVSN_MTH_SE_CD	/* SAAS제품제공방식구분코드 */
 			 , USCM.SF_COMM_CD_NM(SAAS_PRDCT_PVSN_MTH_SE_CD) AS SAAS_PRDCT_PVSN_MTH_SE_NM	/* SAAS제품제공방식구분명 */
 			 , A.SAAS_PRDCT_TYPE_CD	/* SAAS제품유형코드 */
@@ -543,7 +567,23 @@
 		  	  FROM USCM.TBCM_SAAS_PRDCT_EVL_L
 		  	 GROUP BY SAAS_PRDCT_ID
 		  ) D ON A.SAAS_PRDCT_ID  = D.SAAS_PRDCT_ID
-		  LEFT JOIN USCM.TBCM_PRDSBSC_L E ON A.SAAS_PRDCT_ID = E.SAAS_PRDCT_ID AND (E.INST_USER_INTG_ID = #{institutionCode} OR E.INST_USER_INTG_ID = #{accountId})
+		  LEFT JOIN (
+			SELECT SAAS_PRDCT_ID
+				 , INST_USER_INTG_ID
+				 , INST_USER_SE_CD
+				 , PRDSBSC_SN
+				 , PRDSBSC_STTS_CD
+			  FROM (
+				SELECT ROW_NUMBER() OVER (PARTITION BY SAAS_PRDCT_ID, INST_USER_INTG_ID, INST_USER_SE_CD ORDER BY PRDSBSC_SN  DESC) AS RN
+					 , SAAS_PRDCT_ID
+					 , INST_USER_INTG_ID
+					 , INST_USER_SE_CD
+					 , PRDSBSC_SN
+					 , PRDSBSC_STTS_CD
+				  FROM USCM.TBCM_PRDSBSC_L
+			  )
+			 WHERE RN = 1
+		  ) E ON A.SAAS_PRDCT_ID = E.SAAS_PRDCT_ID AND (E.INST_USER_INTG_ID = #{institutionCode} OR E.INST_USER_INTG_ID = #{accountId})
 		 WHERE A.USE_YN = 'Y'
 		<if test="saasPrdctTypeCd != null and !''.equals(saasPrdctTypeCd)">
 			AND A.SAAS_PRDCT_TYPE_CD = #{saasPrdctTypeCd}
@@ -552,11 +592,11 @@
 			AND A.SAAS_PRDCT_NM LIKE '%' || #{saasPrdctNm} || '%'
 		</if>
 		<choose>
-			<when test="'rate'.equals(sortCd)">
+			<when test="'rate_desc'.equals(sortCd)">
 				ORDER BY D.SAAS_PRDCT_REV_SCR_AVG DESC NULLS LAST, D.SAAS_PRDCT_REV_CNT DESC
 			</when>
-			<when test="'asc'.equals(sortCd)">
-				ORDER BY ROWNUM ASC
+			<when test="'date_desc'.equals(sortCd)">
+				ORDER BY A.SAAS_PRDCT_ID ASC
 			</when>
 		</choose>
 	</select>

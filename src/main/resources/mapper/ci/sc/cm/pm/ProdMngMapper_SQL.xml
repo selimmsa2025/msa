@@ -50,7 +50,7 @@
 	          </choose>
 	        </when>
 	        <otherwise>
-	          ORDER BY FRST_CRT_DT DESC
+	          ORDER BY SAAS_PRDCT_API_VER_SN DESC, SAAS_PRDCT_NM
 	        </otherwise>
 	      </choose>
 	    ) AS RNUM, A.*

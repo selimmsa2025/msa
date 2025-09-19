@@ -59,6 +59,7 @@ public class ProdMngServiceImpl implements ProdMngService {
 	@Transactional(rollbackFor = Exception.class)
 	public int insertProd(ProdMngSVO vo){
 		String saasPrdctId = selectProdId(vo);
+		
         vo.setSaasPrdctId(saasPrdctId);
 
         int resultCnt = prodMngMapper.insertProd(vo);

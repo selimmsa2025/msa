@@ -194,9 +194,9 @@ public class ProdMngController {
 		ProdMngDVO checkValidation = prodMngService.selectProdInfo(vo);
 		
 		if (checkValidation != null) {
-		    String gdsPvsnMthSeCd = checkValidation.getSaasPrdctPvsnMthSeCd();
-		    if (!"A0010001".equals(gdsPvsnMthSeCd)) {
-		        throw new ApiBizException(HttpStatus.BAD_REQUEST, "기관(SaaS형) 상품이 아닙니다.");
+		    String saasPrdctTypeCd = checkValidation.getSaasPrdctTypeCd();
+		    if (!"A0020002".equals(saasPrdctTypeCd)) {
+		        throw new ApiBizException(HttpStatus.BAD_REQUEST, "패키지형 상품이 아닙니다.");
 		    }
 		} else {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "해당 상품이 없습니다.");

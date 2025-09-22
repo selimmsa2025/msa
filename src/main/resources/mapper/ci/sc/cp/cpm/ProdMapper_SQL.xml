@@ -452,6 +452,7 @@
 			 WHERE RN = 1
 		  ) E ON A.SAAS_PRDCT_ID = E.SAAS_PRDCT_ID
 		 WHERE A.USE_YN = 'Y'
+		   AND A.GDS_GDNTC_REG_YN = 'Y'
 		   AND E.PRDSBSC_STTS_CD = 'A0040002'	/* 구독중 */
 		   AND E.INST_USER_INTG_ID = #{institutionCode}
 	</select>
@@ -509,6 +510,7 @@
 		  	 GROUP BY SAAS_PRDCT_ID, PRDSBSC_STTS_CD
 		  ) E ON A.SAAS_PRDCT_ID = E.SAAS_PRDCT_ID
 		 WHERE A.USE_YN = 'Y'
+		   AND A.GDS_GDNTC_REG_YN = 'Y'
 		 ORDER BY D.SAAS_PRDCT_REV_SCR_AVG, D.SAAS_PRDCT_REV_CNT DESC
 		 LIMIT 5
 	</select>
@@ -566,6 +568,7 @@
 		  	 GROUP BY SAAS_PRDCT_ID, PRDSBSC_STTS_CD
 		 ) E ON A.SAAS_PRDCT_ID = E.SAAS_PRDCT_ID
 		 WHERE A.USE_YN = 'Y'
+		   AND A.GDS_GDNTC_REG_YN = 'Y'
 		 ORDER BY D.SAAS_PRDCT_REV_CNT DESC
 		 LIMIT 5
 	</select>
@@ -623,6 +626,7 @@
 			 WHERE RN = 1
 		  ) E ON A.SAAS_PRDCT_ID = E.SAAS_PRDCT_ID AND (E.INST_USER_INTG_ID = #{institutionCode} OR E.INST_USER_INTG_ID = #{accountId})
 		 WHERE A.USE_YN = 'Y'
+		   AND A.GDS_GDNTC_REG_YN = 'Y'
 		<if test="saasPrdctTypeCd != null and !''.equals(saasPrdctTypeCd)">
 			AND A.SAAS_PRDCT_TYPE_CD = #{saasPrdctTypeCd}
 		</if>

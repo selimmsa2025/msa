@@ -10,7 +10,7 @@ pipeline {
         stage('Git Checkout') {
             steps {
                 git credentialsId: 'gitlab_idpw', 
-                     url: 'http://10.100.0.4:8080/inner2025/back-prototype.git', 
+                     url: 'http://10.100.0.4:8080/inner2025/iop-ci-catalog.git', 
                      branch: 'main'
             }
         }

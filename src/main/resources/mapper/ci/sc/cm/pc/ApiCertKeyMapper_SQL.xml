@@ -17,11 +17,11 @@
 				, CASE  																			/* 인증정보 발급여부 */
 				  WHEN EXISTS (
 								SELECT 1 
-								FROM USCM.TBCM_CMNC_CERT_L T
+								FROM USCM.TBCM_CMNC_CERT_L C
 								WHERE 
-									T.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
+									C.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
 								AND 
-									T.SRVR_SE_CD = A.SRVR_SE_CD
+									C.SRVR_SE_CD = A.SRVR_SE_CD
 				  ) THEN 'Y'
 				  ELSE 'N'
 				  END AS HAS_TEST_CERT
@@ -47,23 +47,23 @@
 				    <choose>
 				        <when test="hasTestCert == 'Y'.toString()">
 				            AND EXISTS (
-				                SELECT 1 
-				                FROM USCM.TBCM_CMNC_CERT_L T 
-				                WHERE 
-				                	T.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
-				                AND 
-				                	T.SRVR_SE_CD = A.SRVR_SE_CD
-				            )
+						                SELECT 1 
+						                FROM USCM.TBCM_CMNC_CERT_L D
+						                WHERE 
+						                	D.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
+						                AND 
+						                	D.SRVR_SE_CD = A.SRVR_SE_CD
+							            )
 				        </when>
 				        <when test="hasTestCert == 'N'.toString()">
 				            AND NOT EXISTS (
-				                SELECT 1 
-				                FROM USCM.TBCM_CMNC_CERT_L T 
-				                WHERE 
-				                	T.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
-				                AND 
-				                	T.SRVR_SE_CD = A.SRVR_SE_CD
-				            )
+							                SELECT 1 
+							                FROM USCM.TBCM_CMNC_CERT_L E
+							                WHERE 
+							                	E.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
+							                AND 
+							                	E.SRVR_SE_CD = A.SRVR_SE_CD
+								            )
 				        </when>
 				    </choose>
 				</if>
@@ -97,19 +97,19 @@
 			    <choose>
 			        <when test="hasTestCert == 'Y'.toString()">
 			            AND EXISTS (
-			                SELECT 1 
-			                FROM USCM.TBCM_PRDSBSC_CERT_L T 
-			                WHERE 
-			                	T.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
-			            )
+					                SELECT 1 
+					                FROM USCM.TBCM_PRDSBSC_CERT_L C
+					                WHERE 
+					                	C.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
+			            			)
 			        </when>
 			        <when test="hasTestCert == 'N'.toString()">
 			            AND NOT EXISTS (
-			                SELECT 1 
-			                FROM USCM.TBCM_PRDSBSC_CERT_L T 
-			                WHERE 
-			                	T.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
-			            )
+						                SELECT 1 
+						                FROM USCM.TBCM_PRDSBSC_CERT_L D 
+						                WHERE 
+						                	D.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
+							            )
 			        </when>
 			    </choose>
 			</if>
@@ -131,15 +131,15 @@
 			  	, C.INSTITUTION_NAME AS INSTITUTION_NAME                 							/* 구독기관명 */
 			  	, CASE WHEN EXISTS (
 					            	SELECT 1
-					            	FROM USCM.TBCM_PRDSBSC_CERT_L T
+					            	FROM USCM.TBCM_PRDSBSC_CERT_L D
 					            	WHERE 
-					            		T.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
+					            		D.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
               						AND 
-              							T.INST_USER_INTG_ID = A.INST_USER_INTG_ID 
+              							D.INST_USER_INTG_ID = A.INST_USER_INTG_ID 
         		  ) THEN 'Y' 
         		  ELSE 'N' 
-        		  END AS HAS_TEST_CERT      									/* 인증정보발급여부 */
-  				, A.FRST_CRT_DT AS FRST_CRT_DT           						/* 등록일자 */
+        		  END AS HAS_TEST_CERT      														/* 인증정보발급여부 */
+  				, A.FRST_CRT_DT AS FRST_CRT_DT           											/* 등록일자 */
 		FROM USCM.TBCM_PRDSBSC_L A
 		LEFT JOIN USCM.TBCM_SAAS_PRDCT_M  B 
 			ON B.SAAS_PRDCT_ID  = A.SAAS_PRDCT_ID
@@ -164,21 +164,21 @@
 		            <when test="hasTestCert == 'Y'.toString()">
 		                AND EXISTS (
 				                    SELECT 1
-				                    FROM USCM.TBCM_PRDSBSC_CERT_L T
+				                    FROM USCM.TBCM_PRDSBSC_CERT_L E
 				                    WHERE 
-				                    	T.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
+				                    	E.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
 				                    AND 
-				                    	T.INST_USER_INTG_ID = A.INST_USER_INTG_ID
+				                    	E.INST_USER_INTG_ID = A.INST_USER_INTG_ID
 				                	)
 		            </when>
 		            <when test="hasTestCert == 'N'.toString()">
 		                AND NOT EXISTS (
 					                    SELECT 1
-					                    FROM USCM.TBCM_PRDSBSC_CERT_L T
+					                    FROM USCM.TBCM_PRDSBSC_CERT_L F
 					                    WHERE 
-					                    	T.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
+					                    	F.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
 					                    AND 
-					                      	T.INST_USER_INTG_ID = A.INST_USER_INTG_ID
+					                      	F.INST_USER_INTG_ID = A.INST_USER_INTG_ID
 					                	)
 		            </when>
 		        </choose>
@@ -217,22 +217,22 @@
 		    	<choose>
 		    		<when test="hasTestCert == 'Y'.toString()">
 		          		AND EXISTS (
-		            					SELECT 1
-		            					FROM USCM.TBCM_PRDSBSC_CERT_L T
-		            					WHERE 
-		            						T.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
-		              					AND 
-		              						T.INST_USER_INTG_ID = A.INST_USER_INTG_ID
+	            					SELECT 1
+	            					FROM USCM.TBCM_PRDSBSC_CERT_L D
+	            					WHERE 
+	            						D.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
+	              					AND 
+	              						D.INST_USER_INTG_ID = A.INST_USER_INTG_ID
 		          					)
 		        	</when>
 		        	<when test="hasTestCert == 'N'.toString()">
 		          		AND NOT EXISTS (
-			            					SELECT 1
-			            					FROM USCM.TBCM_PRDSBSC_CERT_L T
-			            					WHERE 
-			            						T.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
-			              					AND 
-			              						T.INST_USER_INTG_ID = A.INST_USER_INTG_ID
+		            					SELECT 1
+		            					FROM USCM.TBCM_PRDSBSC_CERT_L E
+		            					WHERE 
+		            						E.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
+		              					AND 
+		              						E.INST_USER_INTG_ID = A.INST_USER_INTG_ID
 				         				)
 		   	     	</when>
 		      	</choose>
@@ -243,13 +243,13 @@
 	<!-- 인증키 관리 상세조회 - 통신테스트 상세 조회 -->		
 	<select id="selectApiCertKeyDetail" parameterType="apiCertKeyReqSVO" resultType="apiCertKeyDVO">
 		SELECT /* SQL_ID: ci.sc.cm.pc.ApiCertKeyMapper.select.selectApiCertKeyDetail - 통신테스트 상세 조회 */
-				A.SAAS_PRDCT_ID AS SAAS_PRDCT_ID 							/* 상품ID */
-				, USCM.SF_COMM_CD_NM(SAAS_PRDCT_PVSN_MTH_SE_CD) as SAAS_PRDCT_PVSN_MTH_SE_CD_NM 			/* 상품구분명 */
-				, USCM.SF_COMM_CD_NM(SAAS_PRDCT_TYPE_CD) as SAAS_PRDCT_TYPE_CD_NM 				/* 상품유형명 */
-				, B.SAAS_PRDCT_NM AS SAAS_PRDCT_NM 							/* 상품명 */
-				, NULL AS INSTITUTION_NAME 									/* 구독기관명(통신테스트인증은 없음) */
-				, A.SRVR_SE_CD AS SRVR_SE_CD  								/* 서버구분코드 */
-				, USCM.SF_COMM_CD_NM(SRVR_SE_CD) as SRVR_SE_CD_NM 						/* 서버구분명 */
+				A.SAAS_PRDCT_ID AS SAAS_PRDCT_ID 													/* 상품ID */
+				, USCM.SF_COMM_CD_NM(SAAS_PRDCT_PVSN_MTH_SE_CD) as SAAS_PRDCT_PVSN_MTH_SE_CD_NM 	/* 상품구분명 */
+				, USCM.SF_COMM_CD_NM(SAAS_PRDCT_TYPE_CD) as SAAS_PRDCT_TYPE_CD_NM 					/* 상품유형명 */
+				, B.SAAS_PRDCT_NM AS SAAS_PRDCT_NM 													/* 상품명 */
+				, NULL AS INSTITUTION_NAME 															/* 구독기관명(통신테스트인증은 없음) */
+				, A.SRVR_SE_CD AS SRVR_SE_CD  														/* 서버구분코드 */
+				, USCM.SF_COMM_CD_NM(SRVR_SE_CD) as SRVR_SE_CD_NM 									/* 서버구분명 */
 				, A.FRST_CRT_PRCR_ID AS FRST_CRT_PRCR_ID
 				, A.LAST_CHG_PRCR_ID AS LAST_CHG_PRCR_ID
 		FROM USCM.TBCM_CMNC_MNG_L A
@@ -283,28 +283,22 @@
 	<!-- 인증키 관리 상세조회 - 구독 상세 조회 -->		 
 	<select id="selectSubCertKeyDetail" parameterType="apiCertKeyReqSVO" resultType="apiCertKeyDVO">
 		SELECT  /* SQL_ID: ci.sc.cm.pc.ApiCertKeyMapper.select.selectSubCertKeyDetail - 구독 상세 조회 */
-    			A.SAAS_PRDCT_ID AS SAAS_PRDCT_ID               				/* 상품ID	 */
-    			, A.PRDSBSC_SN AS PRDSBSC_SN 								/* 구독일련번호 */
-  				, B.SAAS_PRDCT_PVSN_MTH_SE_CD AS SAAS_PRDCT_PVSN_MTH_SE_CD	/* 상품구분코드 */
-  				, C.DTL_CD_KORN_NM AS SAAS_PRDCT_PVSN_MTH_SE_CD_NM      	/* 상품구분명 */
-  				, B.SAAS_PRDCT_TYPE_CD AS SAAS_PRDCT_TYPE_CD            	/* 상품유형코드 */
-			  	, D.DTL_CD_KORN_NM AS SAAS_PRDCT_TYPE_CD_NM             	/* 상품유형명 */
-			  	, B.SAAS_PRDCT_NM AS SAAS_PRDCT_NM                  		/* 상품명 */
-			 	, A.INST_USER_INTG_ID AS INST_USER_INTG_ID					/* 기관사용자통합아이디 */
-			  	, A.INST_USER_SE_CD AS INST_USER_SE_CD         				/* 기관사용자구분코드 */
-			  	, E.DTL_CD_KORN_NM AS INST_USER_SE_CD_NM         			/* 기관사용자구분명 */
-			  	, F.INSTITUTION_NAME AS INSTITUTION_NAME                 	/* 구독기관명 */
+    			A.SAAS_PRDCT_ID AS SAAS_PRDCT_ID               										/* 상품ID	 */
+    			, A.PRDSBSC_SN AS PRDSBSC_SN 														/* 구독일련번호 */
+  				, B.SAAS_PRDCT_PVSN_MTH_SE_CD AS SAAS_PRDCT_PVSN_MTH_SE_CD							/* 상품구분코드 */
+  				, USCM.SF_COMM_CD_NM(SAAS_PRDCT_PVSN_MTH_SE_CD) as SAAS_PRDCT_PVSN_MTH_SE_CD_NM     /* 상품구분명 */
+  				, B.SAAS_PRDCT_TYPE_CD AS SAAS_PRDCT_TYPE_CD            							/* 상품유형코드 */
+				, USCM.SF_COMM_CD_NM(SAAS_PRDCT_TYPE_CD) as SAAS_PRDCT_TYPE_CD_NM            		/* 상품유형명 */
+			  	, B.SAAS_PRDCT_NM AS SAAS_PRDCT_NM                  								/* 상품명 */
+			 	, A.INST_USER_INTG_ID AS INST_USER_INTG_ID											/* 기관사용자통합아이디 */
+			  	, A.INST_USER_SE_CD AS INST_USER_SE_CD         										/* 기관사용자구분코드 */
+			  	, USCM.SF_COMM_CD_NM(INST_USER_SE_CD) AS INST_USER_SE_CD_NM 						/* 기관사용자구분명 */
+			  	, C.INSTITUTION_NAME AS INSTITUTION_NAME                 							/* 구독기관명 */
 		FROM USCM.TBCM_PRDSBSC_L A
 		LEFT JOIN USCM.TBCM_SAAS_PRDCT_M  B 
 			ON B.SAAS_PRDCT_ID  = A.SAAS_PRDCT_ID
-		LEFT JOIN USCM.TBCM_COM_DTL_C  C 
-			ON C.DTL_CD  = B.SAAS_PRDCT_PVSN_MTH_SE_CD   
-		LEFT JOIN USCM.TBCM_COM_DTL_C  D 
-			ON D.DTL_CD  = B.SAAS_PRDCT_TYPE_CD          
-		LEFT JOIN USCM.TBCM_COM_DTL_C  E 
-			ON E.DTL_CD  = A.INST_USER_SE_CD
-		LEFT JOIN USCM.TBCM_INST_M F 
-			ON F.INSTITUTION_CODE = A.INST_USER_INTG_ID
+		LEFT JOIN USCM.TBCM_INST_M C
+			ON C.INSTITUTION_CODE = A.INST_USER_INTG_ID
 		WHERE 
 			A.SAAS_PRDCT_ID = #{saasPrdctId}
 		AND 
@@ -342,27 +336,27 @@
 	<insert id="insertApiCertInfo" parameterType="certInfoSVO">
 		INSERT /* SQL_ID: ci.sc.cm.pc.ApiCertKeyMapper.select.insertApiCertInfo - 통신테스트 인증키정보 추가 */
 		INTO USCM.TBCM_CMNC_CERT_L (
-												SAAS_PRDCT_ID 				/* 상품ID	 */
-												, SRVR_SE_CD 				/* 서버구분코드	 */
-												, CMNC_CERT_SN				/* 시험인증일련번호 */
-												, AUTHKEY_NM 				/* 인증키명 */
-												, AUTHKEY 					/* 인증키값 */
-												, FRST_CRT_PRCR_ID
-												, FRST_CRT_DT
-												, LAST_CHG_PRCR_ID
-												, LAST_CHG_DT
-											)
-									  values(
-												#{saasPrdctId}
-												, #{srvrSeCd}
-												, #{cmncCertSn}
-												, #{authkeyNm}
-												, #{authkey}
-												, #{frstCrtPrcrId}
-												, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
-												, #{lastChgPrcrId}
-												, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
-											)
+										SAAS_PRDCT_ID 				/* 상품ID	 */
+										, SRVR_SE_CD 				/* 서버구분코드 */
+										, CMNC_CERT_SN				/* 시험인증일련번호 */
+										, AUTHKEY_NM 				/* 인증키명 */
+										, AUTHKEY 					/* 인증키값 */
+										, FRST_CRT_PRCR_ID
+										, FRST_CRT_DT
+										, LAST_CHG_PRCR_ID
+										, LAST_CHG_DT
+									)
+							 values(
+										#{saasPrdctId}
+										, #{srvrSeCd}
+										, #{cmncCertSn}
+										, #{authkeyNm}
+										, #{authkey}
+										, #{frstCrtPrcrId}
+										, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+										, #{lastChgPrcrId}
+										, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+									)
 	 </insert>
 	
 	<!-- API 인증키 정보 삭제 - 통신테스트 인증키정보 삭제 -->	 
@@ -381,7 +375,7 @@
 		 INTO USCM.TBCM_PRDSBSC_CERT_L (
 											SAAS_PRDCT_ID					/* 상품ID	 */
 											, INST_USER_INTG_ID				/* 기관사용자통합아이디 */
-											, INST_USER_SE_CD 				/* 기관사용자구분코드	 */
+											, INST_USER_SE_CD 				/* 기관사용자구분코드 */
 											, PRDSBSC_SN 					/* 구독일련번호	 */
 											, PRDSBSC_CERT_SN 				/* 구독인증일련번호 */
 											, AUTHKEY_NM 					/* 인증키명 */
@@ -392,7 +386,7 @@
 											, LAST_CHG_DT
 										)
 								 values(
-											#{gdsIGHd}
+											#{saasPrdctId}
 											, #{instUserIntgId}
 											, #{instUserSeCd}
 											, #{prdsbscSn}

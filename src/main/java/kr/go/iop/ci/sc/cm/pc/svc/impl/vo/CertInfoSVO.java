@@ -54,4 +54,17 @@ public class CertInfoSVO implements Serializable {
 	@Schema(description = "최종변경일시")
 	private String lastChgDt;
 
+	/* 구독인증정보내역 */
+	@Schema(description = "기관사용자통합아이디")
+	private String instUserIntgId;
+
+	@Schema(description = "기관사용자구분코드")
+	private String instUserSeCd;
+
+	@Schema(description = "구독일련번호")
+	private String prdsbscSn;
+
+	@Schema(description = "구독인증일련번호")
+	private String prdsbscCertSn;
+
 }

@@ -177,6 +177,10 @@ public class ProdController {
 		ProdDVO prodDVO = prodService.selectProdInfo(prodSVO);
 		rtnMap.put(ConstantInfo.RESULT_VO, prodDVO);
 		
+//		ProdDVO prdsbscInfo = prodService.selectPrdsbscInfo(prodSVO);
+//		rtnMap.put(ConstantInfo.RESULT_CD, prdsbscInfo);
+		
+		
 		return ResponseUtils.build(rtnMap);
 	}
 

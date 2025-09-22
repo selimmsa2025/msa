@@ -256,9 +256,9 @@
 	<select id="selectProdInfo" parameterType="ProdSVO" resultType="ProdDVO">
 		SELECT /* kr.go.iop.ci.sc.cp.cpm.mapper.ProdMapper.select.selectProdInfo - 카탈로그 상품 상세 조회 */
                 A.SAAS_PRDCT_ID	               /* SAAS제품아이디 */
-               ,B.SAAS_PRDCT_REV_SCR_AVG	   /* SAAS제품평균평점 */
                ,B.SAAS_PRDCT_REV_CNT	       /* SAAS제품리뷰수 */
                ,C.SAAS_PRDCT_SUB_CNT	       /* SAAS제품이용자수 */
+               ,D.PRDSBSC_STTS_CD              /* 제품구독상태코드 */
                ,A.SAAS_PRDCT_PVSN_MTH_SE_CD	   /* SAAS제품제공방식구분코드 */
                ,USCM.SF_COMM_CD_NM(A.SAAS_PRDCT_PVSN_MTH_SE_CD) AS SAAS_PRDCT_PVSN_MTH_SE_NM /* SAAS제품제공방식구분명 */
                ,A.SAAS_PRDCT_TYPE_CD	       /* SAAS제품유형코드 */
@@ -282,29 +282,49 @@
                ,A.LAST_CHG_PRCR_ID	           /* 최종변경처리자아이디 */
                ,A.LAST_CHG_DT	               /* 최종변경일시 */
 		FROM USCM.TBCM_SAAS_PRDCT_M A
-		LEFT JOIN (SELECT /* 상품의 리뷰 점수 평균을 반환한다.*/ 
+		LEFT JOIN (SELECT /* 제품의 리뷰 점수 평균을 반환한다.*/ 
 		                  SAAS_PRDCT_ID
-		                 ,AVG(SAAS_PRDCT_EVL_SCR) AS SAAS_PRDCT_REV_SCR_AVG /* SAAS제품평가점수평균 */
 		                 ,COUNT(*) AS SAAS_PRDCT_REV_CNT
 		           FROM USCM.TBCM_SAAS_PRDCT_EVL_L 
-		           WHERE SAAS_PRDCT_ID = #{saasPrdctId}
+		           WHERE SAAS_PRDCT_ID =  #{saasPrdctId}
 		           GROUP BY SAAS_PRDCT_ID
 		          ) B
 		ON A.SAAS_PRDCT_ID = B.SAAS_PRDCT_ID
-		LEFT JOIN (SELECT /* 상품 이용자 수를 반환한다.*/
-		                 SAAS_PRDCT_ID 
-		                ,COUNT(*) AS SAAS_PRDCT_SUB_CNT 
-		           FROM USCM.TBCM_PRDSBSC_L
-		           WHERE 1=1
-		           AND PRDSBSC_STTS_CD ='A0040002' /* 구독중 고정 값 */
-		           AND SAAS_PRDCT_ID =#{saasPrdctId}
-		           GROUP BY SAAS_PRDCT_ID
-		           ) C
+		LEFT JOIN (SELECT /* 제품 이용자 수를 반환한다.*/
+                         SAAS_PRDCT_ID
+                        ,COUNT(*) AS SAAS_PRDCT_SUB_CNT 
+                   FROM USCM.TBCM_PRDSBSC_L
+                   WHERE 1=1
+                   AND PRDSBSC_STTS_CD ='A0040002' /* 구독중 고정 값 */
+                   AND SAAS_PRDCT_ID = #{saasPrdctId}
+                   GROUP BY SAAS_PRDCT_ID
+		           ) C                   
 		ON A.SAAS_PRDCT_ID = C.SAAS_PRDCT_ID
+	    LEFT JOIN (SELECT /* 기관,사용자의 마지막 구독순번의 구독 상태를 가져온다.*/
+		                  L.SAAS_PRDCT_ID    
+                          ,L.INST_USER_INTG_ID
+                          ,L.INST_USER_SE_CD   
+                          ,L.PRDSBSC_SN       
+                          ,L.PRDSBSC_STTS_CD   
+                   FROM (SELECT /* 기관,사용자의 구독 상태를 가져온다.*/
+                                ROW_NUMBER() OVER (PARTITION BY SAAS_PRDCT_ID, INST_USER_INTG_ID, INST_USER_SE_CD ORDER BY PRDSBSC_SN DESC) AS RN
+                                ,SAAS_PRDCT_ID
+                                ,INST_USER_INTG_ID
+                                ,INST_USER_SE_CD
+                                ,PRDSBSC_SN
+                                ,PRDSBSC_STTS_CD
+                         FROM USCM.TBCM_PRDSBSC_L
+                        ) L
+                   WHERE 1=1
+                   AND L.RN =1
+                   AND L.SAAS_PRDCT_ID = #{saasPrdctId}
+                   AND L.INST_USER_INTG_ID = #{institutionCode}
+                   ) D
+		ON A.SAAS_PRDCT_ID = D.SAAS_PRDCT_ID
         WHERE 1=1
         AND A.USE_YN ='Y'       
-<!--         AND A.GDS_GDNTC_REG_YN ='Y' -->
-        AND A.SAAS_PRDCT_ID = #{saasPrdctId}
+        AND A.GDS_GDNTC_REG_YN ='Y'
+        AND A.SAAS_PRDCT_ID =  #{saasPrdctId}
 	</select>
 	
 	<select id ="selectProdServiceList" parameterType="ProdSVO" resultType="ProdDVO">

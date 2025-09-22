@@ -116,6 +116,8 @@ public class ProdDVO implements Serializable {
 	
 	
 	/* 상품 코드명칭 반환 e */
+	@Schema(description = "제품구독상태코드")
+	private String 	prdsbscSttsCd;
 
 	/* 상품 서비스 반환 s */
 	@Schema(description = "서비스아이디")

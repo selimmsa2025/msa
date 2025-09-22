@@ -1,10 +1,8 @@
 package kr.go.iop.ci.sc.cp.cpm.mapper.vo;
 
 import java.io.Serializable;
-import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import kr.go.iop.ci.sc.cmmn.file.mapper.vo.CatalogFileDVO;
 import lombok.Getter;
 import lombok.Setter;
 

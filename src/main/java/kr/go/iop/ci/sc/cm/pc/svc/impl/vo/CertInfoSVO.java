@@ -33,6 +33,9 @@ public class CertInfoSVO implements Serializable {
 	@Schema(description = "서버구분코드(B002): 개발, 운영")
 	private String srvrSeCd;
 
+	@Schema(description = "인증구분코드(A008): 테스트인증, 구독요청인증")
+	private String certSeCd;
+
 	@Schema(description = "시험인증일련번호(A001)")
 	private int cmncCertSn;
 

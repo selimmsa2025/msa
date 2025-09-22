@@ -80,6 +80,9 @@ public class AmSVO implements Serializable {
 	private int page;
 	private int pageSize;
 	private int offset;
+	
+	@Schema(description = "서버구분")
+	private String SrvrSeCd; //
 
 //	@Schema(description = "페이징여부")
 //	private String pageYn = "Y"; 

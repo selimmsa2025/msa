@@ -25,9 +25,11 @@
         					   LEFT JOIN USCM.TBCM_SAAS_PRDCT_M G 
         						 ON G.SAAS_PRDCT_ID = R.SAAS_PRDCT_ID
         					   WHERE R.API_ID = S.API_ID
-        						 AND G.GDS_GDNTC_REG_YN = 'Y'
+        					   	 AND R.API_VER_SN = S.API_VER_SN	
         						 AND G.SAAS_PRDCT_API_VER_SN = S.API_VER_SN
-        					  )THEN 'Y' ELSE 'N' END AS GDS_GDNTC_REG_YN                 /* 카탈로그 등록여부 	*/
+        						 AND G.GDS_GDNTC_REG_YN = 'Y'
+        						 AND R.CMNC_RSLT_CD = 'A0050002' /* 0922 카탈로그 등록여부에 해당하는 API가 성공일때*/
+        					  )THEN 'Y' ELSE 'N' END AS GDS_GDNTC_REG_YN                
         	,<![CDATA[
         	 CASE WHEN S.API_VER_SN < (
        									SELECT MAX(API_VER_SN) 
@@ -99,8 +101,10 @@
         					   LEFT JOIN USCM.TBCM_SAAS_PRDCT_M G 
         						 ON G.SAAS_PRDCT_ID = R.SAAS_PRDCT_ID
         					   WHERE R.API_ID = S.API_ID
-        						 AND G.GDS_GDNTC_REG_YN = 'Y'
+        						 AND R.API_VER_SN = S.API_VER_SN	
         						 AND G.SAAS_PRDCT_API_VER_SN = S.API_VER_SN
+        						 AND G.GDS_GDNTC_REG_YN = 'Y'
+        						 AND R.CMNC_RSLT_CD = 'A0050002'
         					  )THEN 'Y' ELSE 'N' END AS GDS_GDNTC_REG_YN                   /* 카탈로그 등록여부 */
         	,<![CDATA[
         	 CASE WHEN S.API_VER_SN < (
@@ -235,7 +239,7 @@
 			,API_DMND_RSPNS_SE_CD = #{apiDmndRspnsSeCd}							/* API요청응답구분코드 	*/
 			,HTTP_CMNC_SE_CD = #{httpCmncSeCd}									/* HTTP통신구분코드 	*/
 			,URI_ADDR = #{uriAddr}												/* URI주소 			*/
-			,LAST_CHG_PRCR_ID = #{lastChgPrcrId} 								/* 최종변경처리자아이디 	*/
+			,LAST_CHG_PRCR_ID = '1'								/* 최종변경처리자아이디 	*/
 			,LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')		/* 최종변경일시 		*/
 		WHERE API_ID = #{apiId}
 		AND API_VER_SN = #{apiVerSn}
@@ -296,7 +300,7 @@
 	</select>
 	
 	<insert id = "insertProdStndApiR" parameterType = "AmProdSVO">
-		INSERT /* SQL_ID: ci.sc.cm.am.ApiMngMapper.insert.insertProdStndApiR  - 상품 표준 API 관계 등록 */
+		INSERT /* SQL_ID: ci.sc.cm.am.ApiMngMapper.insert.insertProdStndApiR  (상품표준API관계 등록) */
 		INTO USCM.TBCM_SAAS_PRDCT_API_R (
 			SAAS_PRDCT_ID
 			, API_VER_SN
@@ -310,7 +314,7 @@
 	</insert>
 	
 	<insert id = "insertProdApiTest" parameterType = "AmProdSVO">
-		INSERT /* SQL_ID: ci.sc.cm.am.ApiMngMapper.insert.insertProdApiTest - 상품 API 통신 항목 등록 */
+		INSERT /* SQL_ID: ci.sc.cm.am.ApiMngMapper.insert.insertProdApiTest (상품API통신항목 등록) */
 		INTO USCM.TBCM_PRDCT_API_CMNCRSLT_L (
 			SAAS_PRDCT_ID		/* SAAS제품아이디	*/
 			, SRVR_SE_CD		/* 서버구분코드		*/
@@ -334,6 +338,18 @@
 			, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
 		)
 	</insert>
+	
+	<update id="updateProdApiTest" parameterType="AmProdSVO">
+	  	UPDATE  /* SQL_ID: ci.sc.cm.pm.ApiMngMapper.select.updateProdApiTest (상품API통신항목수정) */ 
+	  		USCM.TBCM_PRDCT_API_CMNCRSLT_L
+	    SET 
+	    	CMNC_RSLT_CD = #{cmncRsltCd}                  
+	        , LAST_CHG_PRCR_ID = '1'                              
+	        , LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+	   	WHERE API_ID = #{apiId}
+	    AND API_VER_SN = #{apiVerSn}
+	    AND CMNC_RSLT_CD != #{cmncRsltCd}            
+	</update>
 	
 	<select id="selectStndApiNmCnt" resultType="int">
   		 SELECT /* SQL_ID: ci.sc.cm.am.ApiMngMapper.select.selectStndApiNmCnt (표준API명_중복검사용조회) */ 
@@ -383,7 +399,7 @@
   		</if>		
 	</delete>
 	
-	<update id="updateProdApiVer" parameterType="amProdSVO">
+	<update id="updateProdApiVer" parameterType="AmProdSVO">
   		UPDATE /* SQL_ID: ci.sc.cm.am.ApiMngMapper.update.updateProdApiVer (상품API버전수정) */
   			USCM.TBCM_SAAS_PRDCT_M
      	SET 
@@ -391,8 +407,44 @@
    		WHERE SAAS_PRDCT_ID = #{saasPrdctId}
      	AND GDS_GDNTC_REG_YN = 'N'                
      	AND (SAAS_PRDCT_API_VER_SN IS NULL OR SAAS_PRDCT_API_VER_SN <![CDATA[<>]]>  #{apiVerSn}) 
-</update>
+	</update>
 	
+	
+	<update id = "updateCertKey" parameterType = "amSVO">
+		UPDATE /* SQL_ID: ci.sc.cm.pm.ApiMngMapper.insert.updateCertKey (0922 상품인증관리내역수정) */
+			USCM.TBCM_CMNC_MNG_L M
+		SET API_CMNC_SCS_YN  = 'N'
+			, LAST_CHG_PRCR_ID = #{lastChgPrcrId}
+        	, LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+        	
+        WHERE EXISTS (
+     					SELECT 1
+       					FROM USCM.TBCM_PRDCT_API_CMNCRSLT_L R
+       						JOIN USCM.TBCM_SAAS_PRDCT_M G
+         					ON G.SAAS_PRDCT_ID = R.SAAS_PRDCT_ID
+         					AND R.SRVR_SE_CD    = M.SRVR_SE_CD
+      					WHERE R.SAAS_PRDCT_ID = M.SAAS_PRDCT_ID
+        					AND R.SRVR_SE_CD    = M.SRVR_SE_CD
+        					AND R.API_ID        = #{apiId}
+        					AND R.API_VER_SN    = #{apiVerSn}
+        					AND G.USE_YN        = 'Y'
+        					AND G.GDS_GDNTC_REG_YN = 'N'
+        					AND G.SAAS_PRDCT_API_VER_SN = #{apiVerSn}
+        				<if test="srvrSeCd != null and srvrSeCd != ''">
+          					AND R.SRVR_SE_CD  = #{srvrSeCd} 
+        				</if>
+  						)
+	   <if test="srvrSeCd != null and srvrSeCd != ''">
+	     AND M.SRVR_SE_CD = #{srvrSeCd}
+	   </if>
+	</update>
+	
+	<select id="selectMaxStndApiVer" resultType="int">
+		SELECT /* SQL_ID: ci.sc.cm.pm.ApiMngMapper.select.selectMaxStndApiVer -- API 최종버전 조회 */ 
+			MAX(API_VER_SN)			/* api 버전일련번호 */
+		FROM USCM.TBCM_API_VER_B
+		WHERE USE_YN = 'Y'			/* 사용여부 */
+	</select>
 	
 	
 </mapper>

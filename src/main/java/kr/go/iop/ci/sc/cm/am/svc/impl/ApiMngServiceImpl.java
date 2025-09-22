@@ -117,8 +117,15 @@ public class ApiMngServiceImpl implements ApiMngService {
 		if (apiMngMapper.selectStndApiUriCnt(svo) > 0) {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "이미 사용 중인 URI입니다.");
 		}
+		//0922
+		int maxApiVer = apiMngMapper.selectMaxStndApiVer();
+		int apiVer = svo.getApiVerSn();
+		if(apiVer != maxApiVer) {
+			throw new ApiBizException(HttpStatus.BAD_REQUEST, "해당 API 버전이 최신 버전과 일치하지 않습니다.");
+			
+		}
 
-		String apiId = apiMngMapper.selectNextStndApiId(); 
+		String apiId = apiMngMapper.selectNextStndApiId();
 		svo.setApiId(apiId);
 		log.info("[insertStndApi] 발급된 apiId={}", apiId);
 
@@ -146,21 +153,30 @@ public class ApiMngServiceImpl implements ApiMngService {
 				insertVo.setSaasPrdctId(vo.getSaasPrdctId());
 				insertVo.setApiVerSn(svo.getApiVerSn());
 				insertVo.setApiId(apiId);
-				insertVo.setSrvrSeCd(ConstantInfo.TEST_DEV); // 개발서버
+				insertVo.setSrvrSeCd(ConstantInfo.TEST_OPS);
 				insertVo.setCmncRsltCd(ConstantInfo.TEST_WAIT); // 대기
 				insertVo.setFrstCrtPrcrId("1");
 				int r = apiMngMapper.insertProdStndApiR(insertVo); // 상품-표준API 관계
 				if (r != 1) {
 					throw new RuntimeException("상품-표준API 관계 등록 실패");
 				}
-				apiMngMapper.insertProdApiTest(insertVo); // 통신결과세팅
-				insertVo.setSrvrSeCd(ConstantInfo.TEST_OPS);
 				int r2 = apiMngMapper.insertProdApiTest(insertVo); // 통신결과세팅
 				if (r2 != 1) {
 					throw new RuntimeException("통신테이블 등록 실패");
 				}
+
 			}
 		}
+		
+//		AmSVO p = new AmSVO();
+//		p.setApiId(clonedApiId);
+//		p.setApiVerSn(nextVer);
+//		p.setSrvrSeCd(ConstantInfo.TEST_OPS); 
+//		p.setLastChgPrcrId("1"); // 실제 사용자 ID로 교체
+//		int upd = apiMngMapper.updateCertKey(p);
+//		if (upd == 0) {
+//			log.warn("[insertStndApi] 인증관리 UPDATE 0건 (apiId={}, ver={})", svo.getApiVerSn(), svo.getApiVerSn());
+//		}
 
 		return 1;
 	}
@@ -182,24 +198,50 @@ public class ApiMngServiceImpl implements ApiMngService {
 		if (apiMngMapper.selectStndApiUriCnt(svo) > 0) {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "이미 사용 중인 URI입니다.");
 		}
+		//0922
+		int maxApiVer = apiMngMapper.selectMaxStndApiVer();
+		int apiVer = svo.getApiVerSn();
+		if(apiVer != maxApiVer) {
+			throw new ApiBizException(HttpStatus.BAD_REQUEST, "해당 API 버전이 최신 버전과 일치하지 않습니다.");
+			
+		}
 
 		int resultCnt = apiMngMapper.updateStndApi(svo);
+		if (resultCnt < 1) {
+			throw new RuntimeException("API 수정 실패 또는 대상 없음");
+		}
 		deleteStndApiArtcl(svo);
 
 		List<AmArtcSVO> paramList = svo.getParamList();
-		if (paramList == null || paramList.isEmpty()) {
-			return 1;
-		}
-
-		for (AmArtcSVO artc : paramList) {
-			artc.setApiId(svo.getApiId());
-			int row = apiMngMapper.insertStndApiArtcl(artc);
-			if (row != 1) {
-				throw new RuntimeException("항목 등록 실패");
+		if (paramList != null && !paramList.isEmpty()) {
+			for (AmArtcSVO artc : paramList) {
+				artc.setApiId(svo.getApiId());
+				int row = apiMngMapper.insertStndApiArtcl(artc);
+				if (row != 1) {
+					throw new RuntimeException("항목 등록 실패");
+				}
 			}
 		}
-		return resultCnt;
 
+		// 수정후 통신관리 내역 상태코드 update
+		AmProdSVO testUpd = new AmProdSVO();
+		testUpd.setApiId(svo.getApiId());
+		testUpd.setApiVerSn(svo.getApiVerSn());
+		testUpd.setCmncRsltCd(ConstantInfo.TEST_WAIT); // 대기 상태로 update
+		apiMngMapper.updateProdApiTest(testUpd);
+
+//		// 0922 인증관리 내역 통신성공여부 update 
+//		AmSVO p = new AmSVO();
+//		p.setApiId(svo.getApiId());
+//		p.setApiVerSn(svo.getApiVerSn());
+//		p.setSrvrSeCd(ConstantInfo.TEST_OPS); 
+//		p.setLastChgPrcrId("1"); // 실제 사용자 ID로 교체
+//		int upd = apiMngMapper.updateCertKey(p);
+//		if (upd == 0) {
+//			log.warn("[insertStndApi] 인증관리 UPDATE 0건 (apiId={}, ver={})", svo.getApiId(), svo.getApiVerSn());
+//		}
+
+		return resultCnt;
 	}
 
 	/* 표준API삭제_API 기본정보 */
@@ -210,11 +252,11 @@ public class ApiMngServiceImpl implements ApiMngService {
 		log.debug("deleteProdApiTest params apiId={}, ver={}, gdsGdntcRegYn={}", svo.getApiId(), svo.getApiVerSn(),
 				svo.getGdsGdntcRegYn());
 
-		deleteProdStndApiR(svo); // 상품-api관계테이블 삭제 
-		int delTest = apiMngMapper.deleteProdApiTest(svo); //통신결과내역테이블 삭제 
+		deleteProdStndApiR(svo); // 상품-api관계테이블 삭제
+		int delTest = apiMngMapper.deleteProdApiTest(svo); // 통신결과내역테이블 삭제
 		log.debug("deleteProdApiTest deleted rows={}", delTest);
 
-		int result = apiMngMapper.deleteStndApi(svo); //api기본테이블n업데이트 
+		int result = apiMngMapper.deleteStndApi(svo); // api기본테이블n업데이트
 		if (result != 1) {
 			throw new RuntimeException("기본 정보 삭제 실패");
 		}
@@ -322,12 +364,10 @@ public class ApiMngServiceImpl implements ApiMngService {
 					insertVo.setSaasPrdctId(vo.getSaasPrdctId());
 					insertVo.setApiVerSn(nextVer);
 					insertVo.setApiId(clonedApiId);
-					insertVo.setSrvrSeCd(ConstantInfo.TEST_DEV);// 테스트결과 초기 셋팅 : 개발서버
+					insertVo.setSrvrSeCd(ConstantInfo.TEST_OPS);// 테스트결과 초기 셋팅 : 운영서버
 					insertVo.setCmncRsltCd(ConstantInfo.TEST_WAIT);// 테스트결과 초기 셋팅 : 대기
 					insertVo.setFrstCrtPrcrId("1");
 					apiMngMapper.insertProdStndApiR(insertVo);
-					apiMngMapper.insertProdApiTest(insertVo);
-					insertVo.setSrvrSeCd(ConstantInfo.TEST_OPS);// 테스트결과 초기 셋팅 : 운영서버
 					apiMngMapper.insertProdApiTest(insertVo);
 
 					// 카탈로그 미등록 상품 버전 업데이트
@@ -336,7 +376,6 @@ public class ApiMngServiceImpl implements ApiMngService {
 					updVo.setApiVerSn(nextVer);
 					apiMngMapper.updateProdApiVer(updVo);
 				}
-
 			}
 
 			// 이전 통신결과내역 데이터 삭제(카탈로그 미등록 상품에 대한 api)
@@ -345,6 +384,18 @@ public class ApiMngServiceImpl implements ApiMngService {
 			delParam.setApiVerSn(prevVer);
 			delParam.setGdsGdntcRegYn(ConstantInfo.N_VALUE);// 미등록
 			apiMngMapper.deleteProdApiTest(delParam);
+			
+			// 0922 인증관리
+//			AmSVO p = new AmSVO();
+//			p.setApiId(clonedApiId);
+//			p.setApiVerSn(nextVer);
+//			p.setSrvrSeCd(ConstantInfo.TEST_OPS); 
+//			p.setLastChgPrcrId("1"); // 실제 사용자 ID로 교체
+//			int upd = apiMngMapper.updateCertKey(p);
+//			if (upd == 0) {
+//				log.warn("[insertStndApi] 인증관리 UPDATE 0건 (apiId={}, ver={})", svo.getApiVerSn(), svo.getApiVerSn());
+//			}
+			
 		}
 
 		return apiMngMapper.selectStndApiVerList();
@@ -410,7 +461,6 @@ public class ApiMngServiceImpl implements ApiMngService {
 		mapInfo.put("fileName", excelFileName);
 		mapInfo.put("sheetName", "표준API 목록");
 		mapInfo.put("excelTitle", "표준API 목록");
-		
 
 		int page = (svo.getPage() < 1) ? 1 : svo.getPage();
 		int pageSize = (svo.getPageSize() < 1) ? 10 : svo.getPageSize();
@@ -455,80 +505,78 @@ public class ApiMngServiceImpl implements ApiMngService {
 		}
 		ExcelUtil.excelFileDownload(request, response, mapInfo, titleList, null, dataList);
 	}
-	
-	/* 표준 API 상세 엑셀 다운로드 */ 
+
+	/* 표준 API 상세 엑셀 다운로드 */
 	@Override
 	public void selectStndApiInfoExcelDownload(HttpServletRequest request, HttpServletResponse response, AmSVO svo) {
-	    String excelFileName = DateUtil.getNowDateString() + "_" + "API 상세(" + svo.getApiId() + ").xlsx";
+		String excelFileName = DateUtil.getNowDateString() + "_" + "API 상세(" + svo.getApiId() + ").xlsx";
 
-	    Map<String, String> mapInfo = new HashMap<>();
-	    mapInfo.put("fileName", excelFileName);
-	    mapInfo.put("sheetName", "표준API 상세");
-	    mapInfo.put("excelTitle", "표준API 상세");
+		Map<String, String> mapInfo = new HashMap<>();
+		mapInfo.put("fileName", excelFileName);
+		mapInfo.put("sheetName", "표준API 상세");
+		mapInfo.put("excelTitle", "표준API 상세");
 
-	    List<String> apiTitleList = new ArrayList<>();
-	    List<String> apiDataList = new ArrayList<>();
+		List<String> apiTitleList = new ArrayList<>();
+		List<String> apiDataList = new ArrayList<>();
 
-	    AmDVO api = apiMngMapper.selectStndApiInfo(svo);
-	    List<AmArtcDVO> paramList = apiMngMapper.selectStndApiArtclList(svo);
+		AmDVO api = apiMngMapper.selectStndApiInfo(svo);
+		List<AmArtcDVO> paramList = apiMngMapper.selectStndApiArtclList(svo);
 
-	    if (api != null) {
-	        api.setParamList(paramList);
-	        String[][] basics = {
-	                {"API ID",        nz(api.getApiId())},
-	                {"API명",         nz(api.getApiNm())},
-	                {"API 버전번호",  String.valueOf(api.getApiVerSn())},
-	                {"제공유형",      nz(api.getSaasPrdctTypeNm())},
-	                {"요청/응답",     nz(api.getApiDmndRspnsSeNm())},
-	                {"HTTP통신구분",  nz(api.getHttpCmncSeNm())},
-	                {"URI주소",       nz(api.getUriAddr())},
-	                {"등록일시",      nz(api.getFrstCrtDt())}
-	        };
-	        for (String[] b : basics) {
-	            apiTitleList.add(b[0]);
-	            apiDataList.add(b[1]);
-	        }
-	    }
+		if (api != null) {
+			api.setParamList(paramList);
+			String[][] basics = { { "API ID", nz(api.getApiId()) }, { "API명", nz(api.getApiNm()) },
+					{ "API 버전번호", String.valueOf(api.getApiVerSn()) }, { "제공유형", nz(api.getSaasPrdctTypeNm()) },
+					{ "요청/응답", nz(api.getApiDmndRspnsSeNm()) }, { "HTTP통신구분", nz(api.getHttpCmncSeNm()) },
+					{ "URI주소", nz(api.getUriAddr()) }, { "등록일시", nz(api.getFrstCrtDt()) } };
+			for (String[] b : basics) {
+				apiTitleList.add(b[0]);
+				apiDataList.add(b[1]);
+			}
+		}
 
-	    Map<String, List<String[]>> sectionDataMap = new LinkedHashMap<>();
-	    List<String> sectionHeader = Arrays.asList("속성명", "타입", "필수", "설명");
+		Map<String, List<String[]>> sectionDataMap = new LinkedHashMap<>();
+		List<String> sectionHeader = Arrays.asList("속성명", "타입", "필수", "설명");
 
-	    if (api != null && api.getParamList() != null) {
-	        String[] sections = {"HeaderParameter", "RequestBody", "ResponseBody"};
-	        String[] sectionTitles = {"Header Parameter", "Request Body", "Response Body"};
+		if (api != null && api.getParamList() != null) {
+			String[] sections = { "HeaderParameter", "RequestBody", "ResponseBody" };
+			String[] sectionTitles = { "Header Parameter", "Request Body", "Response Body" };
 
-	        for (int i = 0; i < sections.length; i++) {
-	            String section = sections[i];
-	            String sectionTitle = sectionTitles[i];
+			for (int i = 0; i < sections.length; i++) {
+				String section = sections[i];
+				String sectionTitle = sectionTitles[i];
 
-	            List<String[]> sectionData = api.getParamList().stream()
-	                    .filter(p -> section.equals(p.getApiArtclSeNm()))
-	                    .map(p -> new String[]{
-	                            nz(p.getApiArtclAtrbNm()),
-	                            nz(p.getApiArtclDataTypeNm()),
-	                            yn(p.getApiArtclEsntlYn()),
-	                            nz(p.getApiArtclCn())
-	                    })
-	                    .toList();
+				List<String[]> sectionData = api.getParamList().stream()
+						.filter(p -> section.equals(p.getApiArtclSeNm()))
+						.map(p -> new String[] { nz(p.getApiArtclAtrbNm()), nz(p.getApiArtclDataTypeNm()),
+								yn(p.getApiArtclEsntlYn()), nz(p.getApiArtclCn()) })
+						.toList();
 
-	            if (!sectionData.isEmpty()) {
-	                sectionDataMap.put(sectionTitle, sectionData);
-	            }
-	        }
-	    }
+				if (!sectionData.isEmpty()) {
+					sectionDataMap.put(sectionTitle, sectionData);
+				}
+			}
+		}
 
-	    ExcelUtil.excelFileDownload(request, response, mapInfo,
-	            apiTitleList, apiDataList,
-	            sectionDataMap, sectionHeader);
+		ExcelUtil.excelFileDownload(request, response, mapInfo, apiTitleList, apiDataList, sectionDataMap,
+				sectionHeader);
 	}
-	    
 
 	// 상세 엑셀 헬퍼
-	private static String nz(String v) { return v == null ? "" : v; }
+	private static String nz(String v) {
+		return v == null ? "" : v;
+	}
+
 	private static String yn(String v) {
-	    if ("Y".equalsIgnoreCase(v)) return "Y";
-	    if ("N".equalsIgnoreCase(v)) return "N";
-	    return nz(v);
+		if ("Y".equalsIgnoreCase(v))
+			return "Y";
+		if ("N".equalsIgnoreCase(v))
+			return "N";
+		return nz(v);
+	}
+
+	@Override
+	public int updateCertKey(AmSVO vo) {
+		return apiMngMapper.updateCertKey(vo);
 	}
 
 }

@@ -122,8 +122,8 @@
 			, #{prdsbscSn}
 			, #{prdsbscHstrySn}
 			, #{prdsbscSttsCd}
-			, ''
-			, ''
+			, #{prdsbscBgngYmd}
+			, #{prdsbscEndYmd}
 			, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS') 
 			, #{accountId} 
 			, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS') 

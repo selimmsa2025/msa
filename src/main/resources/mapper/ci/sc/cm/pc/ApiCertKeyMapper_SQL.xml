@@ -266,6 +266,7 @@
 		SELECT /* SQL_ID: ci.sc.cm.pc.ApiCertKeyMapper.select.selectApiCertInfoList - 통신테스트 인증키정보 조회 */
 				SAAS_PRDCT_ID 				/* 상품ID */
 				, SRVR_SE_CD 				/* 서버구분코드 */
+				, CERT_SE_CD 				/* 인증구분코드 */
 				, CMNC_CERT_SN				/* 시험인증일련번호 */
 				, AUTHKEY_NM 				/* 인증키명 */
 				, AUTHKEY 					/* 인증키값 */
@@ -338,6 +339,7 @@
 		INTO USCM.TBCM_CMNC_CERT_L (
 										SAAS_PRDCT_ID 				/* 상품ID	 */
 										, SRVR_SE_CD 				/* 서버구분코드 */
+										, CERT_SE_CD 				/* 인증구분코드 */
 										, CMNC_CERT_SN				/* 시험인증일련번호 */
 										, AUTHKEY_NM 				/* 인증키명 */
 										, AUTHKEY 					/* 인증키값 */
@@ -349,6 +351,7 @@
 							 values(
 										#{saasPrdctId}
 										, #{srvrSeCd}
+										, #{certSeCd}
 										, #{cmncCertSn}
 										, #{authkeyNm}
 										, #{authkey}

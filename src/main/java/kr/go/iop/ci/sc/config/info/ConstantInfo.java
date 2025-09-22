@@ -98,11 +98,6 @@ public final class ConstantInfo {
 	//2025.08.13 작성
 	public static final String NEXT_API_ID = "nextId";
 	
-	// 통신결과코드
-	public static final String CMNC_RSLT_CD_PENDING = "A0050001";
-	public static final String CMNC_RSLT_CD_SUCCESS = "A0050002";
-	public static final String CMNC_RSLT_CD_FAILURE = "A0050003";
-	
 	// HTTP 통신 구분 코드
 	public static final String HTTP_METHOD_GET = "B0020001";
 	public static final String HTTP_METHOD_POST = "B0020002";

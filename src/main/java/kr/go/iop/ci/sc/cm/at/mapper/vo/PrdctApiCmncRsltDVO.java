@@ -43,6 +43,9 @@ public class PrdctApiCmncRsltDVO implements Serializable {
 	@Schema(description = "통신 결과 코드")
 	private String cmncRsltCd;
 	
+	@Schema(description = "통신 결과 코드명")
+	private String cmncRsltNm;
+	
 	@Schema(description = "통신일시")
 	private LocalDateTime cmncDt;
 	

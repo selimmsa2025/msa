@@ -332,6 +332,8 @@
 		   SET  LAST_CHG_PRCR_ID = #{lastChgPrcrId}							/* 최종변경처리자아이디 */
 		  	  , LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')	/* 최종변경일시 */
 		  	  , CMNC_RSLT_CN = #{cmncRsltCn}								/* 통신결과내용 */
+		  	  , CMNC_DT = #{cmncDt, jdbcType=TIMESTAMP}
+		  	  , CMNC_RSLT_CD = #{cmncRsltCd}
 		 WHERE  SAAS_PRDCT_ID = #{saasPrdctId}
 		   AND  SRVR_SE_CD = #{srvrSeCd}
 		   AND  API_ID = #{apiId}

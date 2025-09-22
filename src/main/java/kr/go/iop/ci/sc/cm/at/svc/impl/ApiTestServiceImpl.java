@@ -51,6 +51,9 @@ import kr.go.iop.ci.sc.cm.at.svc.vo.CmncMngSVO;
 import kr.go.iop.ci.sc.cm.at.svc.vo.PrdctApiCmncRsltSVO;
 import kr.go.iop.ci.sc.cm.at.svc.vo.StdApiSVO;
 import kr.go.iop.ci.sc.cm.at.svc.vo.TestExecutionSVO;
+import kr.go.iop.ci.sc.cm.pc.mapper.ProdCertMapper;
+import kr.go.iop.ci.sc.cm.pc.mapper.vo.CertInfoDVO;
+import kr.go.iop.ci.sc.cm.pc.svc.impl.vo.ApiCertKeyReqSVO;
 import kr.go.iop.ci.sc.cmmn.bean.WebClientConfig;
 import kr.go.iop.ci.sc.cmmn.exception.ApiBizException;
 import kr.go.iop.ci.sc.config.info.ConstantInfo;
@@ -72,6 +75,8 @@ public class ApiTestServiceImpl implements ApiTestService {
 	private final ApiTestMapper apiTestMapper;
 	
 	private final WebClientConfig webClientConfig;
+	
+	private final ProdCertMapper apiCertKeyMapper;
 	
 	@Value("${saas.dev.url}")
 	private String saasDevUrl;
@@ -163,19 +168,32 @@ public class ApiTestServiceImpl implements ApiTestService {
 			}
 		}
 		
+		// 통신 인증 내역 정보 (인증 키)
+		ApiCertKeyReqSVO keyVo = new ApiCertKeyReqSVO();
+		keyVo.setSaasPrdctId(req.getSaasPrdctId());
+		keyVo.setSrvrSeCd(req.getSrvrSeCd());
+		List<CertInfoDVO> keyList = apiCertKeyMapper.selectApiCertInfoList(keyVo);
 		
 		// 최종 API 리스트 + 파라미터 합치고 리턴
 		return apiTestList.stream()
 				.map(api -> {
 					if(headerParamMap.containsKey(api.getApiId())) {
 						HeaderParamValue headerInfo = headerParamMap.get(api.getApiId()).get(String.valueOf(api.getApiVerSn()));
-						api.setHeaderContents(headerInfo.values());
+						Map<String, String> headerMap = headerInfo.values();
+						
+						// 인증키 정보 셋팅
+						for (CertInfoDVO certInfo : keyList ) {
+							headerMap.put(certInfo.getAuthkeyNm(), certInfo.getAuthkey());
+						}
+						
+						api.setHeaderContents(headerMap);
 					}
 					
 					if (reqParamMap.containsKey(api.getApiId())) {
 						ParamValue reqInfo = reqParamMap.get(api.getApiId()).get(String.valueOf(api.getApiVerSn()));					
 						api.setReqBdyContents(reqInfo.values());
 					}
+					
 					return api;
 				}).toList();
 	}

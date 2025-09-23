@@ -14,8 +14,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import kr.go.iop.ci.sc.cm.pc.svc.ProdCertService;
-import kr.go.iop.ci.sc.cm.pc.svc.impl.vo.ApiCertKeyReqSVO;
+//import kr.go.iop.ci.sc.config.service.vo.ApiCertKeyReqSVO;
 
 @Service
 public class JwtService {
@@ -23,16 +22,17 @@ public class JwtService {
     private final SecretKey secretKey;
     private final long accessTokenExpirationMs;
     private final long refreshTokenExpirationMs;
-    private final ProdCertService apiCertKeyService;
+    //private final ProdCertService apiCertKeyService;
 
     public JwtService(@Value("${jwt.secret}") String secret,
                       @Value("${jwt.access-expiration:600000}") long accessTokenExpirationMs,
-                      @Value("${jwt.refresh-expiration:2592000000}") long refreshTokenExpirationMs,
-                      ProdCertService apiCertKeyService) {
+                      @Value("${jwt.refresh-expiration:2592000000}") long refreshTokenExpirationMs
+                      //,ProdCertService apiCertKeyService
+                      ) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         this.accessTokenExpirationMs = accessTokenExpirationMs; // 1시간
         this.refreshTokenExpirationMs = refreshTokenExpirationMs; // 30일
-		this.apiCertKeyService = apiCertKeyService;
+		//this.apiCertKeyService = apiCertKeyService;
     }
 
     // Access Token 생성
@@ -188,19 +188,19 @@ public class JwtService {
     //DB insert 
     public int insertTokenData(Map<String, String> params) {
     	
-    	ApiCertKeyReqSVO vo = new ApiCertKeyReqSVO();
+    	//ApiCertKeyReqSVO vo = new ApiCertKeyReqSVO();
 //    	vo.setGdsId(params.get("clientId"));
-    	vo.setAplyKey(params.get("aplyKey"));
-    	vo.setAplySrctKey(params.get("aplyKey"));
-    	vo.setSrvrSeCd(params.get("aplyKey").startsWith("dev") ? "B0020001" : "B0020002"); //개발서버, 운영서버
-    	vo.setJsonWebTokenKey(params.get("access_token"));
-    	vo.setCertKey(params.get("refresh_token"));
-    	vo.setCertPrgrsStpCd("A0050002"); //발급
-    	vo.setApiCommScsYn("Y");
-    	vo.setFrstCrtPrcrId("SYSTEM_ADMIN");
-    	vo.setLastChgPrcrId("SYSTEM_ADMIN");
+//    	vo.setAplyKey(params.get("aplyKey"));
+//    	vo.setAplySrctKey(params.get("aplyKey"));
+//    	vo.setSrvrSeCd(params.get("aplyKey").startsWith("dev") ? "B0020001" : "B0020002"); //개발서버, 운영서버
+//    	vo.setJsonWebTokenKey(params.get("access_token"));
+//    	vo.setCertKey(params.get("refresh_token"));
+//    	vo.setCertPrgrsStpCd("A0050002"); //발급
+//    	vo.setApiCommScsYn("Y");
+//    	vo.setFrstCrtPrcrId("SYSTEM_ADMIN");
+//    	vo.setLastChgPrcrId("SYSTEM_ADMIN");
     	
-    	apiCertKeyService.createJwtKey(vo);
+    	//apiCertKeyService.createJwtKey(vo);
     	
     	return 0;
     }

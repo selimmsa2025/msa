@@ -2,7 +2,7 @@ package kr.go.iop.ci.sc.cmmn.utils;
 
 import java.util.Arrays;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

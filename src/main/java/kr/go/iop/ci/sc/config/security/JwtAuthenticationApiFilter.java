@@ -1,9 +1,8 @@
 package kr.go.iop.ci.sc.config.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import kr.go.iop.ci.sc.config.service.JwtService;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -11,14 +10,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import kr.go.iop.ci.sc.config.service.JwtService;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Spring Security AuthenticationFilter 처리. 토큰 정보를 받아 인증 정보 생성

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.go.iop.ci.sc.cmmn.vo.ApiResponseVO;
 import kr.go.iop.ci.sc.cmmn.vo.ResponseVO;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

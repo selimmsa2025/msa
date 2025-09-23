@@ -24,64 +24,88 @@ configurations {
 }
 
 dependencies {
+    //Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     //implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    
+    //Spring Cloud
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.3.2'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+    
+    //DB
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5'
+    implementation 'org.postgresql:postgresql:42.7.7'
+    runtimeOnly 'com.h2database:h2:1.4.200' //테스트용
+    
+    //전자정부
     implementation "org.egovframe.rte:org.egovframe.rte.fdl.crypto:${eGovFrameVersion}"
-    //implementation 'tibero:tibero7-jdbc-18:1.0'
-    //implementation 'io.jsonwebtoken:jjwt:0.9.1'
-    // JWT only
+    
+    //암호화, 인코딩
+//    implementation 'io.jsonwebtoken:jjwt-api:0.12.7'
+    //runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.7'
+    //runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.7'
+    
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
     
-    implementation 'net.logstash.logback:logstash-logback-encoder:7.2'        // logstash logback
-    implementation 'org.jasypt:jasypt:1.9.3'
+
+
+    implementation 'commons-codec:commons-codec:1.19.0'
+    implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
+    
+    //취약점 조치
+    implementation 'commons-fileupload:commons-fileupload:1.6.0'
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
+    implementation 'org.springframework:spring-webmvc:6.2.10'
+    
+    //데이터 처리
     implementation 'org.apache.commons:commons-collections4:4.5.0'
+    
+    //Docs, AOP
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.10'
+    implementation 'org.aspectj:aspectjweaver:1.9.24'
+    
+    //공통모듈
+    //implementation files ("libs/msa-cmmn-2025.08.25.jar")
+    //implementation files ("libs/onnara-cmmn-2025.03.04.jar")
+    
+    //개발지원도구
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    
+    //테스트
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.5'
+    testImplementation 'org.springframework.security:spring-security-test'
+    
+    //로깅, 모니터링
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    
+
+    
+    //기타
+    implementation 'org.jasypt:jasypt:1.9.3'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
-    implementation 'commons-codec:commons-codec:1.18.0'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
     implementation 'com.sun.xml.bind:jaxb-core:2.3.0.1'
     implementation 'com.sun.xml.bind:jaxb-impl:2.3.9'
-    implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
-    implementation 'org.aspectj:aspectjweaver:1.9.24'
-    implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
     
-    //posgresql 추가
-    implementation 'org.postgresql:postgresql:42.7.3'
+    //implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
+    
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    //implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-    //implementation 'org.springframework.cloud:spring-cloud-starter-config'    // config
     implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap' // config
-   //implementation files('/lib/onnara-cmmn-2025.03.04.jar')
-    
-
-    //아우터 아키텍처 구성요소
-    //implementation 'org.springframework.cloud:spring-cloud-sleuth-otel-autoconfigure'
-    //implementation 'io.opentelemetry:opentelemetry-exporter-otlp:1.23.1'
-    //implementation 'io.opentelemetry:opentelemetry-exporter-zipkin:1.23.1'
-    //implementation "opentelemetry-conf:opentelemetry-conf-selim:${opentelemetryVersion}"
-    //implementation 'io.micrometer:micrometer-registry-prometheus'
-
-    runtimeOnly 'com.h2database:h2:1.4.200' //테스트용
-    compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:2.3.1'
-    testImplementation 'org.springframework.security:spring-security-test'
+  
     
     //0911 엑셀 다운로드 poi임시추가 
-    //implementation files('libs/poi-5.4.1.jar')
-    //implementation files('libs/poi-ooxml-5.4.1.jar')
     implementation "org.apache.poi:poi-ooxml:5.4.1"
     
     // 09.15 feignclient 추가
@@ -92,7 +116,7 @@ dependencies {
 dependencyManagement {
     imports {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-        //mavenBom "org.springframework.cloud:spring-cloud-sleuth-otel-dependencies:${otelVersion}"
+        mavenBom "org.springframework.cloud:spring-cloud-sleuth-otel-dependencies:${otelVersion}"
     }
 }
 

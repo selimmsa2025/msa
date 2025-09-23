@@ -18,9 +18,9 @@ pipeline {
         stage('Build SpringBoot App') {
             steps {
                 script {
-                    docker.image('gradle:7.4.2-jdk17').inside {
+                    docker.image('gradle:7.6.4-jdk17').inside {
                        sh '''
-                            gradle wrapper --gradle-version 7.4.2 
+                            gradle wrapper --gradle-version 7.6.4
                             chmod +x ./gradlew  
                             ./gradlew clean build -x test
                           '''

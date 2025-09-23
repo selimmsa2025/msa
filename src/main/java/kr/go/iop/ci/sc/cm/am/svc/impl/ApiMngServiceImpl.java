@@ -229,17 +229,14 @@ public class ApiMngServiceImpl implements ApiMngService {
 		testUpd.setApiVerSn(svo.getApiVerSn());
 		testUpd.setCmncRsltCd(ConstantInfo.TEST_WAIT); // 대기 상태로 update
 		apiMngMapper.updateProdApiTest(testUpd);
-
-//		// 0922 인증관리 내역 통신성공여부 update 
-//		AmSVO p = new AmSVO();
-//		p.setApiId(svo.getApiId());
-//		p.setApiVerSn(svo.getApiVerSn());
-//		p.setSrvrSeCd(ConstantInfo.TEST_OPS); 
-//		p.setLastChgPrcrId("1"); // 실제 사용자 ID로 교체
-//		int upd = apiMngMapper.updateCertKey(p);
-//		if (upd == 0) {
-//			log.warn("[insertStndApi] 인증관리 UPDATE 0건 (apiId={}, ver={})", svo.getApiId(), svo.getApiVerSn());
-//		}
+		
+		// 0923 인증관리 통신성공여부 업데이트
+		AmSVO cert = new AmSVO();
+	    cert.setApiId(svo.getApiId());
+	    cert.setApiVerSn(svo.getApiVerSn());
+	    cert.setLastChgPrcrId("1");
+	    int certRows = apiMngMapper.updateCertKey(cert);
+	    log.info("[updateCertKey] 인증관리 N 초기화 rows={}", certRows);
 
 		return resultCnt;
 	}
@@ -376,6 +373,13 @@ public class ApiMngServiceImpl implements ApiMngService {
 					updVo.setApiVerSn(nextVer);
 					apiMngMapper.updateProdApiVer(updVo);
 				}
+				// 0923 인증관리 통신성공여부 업데이트 
+				AmSVO cert = new AmSVO();
+				cert.setApiId(clonedApiId);
+				cert.setApiVerSn(nextVer);          
+				cert.setLastChgPrcrId("1");
+			    int certRows = apiMngMapper.updateCertKey(cert);
+			    log.info("[insertStndApiVer] 인증관리 N 초기화: apiId={}, ver={}, updatedRows={}", clonedApiId, nextVer, certRows);
 			}
 
 			// 이전 통신결과내역 데이터 삭제(카탈로그 미등록 상품에 대한 api)
@@ -385,16 +389,7 @@ public class ApiMngServiceImpl implements ApiMngService {
 			delParam.setGdsGdntcRegYn(ConstantInfo.N_VALUE);// 미등록
 			apiMngMapper.deleteProdApiTest(delParam);
 			
-			// 0922 인증관리
-//			AmSVO p = new AmSVO();
-//			p.setApiId(clonedApiId);
-//			p.setApiVerSn(nextVer);
-//			p.setSrvrSeCd(ConstantInfo.TEST_OPS); 
-//			p.setLastChgPrcrId("1"); // 실제 사용자 ID로 교체
-//			int upd = apiMngMapper.updateCertKey(p);
-//			if (upd == 0) {
-//				log.warn("[insertStndApi] 인증관리 UPDATE 0건 (apiId={}, ver={})", svo.getApiVerSn(), svo.getApiVerSn());
-//			}
+			
 			
 		}
 

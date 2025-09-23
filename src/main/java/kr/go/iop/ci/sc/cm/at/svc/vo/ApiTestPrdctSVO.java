@@ -11,9 +11,8 @@ package kr.go.iop.ci.sc.cm.at.svc.vo;
 
 import java.io.Serializable;
 
-import javax.validation.constraints.NotBlank;
-
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

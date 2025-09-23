@@ -256,77 +256,41 @@
 	</update>
 	
 	<select id="selectProdInfo" parameterType="ProdSVO" resultType="ProdDVO">
-		SELECT /* kr.go.iop.ci.sc.cp.cpm.mapper.ProdMapper.select.selectProdInfo - 카탈로그 상품 상세 조회 */
-                A.SAAS_PRDCT_ID	               /* SAAS제품아이디 */
-               ,B.SAAS_PRDCT_REV_CNT	       /* SAAS제품리뷰수 */
-               ,C.SAAS_PRDCT_SUB_CNT	       /* SAAS제품이용자수 */
-               ,D.PRDSBSC_STTS_CD              /* 제품구독상태코드 */
-               ,A.SAAS_PRDCT_PVSN_MTH_SE_CD	   /* SAAS제품제공방식구분코드 */
-               ,USCM.SF_COMM_CD_NM(A.SAAS_PRDCT_PVSN_MTH_SE_CD) AS SAAS_PRDCT_PVSN_MTH_SE_NM /* SAAS제품제공방식구분명 */
-               ,A.SAAS_PRDCT_TYPE_CD	       /* SAAS제품유형코드 */
-               ,USCM.SF_COMM_CD_NM(A.SAAS_PRDCT_TYPE_CD) AS SAAS_PRDCT_TYPE_NM /* SAAS제품유형명 */
-               ,A.SAAS_PRDCT_NM	               /* SAAS제품명 */
-               ,A.SAAS_PRDCT_DTL_CN	           /* SAAS제품상세내용 */
-               ,A.SAAS_PRDCT_SMRY_CN	       /* SAAS제품요약내용 */
-               ,A.SAAS_PRDCT_MKR_CD	           /* SAAS제품제조사코드 */
-               ,USCM.SF_COMM_CD_NM(A.SAAS_PRDCT_MKR_CD) AS SAAS_PRDCT_MKR_NM /* SAAS제품제조사명 */
-               ,A.SAAS_PRDCT_API_VER_SN	       /* SAAS제품API버전일련번호 */
-               ,A.SAAS_PRDCT_SRVC_DMN_ADDR	   /* SAAS제품서비스도메인주소 */
-               ,A.SAAS_PRDCT_SRVC_DTL_URL_ADDR /* SAAS제품서비스상세URL주소 */
-               ,A.SAAS_PRDCT_FAQ_ADDR          /* SAAS제품FAQ주소 */
-               ,A.USE_YN	                   /* 사용여부 */
-               ,A.GDS_GDNTC_REG_YN	           /* 상품안내문등록여부 */
-               ,A.PRDCT_IMG_ATCH_FILE_GROUP_NO /* 제품이미지첨부파일그룹번호 */
-               ,A.SCRN_IMG_ATCH_FILE_GROUP_NO  /* 화면이미지첨부파일그룹번호 */
-               ,A.EXPLN_IMG_ATCH_FILE_GROUP_NO /* 설명이미지첨부파일그룹번호 */
-               ,A.FRST_CRT_PRCR_ID	           /* 최초생성처리자아이디 */
-               ,A.FRST_CRT_DT	               /* 최초생성일시 */
-               ,A.LAST_CHG_PRCR_ID	           /* 최종변경처리자아이디 */
-               ,A.LAST_CHG_DT	               /* 최종변경일시 */
-		FROM USCM.TBCM_SAAS_PRDCT_M A
-		LEFT JOIN (SELECT /* 제품의 리뷰 점수 평균을 반환한다.*/ 
-		                  SAAS_PRDCT_ID
-		                 ,COUNT(*) AS SAAS_PRDCT_REV_CNT
-		           FROM USCM.TBCM_SAAS_PRDCT_EVL_L 
-		           WHERE SAAS_PRDCT_ID =  #{saasPrdctId}
-		           GROUP BY SAAS_PRDCT_ID
-		          ) B
-		ON A.SAAS_PRDCT_ID = B.SAAS_PRDCT_ID
-		LEFT JOIN (SELECT /* 제품 이용자 수를 반환한다.*/
-                         SAAS_PRDCT_ID
-                        ,COUNT(*) AS SAAS_PRDCT_SUB_CNT 
-                   FROM USCM.TBCM_PRDSBSC_L
-                   WHERE 1=1
-                   AND PRDSBSC_STTS_CD ='A0040002' /* 구독중 고정 값 */
-                   AND SAAS_PRDCT_ID = #{saasPrdctId}
-                   GROUP BY SAAS_PRDCT_ID
-		           ) C                   
-		ON A.SAAS_PRDCT_ID = C.SAAS_PRDCT_ID
-	    LEFT JOIN (SELECT /* 기관,사용자의 마지막 구독순번의 구독 상태를 가져온다.*/
-		                  L.SAAS_PRDCT_ID    
-                          ,L.INST_USER_INTG_ID
-                          ,L.INST_USER_SE_CD   
-                          ,L.PRDSBSC_SN       
-                          ,L.PRDSBSC_STTS_CD   
-                   FROM (SELECT /* 기관,사용자의 구독 상태를 가져온다.*/
-                                ROW_NUMBER() OVER (PARTITION BY SAAS_PRDCT_ID, INST_USER_INTG_ID, INST_USER_SE_CD ORDER BY PRDSBSC_SN DESC) AS RN
-                                ,SAAS_PRDCT_ID
-                                ,INST_USER_INTG_ID
-                                ,INST_USER_SE_CD
-                                ,PRDSBSC_SN
-                                ,PRDSBSC_STTS_CD
-                         FROM USCM.TBCM_PRDSBSC_L
-                        ) L
-                   WHERE 1=1
-                   AND L.RN =1
-                   AND L.SAAS_PRDCT_ID = #{saasPrdctId}
-                   AND L.INST_USER_INTG_ID = #{institutionCode}
-                   ) D
-		ON A.SAAS_PRDCT_ID = D.SAAS_PRDCT_ID
-        WHERE 1=1
-        AND A.USE_YN ='Y'       
-        AND A.GDS_GDNTC_REG_YN ='Y'
-        AND A.SAAS_PRDCT_ID =  #{saasPrdctId}
+        SELECT /* kr.go.iop.ci.sc.cp.cpm.mapper.ProdMapper.select.selectProdInfo - 카탈로그 상품 상세 조회 */
+               A.SAAS_PRDCT_ID	               /* SAAS제품아이디 */
+              ,A.SAAS_PRDCT_PVSN_MTH_SE_CD	   /* SAAS제품제공방식구분코드 */
+              ,USCM.SF_COMM_CD_NM(A.SAAS_PRDCT_PVSN_MTH_SE_CD) AS SAAS_PRDCT_PVSN_MTH_SE_NM /* SAAS제품제공방식구분명 */
+              ,A.SAAS_PRDCT_TYPE_CD	       /* SAAS제품유형코드 */
+              ,USCM.SF_COMM_CD_NM(A.SAAS_PRDCT_TYPE_CD) AS SAAS_PRDCT_TYPE_NM /* SAAS제품유형명 */
+              ,A.SAAS_PRDCT_NM	               /* SAAS제품명 */
+              ,A.SAAS_PRDCT_DTL_CN	           /* SAAS제품상세내용 */
+              ,A.SAAS_PRDCT_SMRY_CN	       /* SAAS제품요약내용 */
+              ,A.SAAS_PRDCT_MKR_CD	           /* SAAS제품제조사코드 */
+              ,USCM.SF_COMM_CD_NM(A.SAAS_PRDCT_MKR_CD) AS SAAS_PRDCT_MKR_NM /* SAAS제품제조사명 */
+              ,A.SAAS_PRDCT_API_VER_SN	       /* SAAS제품API버전일련번호 */
+              ,A.SAAS_PRDCT_SRVC_DMN_ADDR	   /* SAAS제품서비스도메인주소 */
+              ,A.SAAS_PRDCT_SRVC_DTL_URL_ADDR /* SAAS제품서비스상세URL주소 */
+              ,A.SAAS_PRDCT_FAQ_ADDR          /* SAAS제품FAQ주소 */
+              ,A.USE_YN	                   /* 사용여부 */
+              ,A.GDS_GDNTC_REG_YN	           /* 상품안내문등록여부 */
+              ,A.PRDCT_IMG_ATCH_FILE_GROUP_NO /* 제품이미지첨부파일그룹번호 */
+              ,A.SCRN_IMG_ATCH_FILE_GROUP_NO  /* 화면이미지첨부파일그룹번호 */
+              ,A.EXPLN_IMG_ATCH_FILE_GROUP_NO /* 설명이미지첨부파일그룹번호 */
+              ,A.FRST_CRT_PRCR_ID	           /* 최초생성처리자아이디 */
+              ,A.FRST_CRT_DT	               /* 최초생성일시 */
+              ,A.LAST_CHG_PRCR_ID	           /* 최종변경처리자아이디 */
+              ,A.LAST_CHG_DT	               /* 최종변경일시 */
+              ,(SELECT /* 기관의 구독 상태를 가져온다.*/
+                       PRDSBSC_STTS_CD
+                FROM USCM.TBCM_PRDSBSC_L
+                WHERE SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
+                AND INST_USER_INTG_ID = #{institutionCode}
+                ORDER BY PRDSBSC_SN DESC
+                FETCH FIRST 1 ROW ONLY) AS PRDSBSC_STTS_CD
+        FROM USCM.TBCM_SAAS_PRDCT_M A
+        WHERE A.SAAS_PRDCT_ID = #{saasPrdctId}
+        AND A.USE_YN = 'Y'
+        AND A.GDS_GDNTC_REG_YN = 'Y'
 	</select>
 	
 	<select id ="selectProdServiceList" parameterType="ProdSVO" resultType="ProdDVO">

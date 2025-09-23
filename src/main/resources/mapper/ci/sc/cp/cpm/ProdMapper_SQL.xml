@@ -22,7 +22,7 @@
 		LEFT JOIN USCM.TBCM_SAAS_PRDCT_M B 
 		ON A.SAAS_PRDCT_ID = B.SAAS_PRDCT_ID 
 		AND B.USE_YN = 'Y'               			
-		AND B.GDS_GDNTC_REG_YN = 'Y'
+		AND B.GDS_GDNTC_REG_YN = 'Y' 
 		WHERE 1 = 1;
 
 	</select>	

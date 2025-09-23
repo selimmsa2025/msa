@@ -97,6 +97,13 @@ public class ProdMngController {
 		if(checkValidation > 0) {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "해당 제조사에 같은 상품명이 이미 있습니다.");
 		}
+		
+		int maxApiVer = prodMngService.selectMaxStndApiVer();
+		int apiVer = vo.getSaasPrdctApiVerSn();
+		if(apiVer != maxApiVer) {
+			throw new ApiBizException(HttpStatus.BAD_REQUEST, "상품 버전이 최신 버전과 일치하지 않습니다.");
+			
+		}
 
 		int resultCnt = prodMngService.insertProd(vo);
 
@@ -194,9 +201,9 @@ public class ProdMngController {
 		ProdMngDVO checkValidation = prodMngService.selectProdInfo(vo);
 		
 		if (checkValidation != null) {
-		    String gdsPvsnMthSeCd = checkValidation.getSaasPrdctPvsnMthSeCd();
-		    if (!"A0010001".equals(gdsPvsnMthSeCd)) {
-		        throw new ApiBizException(HttpStatus.BAD_REQUEST, "기관(SaaS형) 상품이 아닙니다.");
+		    String saasPrdctTypeCd = checkValidation.getSaasPrdctTypeCd();
+		    if (!"A0020002".equals(saasPrdctTypeCd)) {
+		        throw new ApiBizException(HttpStatus.BAD_REQUEST, "패키지형 상품이 아닙니다.");
 		    }
 		} else {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "해당 상품이 없습니다.");

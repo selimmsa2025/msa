@@ -113,6 +113,9 @@ public class ApiCertKeyReqSVO implements Serializable {
 	private String sortOrder;
 
 	/* 상품구독내역 */
+	@Schema(description = "제품구독일련번호(FK)")
+	private int prdsbscSn;
+	
 	@Schema(description = "기관사용자통합아이디(FK)")
 	private String instUserIntgId;
 

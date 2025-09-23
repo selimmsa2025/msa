@@ -21,6 +21,7 @@ import kr.go.iop.ci.sc.cm.am.svc.vo.AmArtcSVO;
 import kr.go.iop.ci.sc.cm.am.svc.vo.AmProdSVO;
 import kr.go.iop.ci.sc.cm.am.svc.vo.AmSVO;
 import kr.go.iop.ci.sc.cm.am.svc.vo.ApiVerSVO;
+import kr.go.iop.ci.sc.cm.pm.svc.vo.ProdMngSVO;
 
 /**
  * 표준API관리 매퍼 인터페이스.
@@ -79,6 +80,9 @@ public interface ApiMngMapper {
 
 	/* 상품 API 통신 항목 등록(초기셋팅) */
 	public int insertProdApiTest(AmProdSVO vo);
+	
+	/* 상품 API 통신 항목 수정(초기셋팅) */
+	public int updateProdApiTest(AmProdSVO vo);
 
 	/* 표준API중복검사_API명, API URI */
 	public int selectStndApiNmCnt(AmSVO vo);
@@ -93,4 +97,11 @@ public interface ApiMngMapper {
 	
 	/* 0903상품 버전 업데이트 */
 	public int updateProdApiVer(AmProdSVO vo);
+	
+	/* 0922 인증관리 통신성공여부 update */
+	public int updateCertKey(AmSVO vo);
+	
+	/* 0922 API 최종버전 조회 */
+	public int selectMaxStndApiVer();
+	
 }

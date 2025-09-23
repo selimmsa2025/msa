@@ -87,7 +87,8 @@ public interface ApiMngService {
 
     /* 표준 API 상세 엑셀 다운로드 */
     void selectStndApiInfoExcelDownload(HttpServletRequest request, HttpServletResponse response, AmSVO svo);
-
+    
+    public int updateCertKey(AmSVO vo);
 	
 
 }

@@ -31,6 +31,7 @@
 	    					 		AND RSLT.SRVR_SE_CD = CM.SRVR_SE_CD
 	    WHERE	1 = 1
 	    AND 	PRDCT.USE_YN = 'Y'
+	    AND		RSLT.SRVR_SE_CD = 'A0060002'
 	    <if test="saasPrdctNm != null and saasPrdctNm != ''">
 	    AND 	PRDCT.SAAS_PRDCT_NM LIKE CONCAT('%', #{saasPrdctNm}, '%')
 	    </if>
@@ -44,7 +45,7 @@
 	    AND 	COALESCE(CM.API_CMNC_SCS_YN, 'N') = #{apiCmncScsYn}
 	    </if>
 	    GROUP BY RSLT.SAAS_PRDCT_ID, PRDCT.SAAS_PRDCT_NM, RSLT.API_VER_SN, RSLT.SRVR_SE_CD, PRDCT.GDS_GDNTC_REG_YN, CM.API_CMNC_SCS_YN, PRDCT.SAAS_PRDCT_API_VER_SN
-	    ORDER BY RSLT.SAAS_PRDCT_ID, RSLT.API_VER_SN
+	    ORDER BY PRDCT.SAAS_PRDCT_NM, RSLT.API_VER_SN DESC 
 	    <if test="( pageYn==null or pageYn!='N'.toString() )">
 	    LIMIT #{pageSize} OFFSET (#{currentPage} - 1) * #{pageSize}
 	    </if>
@@ -66,6 +67,7 @@
 		    					 		AND RSLT.SRVR_SE_CD = CM.SRVR_SE_CD
 			    WHERE	 1 = 1
 	    		AND 	PRDCT.USE_YN = 'Y'
+	    		AND		RSLT.SRVR_SE_CD = 'A0060002'
 			    <if test="saasPrdctNm != null and saasPrdctNm != ''">
 			    AND 	PRDCT.SAAS_PRDCT_NM LIKE CONCAT('%', #{saasPrdctNm}, '%')
 			    </if>
@@ -330,6 +332,8 @@
 		   SET  LAST_CHG_PRCR_ID = #{lastChgPrcrId}							/* 최종변경처리자아이디 */
 		  	  , LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')	/* 최종변경일시 */
 		  	  , CMNC_RSLT_CN = #{cmncRsltCn}								/* 통신결과내용 */
+		  	  , CMNC_DT = #{cmncDt, jdbcType=TIMESTAMP}
+		  	  , CMNC_RSLT_CD = #{cmncRsltCd}
 		 WHERE  SAAS_PRDCT_ID = #{saasPrdctId}
 		   AND  SRVR_SE_CD = #{srvrSeCd}
 		   AND  API_ID = #{apiId}

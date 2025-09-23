@@ -76,6 +76,12 @@ public class ProdServiceImpl implements ProdService {
 		String saasMsg = "";
 		boolean dbOk = false;
 		boolean saasOk = false;
+		
+		//구동 요청일때는 구독시작일자 종료일자 null
+		if ("A0040001".equals(subscrSVO.getPrdsbscSttsCd())) {
+			subscrSVO.setPrdsbscBgngYmd("");
+			subscrSVO.setPrdsbscEndYmd("");
+		}
 
 		// DB insert
 		prodMapper.insertProdSubscrReq(subscrSVO);

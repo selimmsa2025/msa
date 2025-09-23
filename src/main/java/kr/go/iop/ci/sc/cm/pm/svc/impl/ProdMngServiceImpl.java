@@ -59,11 +59,13 @@ public class ProdMngServiceImpl implements ProdMngService {
 	@Transactional(rollbackFor = Exception.class)
 	public int insertProd(ProdMngSVO vo){
 		String saasPrdctId = selectProdId(vo);
+		
         vo.setSaasPrdctId(saasPrdctId);
 
         int resultCnt = prodMngMapper.insertProd(vo);
         if (resultCnt <= 0) throw new RuntimeException("상품 등록 실패");
         vo.setApiVerSn(vo.getSaasPrdctApiVerSn());
+        vo.setSrvrSeCd(ConstantInfo.TEST_OPS);
 
         List<ProdMngDVO> apiList = selectStdApiInfo(vo);
         for (ProdMngDVO apiVo : apiList) {
@@ -71,21 +73,16 @@ public class ProdMngServiceImpl implements ProdMngService {
             insertVo.setSaasPrdctId(vo.getSaasPrdctId());
             insertVo.setApiVerSn(vo.getApiVerSn());
             insertVo.setApiId(apiVo.getApiId());
-            insertVo.setSrvrSeCd(ConstantInfo.TEST_DEV);
+            insertVo.setSrvrSeCd(vo.getSrvrSeCd());
             insertVo.setCmncRsltCd(ConstantInfo.TEST_WAIT);
             insertVo.setFrstCrtPrcrId(vo.getFrstCrtPrcrId());
             insertVo.setLastChgPrcrId(vo.getLastChgPrcrId());
 
             insertStdApi(insertVo);
             insertProdApiTest(insertVo);
-
-            insertVo.setSrvrSeCd(ConstantInfo.TEST_OPS);
-            insertProdApiTest(insertVo);
         }
         
-        vo.setSrvrSeCd(ConstantInfo.TEST_DEV);
-        insertCertKey(vo);
-        vo.setSrvrSeCd(ConstantInfo.TEST_OPS);
+        
         insertCertKey(vo);
         
         return resultCnt;

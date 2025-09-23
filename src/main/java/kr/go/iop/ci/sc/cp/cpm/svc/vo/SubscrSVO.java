@@ -50,6 +50,12 @@ public class SubscrSVO implements Serializable {
 	
 	@Schema(description = "계정아이디")
 	private String accountId;
+
+	@Schema(description = "제품구독시작일자")
+	private String prdsbscBgngYmd;
+
+	@Schema(description = "제품구독종료일자")
+	private String prdsbscEndYmd;
 	
 	// 외부 SaaS 연계 s 
 	@Schema(description = "기관코드")

@@ -11,7 +11,7 @@ package kr.go.iop.ci.sc.cm.pm.svc.vo;
 
 import java.io.Serializable;
 
-import jakarta.validation.constraints.Pattern;
+import javax.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.URL;
 

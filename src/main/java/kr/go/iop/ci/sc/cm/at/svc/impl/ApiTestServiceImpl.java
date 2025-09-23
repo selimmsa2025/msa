@@ -51,8 +51,12 @@ import kr.go.iop.ci.sc.cm.at.svc.vo.CmncMngSVO;
 import kr.go.iop.ci.sc.cm.at.svc.vo.PrdctApiCmncRsltSVO;
 import kr.go.iop.ci.sc.cm.at.svc.vo.StdApiSVO;
 import kr.go.iop.ci.sc.cm.at.svc.vo.TestExecutionSVO;
+import kr.go.iop.ci.sc.cm.pc.mapper.ProdCertMapper;
+import kr.go.iop.ci.sc.cm.pc.mapper.vo.CertInfoDVO;
+import kr.go.iop.ci.sc.cm.pc.svc.impl.vo.ApiCertKeyReqSVO;
 import kr.go.iop.ci.sc.cmmn.bean.WebClientConfig;
 import kr.go.iop.ci.sc.cmmn.exception.ApiBizException;
+import kr.go.iop.ci.sc.config.info.CommonCode;
 import kr.go.iop.ci.sc.config.info.ConstantInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,6 +76,8 @@ public class ApiTestServiceImpl implements ApiTestService {
 	private final ApiTestMapper apiTestMapper;
 	
 	private final WebClientConfig webClientConfig;
+	
+	private final ProdCertMapper apiCertKeyMapper;
 	
 	@Value("${saas.dev.url}")
 	private String saasDevUrl;
@@ -163,19 +169,32 @@ public class ApiTestServiceImpl implements ApiTestService {
 			}
 		}
 		
+		// 통신 인증 내역 정보 (인증 키)
+		ApiCertKeyReqSVO keyVo = new ApiCertKeyReqSVO();
+		keyVo.setSaasPrdctId(req.getSaasPrdctId());
+		keyVo.setSrvrSeCd(req.getSrvrSeCd());
+		List<CertInfoDVO> keyList = apiCertKeyMapper.selectApiCertInfoList(keyVo);
 		
 		// 최종 API 리스트 + 파라미터 합치고 리턴
 		return apiTestList.stream()
 				.map(api -> {
 					if(headerParamMap.containsKey(api.getApiId())) {
 						HeaderParamValue headerInfo = headerParamMap.get(api.getApiId()).get(String.valueOf(api.getApiVerSn()));
-						api.setHeaderContents(headerInfo.values());
+						Map<String, String> headerMap = headerInfo.values();
+						
+						// 인증키 정보 셋팅
+						for (CertInfoDVO certInfo : keyList ) {
+							headerMap.put(certInfo.getAuthkeyNm(), certInfo.getAuthkey());
+						}
+						
+						api.setHeaderContents(headerMap);
 					}
 					
 					if (reqParamMap.containsKey(api.getApiId())) {
 						ParamValue reqInfo = reqParamMap.get(api.getApiId()).get(String.valueOf(api.getApiVerSn()));					
 						api.setReqBdyContents(reqInfo.values());
 					}
+					
 					return api;
 				}).toList();
 	}
@@ -225,6 +244,8 @@ public class ApiTestServiceImpl implements ApiTestService {
 	@Override
 	public Map<String, Object> startApiTest(TestExecutionSVO req) {
 		
+		Map<String, Object> result = new HashMap<>();
+		
 		StdApiSVO stdApiSVO = new StdApiSVO();
 		stdApiSVO.setApiVerSn(req.getApiVerSn());
 		stdApiSVO.setApiId(req.getApiId());
@@ -271,9 +292,11 @@ public class ApiTestServiceImpl implements ApiTestService {
 	    }
 		
 		if (HttpStatus.valueOf(codeInt).is2xxSuccessful()) {
-			apiTestVO.setCmncRsltCd(ConstantInfo.CMNC_RSLT_CD_SUCCESS);
+			apiTestVO.setCmncRsltCd(CommonCode.CmncRsltCd.SUCCESS.getCode());
+			apiTestVO.setCmncRsltNm(CommonCode.CmncRsltCd.SUCCESS.getDescription());
 		} else {
-			apiTestVO.setCmncRsltCd(ConstantInfo.CMNC_RSLT_CD_FAILURE);
+			apiTestVO.setCmncRsltCd(CommonCode.CmncRsltCd.FAILURE.getCode());
+			apiTestVO.setCmncRsltNm(CommonCode.CmncRsltCd.FAILURE.getDescription());
 		}
 		
 		apiTestVO.setSaasPrdctId(req.getSaasPrdctId());
@@ -284,9 +307,12 @@ public class ApiTestServiceImpl implements ApiTestService {
 		apiTestVO.setApiVerSn(req.getApiVerSn());
 		
 		// API 전송 완료 후 테스트 삭제 후 재생성
-		deleteAndCreateApi(apiTestVO);
+//		deleteAndCreateApi(apiTestVO);
 		
-		return apiResult;
+		result.put("apiResult", apiResult);
+		result.put("apiTestData", apiTestVO);
+		
+		return result;
 	}
 	
 	private Map<String, Object> callApi(HttpMethod callMethod, String uri, Map<String, String> headerContents, Map<String, Object> reqBdyContents) {
@@ -526,11 +552,24 @@ public class ApiTestServiceImpl implements ApiTestService {
 			}
 		} 
 		
+		// 통신 인증 내역 정보 (인증 키)
+		ApiCertKeyReqSVO keyVo = new ApiCertKeyReqSVO();
+		keyVo.setSaasPrdctId(req.getSaasPrdctId());
+		keyVo.setSrvrSeCd(req.getSrvrSeCd());
+		List<CertInfoDVO> keyList = apiCertKeyMapper.selectApiCertInfoList(keyVo);
+		
 		// 파라미터 그외의 값 들어올경우 필터링
 		Set<String> headerKeys = artclList.stream()
 				.filter(artcl -> ConstantInfo.API_ARTCL_SE_CD_HEADER.equals(artcl.getApiArtclSeCd()))
 				.map(StdApiArtclDVO::getApiArtclAtrbNm)
 				.collect(Collectors.toSet());
+		
+		// 인증내역 정보 검증 통과
+		headerKeys.addAll(
+				keyList.stream()
+			              .map(CertInfoDVO::getAuthkeyNm)
+			              .collect(Collectors.toSet())
+			);
 		
 		Set<String> requestKeys = artclList.stream()
 				.filter(artcl -> ConstantInfo.API_ARTCL_SE_CD_REQUEST.equals(artcl.getApiArtclSeCd()))
@@ -616,7 +655,7 @@ public class ApiTestServiceImpl implements ApiTestService {
 			List<ApiTestDetailListDVO> detailApiList = selectApiTestDetailList(apiDetailParam);
 			
 			boolean allMatch = detailApiList.stream()
-							.allMatch(r -> ConstantInfo.CMNC_RSLT_CD_SUCCESS.equals(r.getCmncRsltCd()));
+							.allMatch(r -> CommonCode.CmncRsltCd.SUCCESS.getCode().equals(r.getCmncRsltCd()));
 			
 			// 전체 성공인 경우
 			if(allMatch) {

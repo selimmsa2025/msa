@@ -33,6 +33,9 @@ public class CertInfoSVO implements Serializable {
 	@Schema(description = "서버구분코드(B002): 개발, 운영")
 	private String srvrSeCd;
 
+	@Schema(description = "인증구분코드(A008): 테스트인증, 구독요청인증")
+	private String certSeCd;
+
 	@Schema(description = "시험인증일련번호(A001)")
 	private int cmncCertSn;
 
@@ -53,5 +56,18 @@ public class CertInfoSVO implements Serializable {
 
 	@Schema(description = "최종변경일시")
 	private String lastChgDt;
+
+	/* 구독인증정보내역 */
+	@Schema(description = "기관사용자통합아이디")
+	private String instUserIntgId;
+
+	@Schema(description = "기관사용자구분코드")
+	private String instUserSeCd;
+
+	@Schema(description = "구독일련번호")
+	private String prdsbscSn;
+
+	@Schema(description = "구독인증일련번호")
+	private String prdsbscCertSn;
 
 }

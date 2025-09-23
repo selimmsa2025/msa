@@ -66,6 +66,9 @@ public class SubscrProdDVO implements Serializable {
 	@Schema(description = "제품구독종료일자")
 	private String prdsbscEndYmd;
 
+	@Schema(description = "제품구독기관수")
+	private String saasPrdctSubCnt;
+
 	@Schema(description = "최초생성처리자아이디")
 	private String frstCrtPrcrId;
 

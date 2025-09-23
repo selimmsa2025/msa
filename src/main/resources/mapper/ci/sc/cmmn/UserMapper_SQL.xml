@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.go.iop.ci.sc.cmmn.user.mapper.UserMapper">
+
+	<select id="selectUserList" parameterType="kr.go.iop.ci.sc.cmmn.vo.UserVO" resultType="kr.go.iop.ci.sc.cmmn.vo.UserVO">
+         SELECT /* SQL_ID : 임시 로그인*/
+                 A.ACCOUNT_ID /*계정ID */
+                ,A.INSTITUTION_CODE /*기관코드 */
+                ,(SELECT INSTITUTION_NAME FROM USCM.TBCM_INST_M WHERE A.INSTITUTION_CODE = INSTITUTION_CODE) AS INSTITUTION_NM
+                ,A.DEPT_ID /*부서ID */
+                ,A.GRADE_CODE /*직급코드 */
+                ,A.GRADE_NAME /*직급명 */
+                ,A.USER_NAME /*사용자명 */
+                ,A.USER_ID /*사용자ID */
+                ,A.UNITY_ID /*통합ID */
+                ,A.EMAIL /*이메일 */
+                ,A.DEPT_NAME /*부서명 */
+                ,A.POSITION_CODE /*직위코드 */
+                ,A.POSITION_NAME /*직위명 */
+                ,A.POSITION_DETAIL /*직위상세 */
+                ,A.DUTY_CODE /*직책명 */
+                ,A.PHOTO_PATH /*사진경로 */
+                ,A.MOBILE_NUMBER /*이동전화번호 */
+                ,A.OFFICE_NUMBER /*사무실전화번호 */
+                ,A.OFFICE_FAX_NUMBER /*사무실FAX번호 */
+                ,A.OFFICE_ZIPCODE /*사무실우편번호 */
+                ,A.OFFICE_ADRES /*사무실주소 */
+                ,A.OFFICE_DETAIL_ADRES /*사무실상세주소 */
+                ,A.HOMEPAGE /*홈페이지 */
+                ,A.CONCURRENT_TYPE /*겸직유형 */
+                ,A.DISPATCH_TYPE /*파견유형 */
+                ,A.MNTNAB_TYPE /*존폐유형 */
+                ,A.USER_TYPE /*사용자유형 */
+                ,A.CONFM_TYPE /*확정유형 */
+                ,A.PKI_DN /*PKIDN값 */
+                ,A.BIRTH_DATE /*생년월일 */
+                ,A.ON_ID /*온나라아이디 */
+                ,A.USER_CHARGE /*담당직무 */
+                ,A.EUM_ID /*나라이음아이디 */
+                ,A.USER_ORDER /*사용자정렬순서 */
+                ,A.IOP_ID /*지능형ID */
+                ,A.UPDATE_TIME /*수정일시 */
+                ,A.CATALOG_AUTHRT_CD /*카탈로그권한코드 */
+                ,USCM.SF_COMM_CD_NM(A.CATALOG_AUTHRT_CD) AS CATALOG_AUTHRT_NM /*카탈로그권한명 */
+         FROM USCM.TBCM_USER_M A
+         WHERE 1=1
+         ORDER BY A.INSTITUTION_CODE
+	</select>
+	
+	<select id="selectUserListCnt" parameterType="kr.go.iop.ci.sc.cmmn.vo.UserVO" resultType="int">
+	    SELECT /* 사용자 건수 조회 */
+	           COUNT(USER_ID)
+		FROM USCM.TBCM_USER_M
+	</select>
+	
+	<select id="selectUserInfo" parameterType="kr.go.iop.ci.sc.cmmn.vo.UserVO" resultType="kr.go.iop.ci.sc.cmmn.vo.UserVO">
+        SELECT /* SQL_ID : 임시 로그인*/
+                A.ACCOUNT_ID /*계정ID */
+               ,A.INSTITUTION_CODE /*기관코드 */
+               ,(SELECT INSTITUTION_NAME FROM USCM.TBCM_INST_M WHERE A.INSTITUTION_CODE = INSTITUTION_CODE) AS INSTITUTION_NM
+               ,A.DEPT_ID /*부서ID */
+               ,A.GRADE_CODE /*직급코드 */
+               ,A.GRADE_NAME /*직급명 */
+               ,A.USER_NAME /*사용자명 */
+               ,A.USER_ID /*사용자ID */
+               ,A.UNITY_ID /*통합ID */
+               ,A.EMAIL /*이메일 */
+               ,A.DEPT_NAME /*부서명 */
+               ,A.POSITION_CODE /*직위코드 */
+               ,A.POSITION_NAME /*직위명 */
+               ,A.POSITION_DETAIL /*직위상세 */
+               ,A.DUTY_CODE /*직책명 */
+               ,A.PHOTO_PATH /*사진경로 */
+               ,A.MOBILE_NUMBER /*이동전화번호 */
+               ,A.OFFICE_NUMBER /*사무실전화번호 */
+               ,A.OFFICE_FAX_NUMBER /*사무실FAX번호 */
+               ,A.OFFICE_ZIPCODE /*사무실우편번호 */
+               ,A.OFFICE_ADRES /*사무실주소 */
+               ,A.OFFICE_DETAIL_ADRES /*사무실상세주소 */
+               ,A.HOMEPAGE /*홈페이지 */
+               ,A.CONCURRENT_TYPE /*겸직유형 */
+               ,A.DISPATCH_TYPE /*파견유형 */
+               ,A.MNTNAB_TYPE /*존폐유형 */
+               ,A.USER_TYPE /*사용자유형 */
+               ,A.CONFM_TYPE /*확정유형 */
+               ,A.PKI_DN /*PKIDN값 */
+               ,A.BIRTH_DATE /*생년월일 */
+               ,A.ON_ID /*온나라아이디 */
+               ,A.USER_CHARGE /*담당직무 */
+               ,A.EUM_ID /*나라이음아이디 */
+               ,A.USER_ORDER /*사용자정렬순서 */
+               ,A.IOP_ID /*지능형ID */
+               ,A.UPDATE_TIME /*수정일시 */
+               ,A.CATALOG_AUTHRT_CD /*카탈로그권한코드 */
+               ,USCM.SF_COMM_CD_NM(A.CATALOG_AUTHRT_CD) AS CATALOG_AUTHRT_NM /*카탈로그권한명 */
+        FROM USCM.TBCM_USER_M A
+        WHERE ACCOUNT_ID = #{accountId}			
+        ORDER BY INSTITUTION_CODE
+	</select>
+	
+</mapper>

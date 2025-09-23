@@ -1,0 +1,88 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'main', description: '')
+        string(name: 'SERVICE_CODE', defaultValue: 'ci', description: '')
+        string(name: 'MODULE_NAME', defaultValue: 'catalog', description: '')
+    }
+    environment {
+        GIT_REPO = 'gitlab-webservice-default.iop-cicd.svc.cluster.local:8181/iop-ci/iop-ci-manifest.git'
+        CHART_PATH = 'dev/iop-ci-catalog/values/iop-ci-catalog-values.yaml'
+        GIT_SECRET = "gitlab-root"
+		ARTIFACT_PROJECT_NAME = '01-iop-ci-Build/02-iop-ci-App-image/iop-ci-catalog-pack'
+		DOCKER_TAG_FILE = 'docker_tag.txt'
+    }
+    stages {
+        stage('Get Docker Image Tag from Docker Build Job') {
+			steps{
+				script{
+                    def projectCode = "iop"                                     // 프로젝트 ID 고유값
+                    // --------------- 프로젝트별 수정 필요 영역 시작
+                    def serviceCode = params.SERVICE_CODE                       // 서비스 분류 (ex: 워크스페이스 > iw)
+                    def moduleName = params.MODULE_NAME                         // MSA 모듈 name (ex: Frontend 모듈 경우 "ui")
+                    // --------------- 프로젝트별 수정 필요 영역 끝
+                    def namespace = "${projectCode}-${serviceCode}"             // namespace 지정 (ex : iop-iw)
+                    def repositoryName = "${namespace}-${moduleName}"           // Repository name (ex : iop-iw-ui)
+                    
+                    // Jenkins 프로젝트 정보
+                    // default path    : /home/jenkins/agent/workspace
+                    // project path    : /home/jenkins/agent/workspace/iop-iw-Build/iop-iw-Artifact/iop-iw-ui-build
+                    def defaultPath = "/home/jenkins/agent/workspace"
+                    def jobPath = "01-${namespace}-Build/02-${namespace}-App-image/${repositoryName}-pack"
+
+					step([
+						$class: 'CopyArtifact',
+						projectName: "${jobPath}",
+						filter: "${env.DOCKER_TAG_FILE}",
+						selector: [$class: 'PermalinkBuildSelector', id: 'lastSuccessfulBuild']
+					])
+    				def dockerTag = readFile("${env.DOCKER_TAG_FILE}").trim()
+    				env.DOCKER_IMAGE_TAG = dockerTag
+				}
+			}
+        }        
+        stage('Checkout Helm Chart Repo') {
+            steps {
+                checkout([$class: 'GitSCM',
+                    branches: [[name: "${params.BRANCH_NAME}"]],
+                    userRemoteConfigs: [[
+                        url: "http://${GIT_REPO}",
+                        credentialsId: "${GIT_SECRET}"
+                    ]]
+                ])
+            }
+        }        
+        stage('Update values.yaml') {
+            steps {
+                sh """
+                    pwd
+                    ls -al
+                    echo "${env.DOCKER_IMAGE_TAG}"
+                    grep -i tag: ${CHART_PATH}
+                    sed -i "s/^  tag: .*/  tag: ${env.DOCKER_IMAGE_TAG}/" ${CHART_PATH}
+                    grep -i tag: ${CHART_PATH}
+                """
+            }
+        }
+        stage('Git Commit & Push') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: "${env.GIT_SECRET}", usernameVariable: 'username', passwordVariable: 'password')]) {
+                        def encodedPassword = URLEncoder.encode("${password}", 'UTF-8')
+                        def URL = "http://${username}:${encodedPassword}@${GIT_REPO}"
+                        
+                        sh """
+                            echo ${URL}
+                            echo ${encodedPassword}
+                            git config user.name "$username"
+                            git config user.email "$username@example.com"
+                            git add ${CHART_PATH}
+                            git commit -m "Update image tag to \"${env.DOCKER_IMAGE_TAG}\"" --allow-empty
+                            git push ${URL} HEAD:main
+                        """
+                    }
+                }
+            }
+        }        
+    }
+}

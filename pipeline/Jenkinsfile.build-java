@@ -1,0 +1,140 @@
+properties([
+    parameters([
+        string(name: 'BRANCH_NAME',  defaultValue: 'main', description: '브랜치 이름'),
+        string(name: 'SERVICE_CODE', defaultValue: 'ci', description: '서비스 코드'),
+        string(name: 'MODULE_NAME',  defaultValue: 'catalog', description: '모듈 이름')
+    ])
+])
+podTemplate(
+    label: "ci-maven",
+    name: "iop-ci-catalog-build",
+    serviceAccount: "jenkins",
+    namespace: "iop-cicd",
+    imagePullSecrets: ["registry-secret"],
+    containers: [
+      //containerTemplate(name: "docker", image: "iodscr-bedjusoj.scr.private.kr-west1.e.samsungsdscloud.com/library/docker.io/docker:28.3.3", ttyEnabled: true, command: 'dockerd --storage-driver vfs',privileged: true),
+      containerTemplate(name: "jnlp", image: "iodscr-bedjusoj.scr.private.kr-west1.e.samsungsdscloud.com/library/docker.io/jenkins/inbound-agent:3206.vb_15dcf73f6a_9-2-jdk17_cert"),
+      containerTemplate(name: "gradle", image: "iodscr-bedjusoj.scr.private.kr-west1.e.samsungsdscloud.com/library/docker.io/gradle:7.6.4-jdk17", command: 'cat', ttyEnabled: true)
+    ],
+//    yamlMergeStrategy: merge(),
+//    yaml: 
+//'''
+//apiVersion: "v1"
+//kind: Pod
+//spec:
+//  containers:
+//  - name: jnlp
+//    volumeMounts: 
+//    - name: cert-volume
+//      mountPath: "/home/jenkins/agent/cert"
+//      readOnly: true
+//  volumes:
+//  - name: cert-volume
+//    secret:
+//      secretName: secret-ca
+//''' 
+  ) {
+    node("ci-maven") {
+        def gitpullSkipAt = false
+        def buildSkipAt = false
+        def imageSkipAt = false
+    
+        def now = java.time.LocalDateTime.now()
+        def nexusUrl = "http://nexus-nexus3.iop-cicd.svc.cluster.local:8081"
+        def localNexusUrl = "https://nexus.iopdev.kr:31300"
+        
+        
+        def projectCode = "iop"                                     // 프로젝트 ID 고유값
+        // --------------- 프로젝트별 수정 필요 영역 시작
+        def serviceCode = params.SERVICE_CODE                       // 서비스 분류 (ex: 워크스페이스 > iw)
+        def moduleName = params.MODULE_NAME                         // MSA 모듈 name (ex: Frontend 모듈 경우 "ui")
+        // --------------- 프로젝트별 수정 필요 영역 끝
+        def namespace = "${projectCode}-${serviceCode}"             // namespace 지정 (ex : iop-iw)
+        def repositoryName = "${namespace}-${moduleName}"           // Repository name (ex : iop-iw-ui)
+        
+        // Jenkins 프로젝트 정보
+        // default path    : /home/jenkins/agent/workspace
+        // project path    : /home/jenkins/agent/workspace/iop-iw-Build/iop-iw-Artifact/iop-iw-ui-build
+        def defaultPath = "/home/jenkins/agent/workspace"
+        def jobPath = "01-${namespace}-Build/01-${namespace}-Artifact/${repositoryName}-build"
+        def jenkinsProjectPath = "${defaultPath}/${jobPath}"
+        def jenkinsProjectSourcePath = "${jenkinsProjectPath}/artifact"
+
+        //Gitlab 정보
+        def gitlabSourceSecret = "gitlab-root"
+        def gitlabRegistry = "http://gitlab-webservice-default.iop-cicd.svc.cluster.local:8181"
+
+        // def sourceFilePath = "${namespace}/${repositoryName}"       // Repository path (ex: iop-iw/iop-iw-test)
+        def sourceFilePath = "iop-ci/iop-ci-catalog" //gitlab의 프로젝트 경로
+
+    
+        // Step1> Checkout Stage : Checkout from Git Repository
+        stage("Checkout") {
+            if(!gitpullSkipAt) {
+                container("jnlp") {
+                    sh """
+                        pwd
+                        ls -al
+                        if [ -d "${jenkinsProjectSourcePath}" ]; then
+                            echo "[Info] Artifact folder is exist, Cleaning..."
+                            rm -rf "${jenkinsProjectSourcePath}"
+                        fi
+                            echo "[Info] Making Artifact folder..."
+                            mkdir -p "${jenkinsProjectSourcePath}"
+                    """
+
+                    dir ("${jenkinsProjectSourcePath}") {
+                        //checkout scm
+                        // withCredentials([usernamePassword(credentialsId: "${gitlabSourceSecret}", passwordVariable: "password", usernameVariable: "username")]) {
+                        //     git branch: "main", credentialsId:"${gitlabSourceSecret}", url: "${gitlabRegistry}/${sourceFilePath}"
+                        // }
+
+                        def gitVars = checkout([$class: 'GitSCM',
+                            branches: [[name: "${params.BRANCH_NAME}"]],
+                            userRemoteConfigs: [[
+                                url: "${gitlabRegistry}/${sourceFilePath}",
+                                credentialsId: "${gitlabSourceSecret}"
+                            ]]
+                        ])
+                        echo "[Info] Commit ID: ${gitVars.GIT_COMMIT}"
+                        env.git_commit = "${gitVars.GIT_COMMIT}".substring(0,4)
+                        
+                        // 테스트 목적 (Git 정상 여부)
+                        sh """
+                            pwd
+                            ls -al
+                        """
+                    } // end dir
+                } // end container
+            }
+        } // end stage
+        
+        
+        // Step2> gradle Build : Make artifact using gradle build
+        stage("gradle Build") {
+            if(!buildSkipAt){
+                container("gradle") { 
+                    dir("${jenkinsProjectSourcePath}"){
+                        sh """
+                            set +x
+                            cd ${jenkinsProjectSourcePath}/ &&
+                            gradle --no-daemon bootJar -Dorg.gradle.jvmargs="-Xmx1g"
+                        """
+                        
+                        sh """
+                            echo "${env.git_commit}" > build/libs/versionfile
+                            cp pipeline/DockerfileK8s build/libs/
+                        """
+                    } // end dir
+                
+                    dir("${jenkinsProjectSourcePath}"){
+                        archiveArtifacts artifacts: 'build/libs/*.jar, build/libs/versionfile, build/libs/DockerfileK8s',
+                            allowEmptyArchive: true,
+                            fingerprint: true,
+                            onlyIfSuccessful: true
+                    } // end dir
+                } // end container
+            }
+        } // end stage
+    }
+}

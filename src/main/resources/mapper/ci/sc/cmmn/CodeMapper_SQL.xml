@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.go.iop.ci.sc.cmmn.code.mapper.CodeMapper">
+
+	<select id="selectCodeList" parameterType="CodeSVO" resultType="CodeDVO">
+         SELECT /* CodeMapper.selectCodeList - 코드 목록 조회 */
+                GROUP_CD_ID /*그룹코드아이디 */
+                ,DTL_CD /*상세코드 */
+                ,DTL_CD_KORN_NM /*상세코드한글명 */
+                ,DTL_CD_ENG_NM /*상세코드영문명 */
+                ,DTL_CD_KORN_ABBR_NM /*상세코드한글약어명 */
+                ,DTL_CD_ENG_ABBR_NM /*상세코드영문약어명 */
+                ,SORT_SEQ /*정렬순서 */
+                ,USE_YN /*사용여부 */
+                ,USE_BGNG_YMD /*사용시작일자 */
+                ,USE_END_YMD /*사용종료일자 */
+                ,CD_RFRNC_CN /*코드참조내용 */
+                ,DTL_CD_KORN_EXPLN /*상세코드한글설명 */
+                ,DTL_CD_ENG_EXPLN /*상세코드영문설명 */
+                ,FRST_CRT_DT /*최초생성일시 */
+                ,FRST_CRT_PRCR_ID /*최초생성처리자아이디 */
+                ,LAST_CHG_DT /*최종변경일시 */
+                ,LAST_CHG_PRCR_ID /*최종변경처리자아이디 */
+         FROM USCM.TBCM_COM_DTL_C
+         WHERE 1=1
+         AND USE_YN = 'Y'
+		<if test='comGroupCdList !=null and comGroupCdList.size !=0'>
+         AND GROUP_CD_ID IN
+			<foreach collection="comGroupCdList" item="groupCdId" index="idx" separator="," open="(" close=")">
+				#{groupCdId}
+			</foreach>
+		</if>
+         ORDER BY SORT_SEQ
+	</select>
+	
+</mapper>

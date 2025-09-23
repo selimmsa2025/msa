@@ -1,0 +1,207 @@
+{"properties": [
+  {
+    "name": "health.message",
+    "type": "java.lang.String",
+    "description": "Health Check Return Message"
+  },
+  {
+    "name": "auth.token-secret",
+    "type": "java.lang.String",
+    "description": "A description for 'token.secret'"
+  },
+  {
+    "name": "web-url.onnara.frontend.web",
+    "type": "java.lang.String",
+    "description": "온나라 프론트엔드 웹 URL"
+  },
+  {
+    "name": "web-url.onnara.frontend.api",
+    "type": "java.lang.String",
+    "description": "온나라 프론트엔드 apigateway URL"
+  },
+  {
+    "name": "svc-url.onnara.backend.auth",
+    "type": "java.lang.String",
+    "description": "온나라 백엔드 인증서비스 URL"
+  },
+  {
+    "name": "svc-url.onnara.backend.bbs",
+    "type": "java.lang.String",
+    "description": "온나라 백엔드 게시판서비스 URL"
+  },
+  {
+    "name": "web-url.prism.frontend.web",
+    "type": "java.lang.String",
+    "description": "정책연구 프론트엔드 웹 URL"
+  },
+  {
+    "name": "web-url.prism.frontend.api",
+    "type": "java.lang.String",
+    "description": "정책연구 프론트엔드 apigateway URL"
+  },
+  {
+    "name": "svc-url.prism.backend.auth",
+    "type": "java.lang.String",
+    "description": "정책연구 백엔드 인증서비스 URL"
+  },
+  {
+    "name": "svc-url.prism.backend.bbs",
+    "type": "java.lang.String",
+    "description": "정책연구 백엔드 게시판서비스 URL"
+  },
+  {
+    "name": "rabbitmq.queue.name",
+    "type": "java.lang.String",
+    "description": "RabbitMQ Queue Name"
+  },
+  {
+    "name": "rabbitmq.routing.key",
+    "type": "java.lang.String",
+    "description": "RabbitMQ Routing Key"
+  },
+  {
+    "name": "rabbitmq.exchange.name",
+    "type": "java.lang.String",
+    "description": "RabbitMQ Exchange Name"
+  },
+  {
+    "name": "rabbitmq.fanoutexchange.name",
+    "type": "java.lang.String",
+    "description": "RabbitMQ Fanoutexchange Name"
+  },
+  {
+    "name": "system-info",
+    "type": "java.lang.String",
+    "description": "A description for 'system-info'"
+  },
+  {
+    "name": "junit-datasource",
+    "type": "java.lang.String",
+    "description": "젠킨스 junit 테스트 시 DB 접속정보"
+  },
+  {
+    "name": "svc-url.onnara.frontend.sw",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onnara.frontend.sw'"
+  },
+  {
+    "name": "svc-url.onnara.backend.file",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onnara.backend.file'"
+  },
+  {
+    "name": "svc-url.onnara.backend.sys",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onnara.backend.sys'"
+  },
+  {
+    "name": "svc-url.onnara.backend.prtl",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onnara.backend.prtl'"
+  },
+  {
+    "name": "svc-url.onnara.backend.kndg",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onnara.backend.kndg'"
+  },
+  {
+    "name": "svc-url.onnara.backend.cmnty",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onnara.backend.cmnty'"
+  },
+  {
+    "name": "svc-url.onnara.backend.wiki",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onnara.backend.wiki'"
+  },
+  {
+    "name": "svc-url.onnara.backend.blg",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onnara.backend.blg'"
+  },
+  {
+    "name": "svc-url.onnara.backend.pnt",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onnara.backend.pnt'"
+  },
+  {
+    "name": "svc-url.prism.frontend.sw",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.prism.frontend.sw'"
+  },
+  {
+    "name": "svc-url.prism.backend.file",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.prism.backend.file'"
+  },
+  {
+    "name": "svc-url.prism.backend.sys",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.prism.backend.sys'"
+  },
+  {
+    "name": "svc-url.prism.backend.prtl",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.prism.backend.prtl'"
+  },
+  {
+    "name": "svc-url.prism.backend.bscs",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.prism.backend.bscs'"
+  },
+  {
+    "name": "svc-url.prism.backend.asmt",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.prism.backend.asmt'"
+  },
+  {
+    "name": "svc-url.prism.backend.stats",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.prism.backend.stats'"
+  },
+  {
+    "name": "svc-url.prism.backend.chck",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.prism.backend.chck'"
+  },
+  {
+    "name": "svc-url.onpas.backend.evnt",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onpas.backend.evnt'"
+  },
+  {
+    "name": "svc-url.onpas.backend.ondt",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onpas.backend.ondt'"
+  },
+  {
+    "name": "svc-url.onpas.backend.ondti",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onpas.backend.ondti'"
+  },
+  {
+    "name": "svc-url.onpas.backend.srvyi",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onpas.backend.srvyi'"
+  },
+  {
+    "name": "svc-url.onpas.backend.aply",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onpas.backend.aply'"
+  },
+  {
+    "name": "svc-url.onpas.backend.evnti",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onpas.backend.evnti'"
+  },
+  {
+    "name": "svc-url.onpas.backend.srvy",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onpas.backend.srvy'"
+  },
+  {
+    "name": "svc-url.onpas.backend.schdl",
+    "type": "java.lang.String",
+    "description": "A description for 'svc-url.onpas.backend.schdl'"
+  }
+]}

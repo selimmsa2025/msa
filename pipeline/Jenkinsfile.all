@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Gitlab Repository Branch name')
+        string(name: 'SERVICE_CODE', defaultValue: 'ci', description: '서비스별 주요 Code (ex : Workspace > iw 등)')
+        string(name: 'MODULE_NAME', defaultValue: 'catalog', description: 'Repository 구분 목적의 "모듈 명" (ex : Frontend > ui 등)')
+    }
+
+    stages {
+        stage('0. Setting Variables'){
+            steps{
+                script {
+                    def projectCode = "iop"                                     // 프로젝트 ID 고유값
+                    // --------------- 프로젝트별 수정 필요 영역 시작
+                    def serviceCode = params.SERVICE_CODE                       // 서비스 분류 (ex: 워크스페이스 > iw)
+                    def moduleName = params.MODULE_NAME                         // MSA 모듈 name (ex: Frontend 모듈 경우 "ui")
+                    // --------------- 프로젝트별 수정 필요 영역 끝
+                    def namespace = "${projectCode}-${serviceCode}"             // namespace 지정 (ex : iop-iw)
+                    def repositoryName = "${namespace}-${moduleName}"           // Repository name (ex : iop-iw-ui)
+                    
+                    // Jenkins 프로젝트 정보
+                    def mavenBuildJob = "01-${namespace}-Build/01-${namespace}-Artifact/${namespace}-${moduleName}-build"
+                    def dockerBuildJob = "01-${namespace}-Build/02-${namespace}-App-image/${namespace}-${moduleName}-pack"
+                    def updateTagJob = "02-${namespace}-Deploy/dev-${namespace}-${moduleName}-manifest"
+
+                    env.MAVEN_BUILD_JOB = mavenBuildJob
+                    env.DOCKER_BUILD_JOB = dockerBuildJob
+                    env.UPDATE_TAG_JOB = updateTagJob
+                }
+            }
+        }
+        // Maven build 진행
+        stage('1. Maven Build') {
+            steps {
+                script {
+                    build job: "${env.MAVEN_BUILD_JOB}", wait: true
+                }
+            }
+        }
+        
+        // Docker build 및 SCR에 Image Push
+        stage('2. Docker build') {
+            steps {
+                script {
+                    build job: "${env.DOCKER_BUILD_JOB}", wait: true, propagate: true
+                }
+            }
+        }       
+        
+        // docker image tag를 전달
+        stage('Trigger Update DOCKER IMAGE TAG') {
+            steps{
+                script{
+                    build job: "${env.UPDATE_TAG_JOB}", wait: true
+                }
+            }  	                
+        }
+    }
+}

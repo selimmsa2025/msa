@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.go.iop.ci.sc.cm.pm.mapper.ProdMngMapper">
+	<select id="selectProdList" parameterType="ProdMngSVO" resultType="ProdMngDVO">
+	  SELECT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.select.selectProdList - 상품관리 목록 조회 */ 
+	  		 T.*
+	  FROM (
+	    SELECT ROW_NUMBER() OVER (
+	      <choose>
+	        <when test="sortColumn == 'SAAS_PRDCT_PVSN_MTH_SE_NM'">
+	          ORDER BY SAAS_PRDCT_PVSN_MTH_SE_NM					/* SAAS제품제공방식구분명 */
+	          <choose>
+	            <when test="sortOrder == 'DESC'"> DESC </when>
+	            <otherwise> ASC </otherwise>
+	          </choose>
+	        </when>
+	        <when test="sortColumn == 'SAAS_PRDCT_TYPE_NM'">
+	          ORDER BY SAAS_PRDCT_TYPE_NM							/* SAAS제품유형명 */
+	          <choose>
+	            <when test="sortOrder == 'DESC'"> DESC </when>
+	            <otherwise> ASC </otherwise>
+	          </choose>
+	        </when>
+	        <when test="sortColumn == 'SAAS_PRDCT_NM'">
+	          ORDER BY SAAS_PRDCT_NM								/* SAAS제품명 */
+	          <choose>
+	            <when test="sortOrder == 'DESC'"> DESC </when>
+	            <otherwise> ASC </otherwise>
+	          </choose>
+	        </when>
+	        <when test="sortColumn == 'SAAS_PRDCT_API_VER_SN'">
+	          ORDER BY SAAS_PRDCT_API_VER_SN						/* SAAS제품API버전일련번호 */
+	          <choose>
+	            <when test="sortOrder == 'DESC'"> DESC </when>
+	            <otherwise> ASC </otherwise>
+	          </choose>
+	        </when>
+	        <when test="sortColumn == 'FRST_CRT_DT'">
+	          ORDER BY FRST_CRT_DT									/* 최초생성일시 */
+	          <choose>
+	            <when test="sortOrder == 'DESC'"> DESC </when>
+	            <otherwise> ASC </otherwise>
+	          </choose>
+	        </when>
+	        <when test="sortColumn == 'PROGRESS_STATUS'">
+	          ORDER BY PROGRESS_STATUS								/* 진행상태 */
+	          <choose>
+	            <when test="sortOrder == 'DESC'"> DESC </when>
+	            <otherwise> ASC </otherwise>
+	          </choose>
+	        </when>
+	        <otherwise>
+	          ORDER BY FRST_CRT_DT DESC
+	        </otherwise>
+	      </choose>
+	    ) AS RNUM, A.*
+	    FROM (
+	      SELECT
+		    	B1.SAAS_PRDCT_ID				/* SAAS제품아이디 */
+		    	, B1.SAAS_PRDCT_PVSN_MTH_SE_CD	/* SAAS제품제공방식구분코드 */
+		    	, B1.SAAS_PRDCT_TYPE_CD			/* SAAS제품유형코드 */
+		    	, B1.SAAS_PRDCT_NM				/* SAAS제품명 */
+		    	, B1.SAAS_PRDCT_DTL_CN			/* SAAS제품상세내용 */
+		    	, TO_CHAR( TO_TIMESTAMP(B1.FRST_CRT_DT, 'YYYYMMDDHH24MISS'),  'YYYY-MM-DD HH24:MI:SS' ) AS FRST_CRT_DT	/* 최초생성일시 */
+		    	, B1.GDS_GDNTC_REG_YN			/* 상품안내문등록여부 */
+		    	, B1.SAAS_PRDCT_API_VER_SN		/* SAAS제품API버전일련번호 */
+		    	, USCM.SF_COMM_CD_NM(B1.SAAS_PRDCT_PVSN_MTH_SE_CD) AS SAAS_PRDCT_PVSN_MTH_SE_NM
+		    	, USCM.SF_COMM_CD_NM(B1.SAAS_PRDCT_TYPE_CD) AS SAAS_PRDCT_TYPE_NM
+			    , CASE
+			        WHEN B1.GDS_GDNTC_REG_YN = 'Y' THEN 'REG_COMPLETE'	/* 진행상태 : 등록완료 */
+			        WHEN B1.GDS_GDNTC_REG_YN = 'N' THEN
+			        	CASE
+	            			WHEN B2.API_CMNC_SCS_YN = 'Y' THEN 'TEST_COMPLETE'	/* 진행상태 : 테스트완료 */
+			        		WHEN B2.API_CMNC_SCS_YN = 'N' THEN	'TEST_ING'		/* 진행상태 : 테스트중 */
+			            END
+			    END AS PROGRESS_STATUS
+		  FROM USCM.TBCM_SAAS_PRDCT_M B1
+		    LEFT OUTER JOIN (
+		      /* 인증키관리 운영서버 API 통신성공여부 조회 */
+		        SELECT SAAS_PRDCT_ID, API_CMNC_SCS_YN FROM USCM.TBCM_CMNC_MNG_L WHERE SRVR_SE_CD = 'A0060002'
+		      ) B2 ON B1.SAAS_PRDCT_ID = B2.SAAS_PRDCT_ID
+			LEFT OUTER JOIN USCM.TBCM_PRDCT_API_CMNCRSLT_L B3
+			    ON B1.SAAS_PRDCT_ID = B3.SAAS_PRDCT_ID
+			    AND B3.SRVR_SE_CD = 'A0060002'
+			    AND B3.API_VER_SN = B1.SAAS_PRDCT_API_VER_SN
+		  WHERE B1.USE_YN = 'Y'
+	      <if test="saasPrdctPvsnMthSeCd != null and saasPrdctPvsnMthSeCd != ''">
+	        AND SAAS_PRDCT_PVSN_MTH_SE_CD = #{saasPrdctPvsnMthSeCd}					/* SAAS제품제공방식구분코드 */
+	      </if>
+	      <if test="saasPrdctTypeCd != null and saasPrdctTypeCd != ''">
+	        AND SAAS_PRDCT_TYPE_CD = #{saasPrdctTypeCd}								/* SAAS제품유형코드 */
+	      </if>
+	      <if test="saasPrdctNm != null and saasPrdctNm != ''">
+	        AND SAAS_PRDCT_NM LIKE '%' || #{saasPrdctNm} || '%'						/* SAAS제품명 */
+	      </if>
+	      <if test="saasPrdctApiVerSn != null">
+	        AND SAAS_PRDCT_API_VER_SN = #{saasPrdctApiVerSn}						/* SAAS제품API버전일련번호 */
+	      </if>
+	      GROUP BY B1.SAAS_PRDCT_ID, B1.SAAS_PRDCT_PVSN_MTH_SE_CD, B1.SAAS_PRDCT_TYPE_CD, B1.SAAS_PRDCT_NM, B1.SAAS_PRDCT_API_VER_SN, B1.FRST_CRT_DT, B1.GDS_GDNTC_REG_YN, 
+		  		   USCM.SF_COMM_CD_NM(B1.SAAS_PRDCT_PVSN_MTH_SE_CD), USCM.SF_COMM_CD_NM(B1.SAAS_PRDCT_TYPE_CD), B2.API_CMNC_SCS_YN
+	    ) A
+	    <if test="progressStatus != null and progressStatus != ''">
+	    WHERE A.PROGRESS_STATUS = #{progressStatus}
+	    </if>
+	  ) T
+	  <if test="(pageYn==null or pageYn!='N'.toString())">
+	  WHERE RNUM BETWEEN (#{currentPage} - 1) * #{pageSize} + 1 AND #{currentPage} * #{pageSize}
+	  </if>
+	</select>
+	
+	<select id="selectProdCnt" parameterType="ProdMngSVO" resultType="java.lang.Integer">
+	  SELECT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.select.selectProdCnt - 상품관리 목록 건수 조회 */
+	  		 COUNT(*)
+	  FROM (
+	    SELECT
+		    	B1.SAAS_PRDCT_ID				/* SAAS제품아이디 */
+		    	, B1.SAAS_PRDCT_PVSN_MTH_SE_CD	/* SAAS제품제공방식구분코드 */
+		    	, B1.SAAS_PRDCT_TYPE_CD			/* SAAS제품유형코드 */
+		    	, B1.SAAS_PRDCT_NM				/* SAAS제품명 */
+		    	, B1.SAAS_PRDCT_DTL_CN			/* SAAS제품상세내용 */
+		    	, TO_CHAR( TO_TIMESTAMP(B1.FRST_CRT_DT, 'YYYYMMDDHH24MISS'),  'YYYY-MM-DD HH24:MI:SS' ) AS FRST_CRT_DT	/* 최초생성일시 */
+		    	, B1.GDS_GDNTC_REG_YN			/* 상품안내문등록여부 */
+		    	, B1.SAAS_PRDCT_API_VER_SN		/* SAAS제품API버전일련번호 */
+		    	, USCM.SF_COMM_CD_NM(B1.SAAS_PRDCT_PVSN_MTH_SE_CD) AS SAAS_PRDCT_PVSN_MTH_SE_NM
+		    	, USCM.SF_COMM_CD_NM(B1.SAAS_PRDCT_TYPE_CD) AS SAAS_PRDCT_TYPE_NM
+			    , CASE
+			        WHEN B1.GDS_GDNTC_REG_YN = 'Y' THEN 'REG_COMPLETE'	/* 진행상태 : 등록완료 */
+			        WHEN B1.GDS_GDNTC_REG_YN = 'N' THEN
+			        	CASE
+	            			WHEN B2.API_CMNC_SCS_YN = 'Y' THEN 'TEST_COMPLETE'	/* 진행상태 : 테스트완료 */
+			        		WHEN B2.API_CMNC_SCS_YN = 'N' THEN	'TEST_ING'		/* 진행상태 : 테스트중 */
+			            END
+			    END AS PROGRESS_STATUS
+		  FROM USCM.TBCM_SAAS_PRDCT_M B1
+		    LEFT OUTER JOIN (
+		      /* 인증키관리 운영서버 API 통신성공여부 조회 */
+		        SELECT SAAS_PRDCT_ID, API_CMNC_SCS_YN FROM USCM.TBCM_CMNC_MNG_L WHERE SRVR_SE_CD = 'A0060002'
+		      ) B2 ON B1.SAAS_PRDCT_ID = B2.SAAS_PRDCT_ID
+			LEFT OUTER JOIN USCM.TBCM_PRDCT_API_CMNCRSLT_L B3
+			    ON B1.SAAS_PRDCT_ID = B3.SAAS_PRDCT_ID
+			    AND B3.SRVR_SE_CD = 'A0060002'
+			    AND B3.API_VER_SN = B1.SAAS_PRDCT_API_VER_SN
+		  WHERE B1.USE_YN = 'Y'
+	      <if test="saasPrdctPvsnMthSeCd != null and saasPrdctPvsnMthSeCd != ''">
+	        AND SAAS_PRDCT_PVSN_MTH_SE_CD = #{saasPrdctPvsnMthSeCd}
+	      </if>
+	      <if test="saasPrdctTypeCd != null and saasPrdctTypeCd != ''">
+	        AND SAAS_PRDCT_TYPE_CD = #{saasPrdctTypeCd}
+	      </if>
+	      <if test="saasPrdctNm != null and saasPrdctNm != ''">
+	        AND SAAS_PRDCT_NM LIKE '%' || #{saasPrdctNm} || '%'
+	      </if>
+	      <if test="saasPrdctApiVerSn != null">
+	        AND SAAS_PRDCT_API_VER_SN = #{saasPrdctApiVerSn}
+	      </if>
+	      GROUP BY B1.SAAS_PRDCT_ID, B1.SAAS_PRDCT_PVSN_MTH_SE_CD, B1.SAAS_PRDCT_TYPE_CD, B1.SAAS_PRDCT_NM, B1.SAAS_PRDCT_API_VER_SN, B1.FRST_CRT_DT, B1.GDS_GDNTC_REG_YN, 
+		  		   USCM.SF_COMM_CD_NM(B1.SAAS_PRDCT_PVSN_MTH_SE_CD), USCM.SF_COMM_CD_NM(B1.SAAS_PRDCT_TYPE_CD), B2.API_CMNC_SCS_YN
+	  ) T
+	  
+	  <if test="progressStatus != null and progressStatus != ''">
+	  WHERE T.PROGRESS_STATUS = #{progressStatus}
+	  </if>
+	</select>
+		
+	<select id = "selectProdInfo" parameterType = "ProdMngSVO" resultType= "ProdMngDVO">
+	SELECT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.select.selectProdInfo - 상품관리 상세 조회 */
+		  SAAS_PRDCT_ID					/* SAAS제품아이디 */
+		, SAAS_PRDCT_PVSN_MTH_SE_CD		/* SAAS제품제공방식구분코드 */
+		, SAAS_PRDCT_TYPE_CD			/* SAAS제품유형코드 */ 
+		, SAAS_PRDCT_NM					/* SAAS제품명 */
+		, SAAS_PRDCT_DTL_CN				/* SAAS제품상세내용 */
+		, SAAS_PRDCT_SMRY_CN			/* SAAS제품요약내용 */
+		, SAAS_PRDCT_MKR_CD				/* SAAS제품제조사코드 */
+		, SAAS_PRDCT_API_VER_SN			/* SAAS제품api버전일련번호 */
+		, SAAS_PRDCT_SRVC_DMN_ADDR		/* SAAS제품서비스도메인주소 */
+		, SAAS_PRDCT_SRVC_DTL_URL_ADDR	/* SAAS제품서비스상세url주소 */
+		, SAAS_PRDCT_FAQ_ADDR			/* SAAS제품faq주소 */
+		, TO_CHAR( TO_TIMESTAMP(FRST_CRT_DT, 'YYYYMMDDHH24MISS'),  'YYYY-MM-DD HH24:MI:SS' ) AS FRST_CRT_DT /* 최초생성일시 */
+		, GDS_GDNTC_REG_YN				/* 상품안내문등록여부 */
+		, USCM.SF_COMM_CD_NM(SAAS_PRDCT_PVSN_MTH_SE_CD) AS SAAS_PRDCT_PVSN_MTH_SE_NM		/* SAAS제품방식구분명 */ 
+		, USCM.SF_COMM_CD_NM(SAAS_PRDCT_TYPE_CD) AS SAAS_PRDCT_TYPE_NM					/* SAAS제품상세내용 */
+		, USCM.SF_COMM_CD_NM(SAAS_PRDCT_MKR_CD) AS SAAS_PRDCT_MKR_NM						/* SAAS제품제조사명 */
+		, PRDCT_IMG_ATCH_FILE_GROUP_NO	/* 제품이미지첨부파일그룹번호 */
+		, SCRN_IMG_ATCH_FILE_GROUP_NO	/* 화면이미지첨부파일그룹번호 */
+		, EXPLN_IMG_ATCH_FILE_GROUP_NO	/* 설명이미지첨부파일그룹번호 */
+	FROM USCM.TBCM_SAAS_PRDCT_M
+	WHERE USE_YN = 'Y'
+	  AND SAAS_PRDCT_ID = #{saasPrdctId}	/* SAAS제품아이디 */
+	</select>
+	
+	<select id = "selectProdId" parameterType = "ProdMngSVO" resultType= "java.lang.String">
+	SELECT 'PRDCT_' || LPAD(NEXTVAL('USCM.sqcm_prdct_01')::text, 6, '0') AS SAAS_PRDCT_ID; /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.select.selectProdId - 상품 등록시 SAAS_PRDCT_ID 조회 */
+	</select>
+	
+	<update id = "insertProd" parameterType = "ProdMngSVO">
+	INSERT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.insert.insertProd - 상품관리 상품 등록 */
+	INTO USCM.TBCM_SAAS_PRDCT_M		
+			(
+				SAAS_PRDCT_ID					/* SAAS제품아이디 */
+				, SAAS_PRDCT_PVSN_MTH_SE_CD		/* SAAS제품제공방식구분코드 */
+				, SAAS_PRDCT_TYPE_CD			/* SAAS제품유형코드 */ 
+				, SAAS_PRDCT_NM					/* SAAS제품명 */
+				, SAAS_PRDCT_DTL_CN				/* SAAS제품상세내용 */
+				, SAAS_PRDCT_SMRY_CN			/* SAAS제품요약내용 */
+				, SAAS_PRDCT_MKR_CD				/* SAAS제품제조사코드 */
+				, SAAS_PRDCT_API_VER_SN			/* SAAS제품api버전일련번호 */
+				, SAAS_PRDCT_SRVC_DMN_ADDR		/* SAAS제품서비스도메인주소 */
+				, SAAS_PRDCT_SRVC_DTL_URL_ADDR	/* SAAS제품서비스상세url주소 */
+				, SAAS_PRDCT_FAQ_ADDR			/* SAAS제품faq주소 */
+				, USE_YN						/* 사용여부 */
+				, GDS_GDNTC_REG_YN				/* 상품안내문등록여부 */
+				, PRDCT_IMG_ATCH_FILE_GROUP_NO	/* 제품이미지첨부파일그룹번호 */
+				, SCRN_IMG_ATCH_FILE_GROUP_NO	/* 화면이미지첨부파일그룹번호 */
+				, EXPLN_IMG_ATCH_FILE_GROUP_NO	/* 설명이미지첨부파일그룹번호 */
+				, FRST_CRT_PRCR_ID				/* 최초생성처리자아이디 */
+				, FRST_CRT_DT					/* 최초생성일시 */
+				, LAST_CHG_PRCR_ID				/* 최종변경처리자아이디 */
+				, LAST_CHG_DT					/* 최종변경일시 */
+			)
+	VALUES (
+				#{saasPrdctId}
+				, #{saasPrdctPvsnMthSeCd}
+				, #{saasPrdctTypeCd}
+				, #{saasPrdctNm}
+				, #{saasPrdctDtlCn}
+				, #{saasPrdctSmryCn}
+				, #{saasPrdctMkrCd}
+				, #{saasPrdctApiVerSn}
+				, #{saasPrdctSrvcDmnAddr}
+				, #{saasPrdctSrvcDtlUrlAddr}
+				, #{saasPrdctFaqAddr}
+				, 'Y'
+				, 'N'
+				, #{prdctImgAtchFileGroupNo}
+				, #{scrnImgAtchFileGroupNo}
+				, #{explnImgAtchFileGroupNo}
+				, #{frstCrtPrcrId}
+				, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+				, #{lastChgPrcrId}
+				, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+			)
+	</update>
+	
+	<update id = "updateProd" parameterType = "ProdMngSVO">
+	UPDATE /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.update.updateProd - 상품관리 상품 수정 */
+	USCM.TBCM_SAAS_PRDCT_M	
+	SET   SAAS_PRDCT_NM = #{saasPrdctNm}								/* SAAS제품명 */
+		, SAAS_PRDCT_DTL_CN = #{saasPrdctDtlCn}							/* SAAS제품상세내용 */
+		, SAAS_PRDCT_SMRY_CN = #{saasPrdctSmryCn}						/* SAAS제품요약내용 */
+		, SAAS_PRDCT_MKR_CD = #{saasPrdctMkrCd}							/* SAAS제품제조사코드 */
+		, SAAS_PRDCT_SRVC_DMN_ADDR = #{saasPrdctSrvcDmnAddr}			/* SAAS제품서비스도메인주소 */
+		, SAAS_PRDCT_SRVC_DTL_URL_ADDR = #{saasPrdctSrvcDtlUrlAddr}		/* SAAS제품서비스상세url주소 */
+		, SAAS_PRDCT_FAQ_ADDR = #{saasPrdctFaqAddr}						/* SAAS제품faq주소 */
+		, PRDCT_IMG_ATCH_FILE_GROUP_NO =  #{prdctImgAtchFileGroupNo}	/* 제품이미지첨부파일그룹번호 */
+		, SCRN_IMG_ATCH_FILE_GROUP_NO = #{scrnImgAtchFileGroupNo}		/* 화면이미지첨부파일그룹번호 */
+		, EXPLN_IMG_ATCH_FILE_GROUP_NO = #{explnImgAtchFileGroupNo}		/* 설명이미지첨부파일그룹번호 */
+		, LAST_CHG_PRCR_ID = #{lastChgPrcrId}							/* 최종변경처리자아이디 */
+		, LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')	/* 최종변경일시 */
+	WHERE SAAS_PRDCT_ID = #{saasPrdctId}		/* SAAS제품아이디 */	
+	</update>
+	
+	<update id = "deleteProd" parameterType = "ProdMngSVO">
+	UPDATE /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.delete.deleteProd - 상품관리 상품 삭제(사용여부를 N으로 변경) */ 
+	USCM.TBCM_SAAS_PRDCT_M	
+	SET   USE_YN = 'N'
+	, LAST_CHG_PRCR_ID = #{lastChgPrcrId}
+	, LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+	WHERE SAAS_PRDCT_ID = #{saasPrdctId}
+	</update>
+	
+	<select id = "selectStdApiInfo" parameterType = "ProdMngSVO" resultType= "ProdMngDVO">
+	SELECT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.select.selectStdApiInfo - 상품 표준 API 관계 등록 위한 정보 조회 */
+		   API_ID
+	FROM USCM.TBCM_STD_API_M
+	WHERE API_VER_SN = #{apiVerSn}
+	  AND (  SAAS_PRDCT_TYPE_CD = 'A0020001'
+	  	  OR SAAS_PRDCT_TYPE_CD = #{saasPrdctTypeCd}
+			)
+	</select>
+	
+	<update id = "insertStdApi" parameterType = "ProdMngSVO">
+	INSERT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.insert.insertStdApi - 상품 표준 API 관계 등록 */
+	INTO USCM.TBCM_SAAS_PRDCT_API_R (
+		SAAS_PRDCT_ID
+		, API_VER_SN
+		, API_ID
+	)
+	VALUES (
+		  #{saasPrdctId}
+		, #{apiVerSn}
+		, #{apiId}
+	)
+	</update>
+	
+	<update id = "insertProdApiTest" parameterType = "ProdMngSVO">
+	INSERT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.insert.insertProdApiTest - 상품 API 통신 항목 등록 */
+	INTO USCM.TBCM_PRDCT_API_CMNCRSLT_L (
+		SAAS_PRDCT_ID
+		, SRVR_SE_CD
+		, API_VER_SN
+		, API_ID
+		, CMNC_RSLT_CD
+		, FRST_CRT_PRCR_ID
+		, FRST_CRT_DT
+		, LAST_CHG_PRCR_ID
+		, LAST_CHG_DT
+	)
+	VALUES (
+		  #{saasPrdctId}
+		, #{srvrSeCd}
+		, #{apiVerSn}
+		, #{apiId}
+		, #{cmncRsltCd}
+		, #{frstCrtPrcrId}
+		, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+		, #{lastChgPrcrId}
+		, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+	)
+	</update>
+	
+	<select id = "selectServiceList" parameterType = "ProdMngSVO" resultType= "ProdMngDVO">
+	<include refid="CmmnMapper.pagingHeader" />
+	SELECT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.select.selectServiceList - 상품관리 서비스 목록 조회 */
+			SAAS_PRDCT_ID			/* SAAS 제품 아이디 */
+			, SRVC_ID				/* 서비스 아이디 */
+			, SRVC_NM				/* 서비스명 */
+			, SRVC_CN				/* 서비스내용 */
+			, SRVC_SMRY_CN			/* 서비스요약내용 */
+			, USE_YN				/* 사용여부 */
+			, ATCH_FILE_GROUP_NO	/* 첨부파일그룹번호 */
+			, FRST_CRT_PRCR_ID		/* 최초생성처리자아이디*/
+			, TO_CHAR( TO_TIMESTAMP(FRST_CRT_DT, 'YYYYMMDDHH24MISS'),  'YYYY-MM-DD HH24:MI:SS' ) AS FRST_CRT_DT	/* 최초생성일시 */
+			, LAST_CHG_PRCR_ID		/* 최종변경처리자아이디 */
+			, TO_CHAR( TO_TIMESTAMP(LAST_CHG_DT, 'YYYYMMDDHH24MISS'),  'YYYY-MM-DD HH24:MI:SS' ) AS LAST_CHG_DT	/* 최종변경일시 */
+	FROM USCM.TBCM_SAAS_PRDCT_SRVC_L
+	WHERE USE_YN = 'Y'						/* 사용여부 */
+	  AND SAAS_PRDCT_ID = #{saasPrdctId}	/* SAAS 제품 아이디 */
+	<include refid="CmmnMapper.pagingFooter" />
+	</select>
+	
+	<select id = "selectServiceInfo" parameterType = "ProdMngSVO" resultType= "ProdMngDVO">
+	SELECT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.select.selectServiceInfo - 상품관리 서비스 상세 조회 */
+		  SAAS_PRDCT_ID			/* SAAS 제품 아이디 */
+		, SRVC_ID				/* 서비스 아이디 */
+		, SRVC_NM				/* 서비스명 */
+		, SRVC_CN				/* 서비스내용 */
+		, SRVC_SMRY_CN			/* 서비스요약내용 */
+		, SRVC_DTL_URL_ADDR		/* 서비스 상세 URL 주소 */
+		, USE_YN				/* 사용여부 */
+		, ATCH_FILE_GROUP_NO	/* 첨부파일그룹번호 */
+		, FRST_CRT_PRCR_ID		/* 최초생성처리자아이디*/
+		, TO_CHAR( TO_TIMESTAMP(FRST_CRT_DT, 'YYYYMMDDHH24MISS'),  'YYYY-MM-DD HH24:MI:SS' ) AS FRST_CRT_DT	/* 최초생성일시 */
+		, LAST_CHG_PRCR_ID		/* 최종변경처리자아이디 */
+		, TO_CHAR( TO_TIMESTAMP(LAST_CHG_DT, 'YYYYMMDDHH24MISS'),  'YYYY-MM-DD HH24:MI:SS' ) AS LAST_CHG_DT	/* 최종변경일시 */
+	FROM USCM.TBCM_SAAS_PRDCT_SRVC_L
+	WHERE USE_YN = 'Y'						/* 사용여부 */
+	  AND SAAS_PRDCT_ID = #{saasPrdctId}	/* SAAS 제품 아이디 */
+	  AND SRVC_ID = #{srvcId}				/* 서비스 아이디 */
+	</select>
+	
+	<update id = "insertService" parameterType = "ProdMngSVO">
+	INSERT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.insert.insertService - 상품관리 서비스 등록 */
+	INTO USCM.TBCM_SAAS_PRDCT_SRVC_L (
+		 SAAS_PRDCT_ID			/* SAAS 제품 아이디 */
+		, SRVC_ID				/* 서비스 아이디 */
+		, SRVC_NM				/* 서비스명 */
+		, SRVC_CN				/* 서비스내용 */
+		, SRVC_SMRY_CN			/* 서비스요약내용 */
+		, SRVC_DTL_URL_ADDR		/* 서비스 상세 URL 주소 */
+		, USE_YN				/* 사용여부 */
+		, ATCH_FILE_GROUP_NO	/* 첨부파일그룹번호 */
+		, FRST_CRT_PRCR_ID		/* 최초생성처리자아이디*/
+		, FRST_CRT_DT			/* 최초생성일시 */
+		, LAST_CHG_PRCR_ID		/* 최종변경처리자아이디 */
+		, LAST_CHG_DT			/* 최종변경일시 */
+	)
+	VALUES (
+		#{saasPrdctId}
+		, (SELECT 'SRVC_' || LPAD(NEXTVAL('USCM.sqcm_vrvc_01')::text, 7, '0'))
+		, #{srvcNm}
+		, #{srvcCn}
+		, #{srvcSmryCn}
+ 		, #{srvcDtlUrlAddr}
+		, 'Y'
+		, #{atchFileGroupNo}
+		, #{frstCrtPrcrId}
+		, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+		, #{lastChgPrcrId}
+		, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+	)
+	</update>
+	
+	<update id = "updateService" parameterType = "ProdMngSVO">
+	UPDATE /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.update.updateService - 상품관리 서비스 수정 */
+	USCM.TBCM_SAAS_PRDCT_SRVC_L
+	SET SRVC_NM = #{srvcNm}												/* 서비스명 */
+	     , SRVC_CN = #{srvcCn}											/* 서비스내용 */
+	     , SRVC_SMRY_CN = #{srvcSmryCn}									/* 서비스요약내용 */
+	     , SRVC_DTL_URL_ADDR = #{srvcDtlUrlAddr}						/* 서비스 상세 URL 주소 */
+	     , ATCH_FILE_GROUP_NO = #{atchFileGroupNo}						/* 첨부파일그룹번호 */
+	     , LAST_CHG_PRCR_ID = #{lastChgPrcrId}							/* 최종변경처리자아이디 */
+	     , LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')	/* 최종변경일시 */
+	WHERE SAAS_PRDCT_ID = #{saasPrdctId}	/* SAAS 제품 아이디 */
+		AND SRVC_ID = #{srvcId}				/* 서비스 아이디 */
+	</update>
+	
+	<update id = "deleteService" parameterType = "ProdMngSVO">
+	UPDATE /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.delete.deleteService - 상품관리 서비스 삭제(사용여부를 N으로 변경) */
+	USCM.TBCM_SAAS_PRDCT_SRVC_L
+	SET  USE_YN = 'N'						/* 사용여부 */
+	, LAST_CHG_PRCR_ID = #{lastChgPrcrId}
+	, LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+	WHERE SAAS_PRDCT_ID = #{saasPrdctId}	/* SAAS 제품 아이디 */
+	<if test="srvcId != null and srvcId != ''">
+	   AND SRVC_ID = #{srvcId}				/* 서비스 아이디 */
+	</if>
+	</update>
+	
+	<select id="selectMaxStndApiVer" resultType="int">
+		SELECT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.select.selectMaxStndApiVer -- API 최종버전 조회 */ 
+			MAX(API_VER_SN)			/* api 버전일련번호 */
+		FROM USCM.TBCM_API_VER_B
+		WHERE USE_YN = 'Y'			/* 사용여부 */
+	</select>
+	
+	<update id = "insertCertKey" parameterType = "ProdMngSVO">
+	INSERT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.insert.insertCertKey - 상품 인증키 등록 */
+	INTO USCM.TBCM_CMNC_MNG_L ( 
+		SAAS_PRDCT_ID				/* SAAS 제품 아이디 */
+		, SRVR_SE_CD				/* 서버구분코드 */
+		, API_CMNC_SCS_YN			/* API 통신성공여부 */
+		, FRST_CRT_PRCR_ID			/* 최초생성처리자아이디 */
+		, FRST_CRT_DT				/* 최초생성일시 */
+		, LAST_CHG_PRCR_ID			/* 최종변경처리자아이디 */
+		, LAST_CHG_DT				/* 최종변경일시 */
+	) VALUES (
+		#{saasPrdctId}
+		, #{srvrSeCd}
+		, 'N'
+		, #{frstCrtPrcrId}
+		, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+		, #{lastChgPrcrId}
+		, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+	)
+	</update>
+	
+	<select id="selectPrdctNmDupeTest" resultType="int">
+		SELECT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.select.selectPrdctNmDupeTest -- 상품명 중복검사 */ 
+			COUNT(*) 
+		FROM USCM.TBCM_SAAS_PRDCT_M 
+		WHERE SAAS_PRDCT_NM = #{saasPrdctNm}
+		  AND SAAS_PRDCT_MKR_CD = #{saasPrdctMkrCd}
+		  AND USE_YN = 'Y'
+		<if test="saasPrdctId != null and saasPrdctId != ''">
+		  AND SAAS_PRDCT_ID <![CDATA[<>]]> #{saasPrdctId}
+		</if>
+	</select>
+</mapper>

@@ -1,0 +1,128 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
+    
+    //소나큐브
+    id "org.sonarqube" version "${sonarqubeVersion}"
+}
+
+group = 'kr.go'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '17'
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    all {
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-slf4j-impl'
+    }
+}
+
+dependencies {
+    //Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    //implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    
+    //Spring Cloud
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+    
+    //DB
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.5'
+    implementation 'org.postgresql:postgresql:42.7.7'
+    runtimeOnly 'com.h2database:h2:1.4.200' //테스트용
+    
+    //전자정부
+    implementation "org.egovframe.rte:org.egovframe.rte.fdl.crypto:${eGovFrameVersion}"
+    
+    //암호화, 인코딩
+//    implementation 'io.jsonwebtoken:jjwt-api:0.12.7'
+    //runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.7'
+    //runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.7'
+    
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    
+
+
+    implementation 'commons-codec:commons-codec:1.19.0'
+    implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
+    
+    //취약점 조치
+    implementation 'commons-fileupload:commons-fileupload:1.6.0'
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
+    implementation 'org.springframework:spring-webmvc:6.2.10'
+    
+    //데이터 처리
+    implementation 'org.apache.commons:commons-collections4:4.5.0'
+    
+    //Docs, AOP
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.10'
+    implementation 'org.aspectj:aspectjweaver:1.9.24'
+    
+    //공통모듈
+    //implementation files ("libs/msa-cmmn-2025.08.25.jar")
+    //implementation files ("libs/onnara-cmmn-2025.03.04.jar")
+    
+    //개발지원도구
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    
+    //테스트
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.5'
+    testImplementation 'org.springframework.security:spring-security-test'
+    
+    //로깅, 모니터링
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    
+
+    
+    //기타
+    implementation 'org.jasypt:jasypt:1.9.3'
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'com.sun.xml.bind:jaxb-core:2.3.0.1'
+    implementation 'com.sun.xml.bind:jaxb-impl:2.3.9'
+    
+    //implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
+    
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap' // config
+  
+    
+    //0911 엑셀 다운로드 poi임시추가 
+    implementation "org.apache.poi:poi-ooxml:5.4.1"
+    
+    // 09.15 feignclient 추가
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+   
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        mavenBom "org.springframework.cloud:spring-cloud-sleuth-otel-dependencies:${otelVersion}"
+    }
+}
+
+tasks.named('test') {
+    doFirst {
+        systemProperty 'spring.profiles.active', 'local, jenkins-junit'
+    }
+    useJUnitPlatform()
+}

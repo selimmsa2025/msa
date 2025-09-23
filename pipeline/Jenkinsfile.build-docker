@@ -1,0 +1,124 @@
+properties([
+    parameters([
+        string(name: 'BRANCH_NAME',  defaultValue: 'main', description: '브랜치 이름'),
+        string(name: 'SERVICE_CODE', defaultValue: 'ci', description: '서비스 코드'),
+        string(name: 'MODULE_NAME',  defaultValue: 'catalog', description: '모듈 이름')
+    ])
+])
+
+podTemplate(
+    label: "ci-docker",
+    name: "iop-ci-catalog-pack",
+    serviceAccount: "jenkins",
+    namespace: "iop-cicd",
+    imagePullSecrets: ["registry-secret"],
+    containers: [
+      containerTemplate(name: "docker", image: "iodscr-bedjusoj.scr.private.kr-west1.e.samsungsdscloud.com/library/docker.io/docker:28.3.3", ttyEnabled: true, command: 'dockerd --storage-driver vfs',privileged: true),
+      //containerTemplate(name: "jnlp", image: "iodscr-bedjusoj.scr.private.kr-west1.e.samsungsdscloud.com/library/docker.io/jenkins/inbound-agent:3206.vb_15dcf73f6a_9-2-jdk17_cert"),
+      //containerTemplate(name: "maven", image: "iodscr-bedjusoj.scr.private.kr-west1.e.samsungsdscloud.com/library/docker.io/maven:3.9.6-eclipse-temurin-17-alpine_nexus_v3", command: 'cat', ttyEnabled: true)
+    ],
+//    yamlMergeStrategy: merge(),
+//    yaml: 
+//'''
+//apiVersion: "v1"
+//kind: Pod
+//spec:
+//  containers:
+//  - name: jnlp
+//    volumeMounts: 
+//    - name: cert-volume
+//      mountPath: "/home/jenkins/agent/cert"
+//      readOnly: true
+//  volumes:
+//  - name: cert-volume
+//    secret:
+//      secretName: secret-ca
+//''' 
+  ) {
+    node("ci-docker") {
+        environment{
+            DOCKER_IMAGE_TAG = ""
+        }
+        def imageSkipAt = false
+
+        def now = java.time.LocalDateTime.now()
+        def registryUrl= "iodscr-bedjusoj.scr.private.kr-west1.e.samsungsdscloud.com"
+
+
+        def projectCode = "iop"                                         // 프로젝트 ID 고유값
+        // --------------- 프로젝트별 수정 필요 영역 시작
+        def serviceCode = params.SERVICE_CODE                           // 서비스 분류 (ex: 워크스페이스 > iw)
+        def moduleName = params.MODULE_NAME                             // MSA 모듈 name (ex: Frontend 모듈 경우 "ui")
+        // --------------- 프로젝트별 수정 필요 영역 끝
+        def namespace = "${projectCode}-${serviceCode}"                 // namespace 지정 (ex : iop-iw)
+        def repositoryName = "${namespace}-${moduleName}"               // Repository name (ex : iop-iw-test)
+        
+        def buildDepth1Path = "01-${namespace}-Artifact"                   // build 결과물 경로 (1) (ex : iop-iw-Artifact)
+        def buildDepth2Path = "${repositoryName}-build"                 // build 결과물 경로 (2) (ex : iop-iw-test-build)
+        def resultBuildPath = "${buildDepth1Path}/${buildDepth2Path}"   // 최종 Artifact 경로 (ex : ../iop-iw-Artifact/iop-iw-test-build)
+
+        // Jenkins 프로젝트 정보
+        // default path    : /home/jenkins/agent/workspace
+        // project path    : /home/jenkins/agent/workspace/iop-iw-Build/iop-iw-App-image/iop-iw-test-pack
+        def defaultPath = "/home/jenkins/agent/workspace"
+        def jobPath = "01-${namespace}-Build/02-${namespace}-App-image/${repositoryName}-pack"
+        def jenkinsProjectPath = "${defaultPath}/${jobPath}"
+        def targetPath = "${jenkinsProjectPath}/build/libs"
+        
+        // SCP Container Registry 접속 정보
+        def dockerhubCredentialsId = "registry-secret"              // SCP registry 자격증명
+        def dockerImage = "${registryUrl}/app/${projectCode}/${serviceCode}/${moduleName}"   // Container image
+        // def dockerImageTag = "latest"                            // Container image tag
+
+
+        // Step1> Copy Artifact Stage : Get Artifact file
+        stage('Copy Artifact') {
+            step([
+                $class: 'CopyArtifact',
+                projectName: "../${resultBuildPath}",
+                filter: 'build/libs/**',
+                fingerprintArtifacts: true,
+                selector: [$class: 'PermalinkBuildSelector', id: 'lastSuccessfulBuild']
+            ])
+            
+            script {
+                def shortGitCommitId = readFile('build/libs/versionfile').trim()
+                def date = new Date().format("yyMMdd")
+                def dockerImageTag = "${params.BRANCH_NAME}-${date}-${shortGitCommitId}"
+                echo "[Info] Docker Image Tag: ${dockerImageTag}"
+                env.DOCKER_IMAGE_TAG = dockerImageTag
+                echo "생성된 Docker 태그: ${env.DOCKER_IMAGE_TAG}"
+            }
+            
+            // 테스트 (정상적으로 Artifact 가져왔는지 확인)
+             sh"""
+                 ls -al build/libs
+             """
+        }
+        
+        // Step2> Docker build & Registry push
+        stage("docker build & push") {
+            if(!imageSkipAt){
+                container("docker") {
+                    withCredentials([usernamePassword(credentialsId: "${dockerhubCredentialsId}", passwordVariable: "password", usernameVariable: "username")]) {
+                        sh """ set +x 
+                            cd ${targetPath} &&
+                            docker login -u $username -p $password ${registryUrl} &&
+                            docker build -f ${targetPath}/DockerfileK8s -t ${dockerImage}:${DOCKER_IMAGE_TAG} . &&
+                            docker push ${dockerImage}:${DOCKER_IMAGE_TAG} &&
+                            docker rmi ${dockerImage}:${DOCKER_IMAGE_TAG}
+                        """
+                    }
+                } // end container
+            } 
+        } // end stage
+		// Step3
+        stage("Write Docker Image Tag to file") {
+			sh """
+				echo "${env.DOCKER_IMAGE_TAG}" > docker_tag.txt
+			"""
+			archiveArtifacts artifacts: 'docker_tag.txt', onlyIfSuccessful: true
+        } // end stage        
+    }
+  }
+

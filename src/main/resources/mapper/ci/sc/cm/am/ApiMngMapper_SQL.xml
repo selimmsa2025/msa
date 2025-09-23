@@ -28,7 +28,8 @@
         					   	 AND R.API_VER_SN = S.API_VER_SN	
         						 AND G.SAAS_PRDCT_API_VER_SN = S.API_VER_SN
         						 AND G.GDS_GDNTC_REG_YN = 'Y'
-        						 AND R.CMNC_RSLT_CD = 'A0050002' /* 0922 카탈로그 등록여부에 해당하는 API가 성공일때*/
+        						 /* AND R.CMNC_RSLT_CD = 'A0050002' */
+        						 AND R.SRVR_SE_CD = 'A0060002'
         					  )THEN 'Y' ELSE 'N' END AS GDS_GDNTC_REG_YN                
         	,<![CDATA[
         	 CASE WHEN S.API_VER_SN < (
@@ -104,7 +105,8 @@
         						 AND R.API_VER_SN = S.API_VER_SN	
         						 AND G.SAAS_PRDCT_API_VER_SN = S.API_VER_SN
         						 AND G.GDS_GDNTC_REG_YN = 'Y'
-        						 AND R.CMNC_RSLT_CD = 'A0050002'
+        						 /* AND R.CMNC_RSLT_CD = 'A0050002' */
+        						 AND R.SRVR_SE_CD = 'A0060002'
         					  )THEN 'Y' ELSE 'N' END AS GDS_GDNTC_REG_YN                   /* 카탈로그 등록여부 */
         	,<![CDATA[
         	 CASE WHEN S.API_VER_SN < (
@@ -340,15 +342,22 @@
 	</insert>
 	
 	<update id="updateProdApiTest" parameterType="AmProdSVO">
-	  	UPDATE  /* SQL_ID: ci.sc.cm.pm.ApiMngMapper.select.updateProdApiTest (상품API통신항목수정) */ 
-	  		USCM.TBCM_PRDCT_API_CMNCRSLT_L
+	  	UPDATE  /* SQL_ID: ci.sc.cm.pm.ApiMngMapper.select.updateProdApiTest (상품API통신항목수정_통신결과코드) */ 
+	  		USCM.TBCM_PRDCT_API_CMNCRSLT_L R
 	    SET 
 	    	CMNC_RSLT_CD = #{cmncRsltCd}                  
-	        , LAST_CHG_PRCR_ID = '1'                              
+	        , LAST_CHG_PRCR_ID = '1'
+	        , CMNC_DT = NULL 
+	        , CMNC_RSLT_CN = NULL                                      
 	        , LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
-	   	WHERE API_ID = #{apiId}
-	    AND API_VER_SN = #{apiVerSn}
-	    AND CMNC_RSLT_CD != #{cmncRsltCd}            
+	   	FROM USCM.TBCM_SAAS_PRDCT_M G
+	   	WHERE R.API_ID = #{apiId}
+		    AND R.API_VER_SN = #{apiVerSn}
+		    AND R.CMNC_RSLT_CD != #{cmncRsltCd}
+		    AND G.SAAS_PRDCT_ID = R.SAAS_PRDCT_ID
+		    AND G.USE_YN = 'Y'
+		    AND G.GDS_GDNTC_REG_YN = 'N'       
+		    AND G.SAAS_PRDCT_API_VER_SN = R.API_VER_SN
 	</update>
 	
 	<select id="selectStndApiNmCnt" resultType="int">
@@ -416,27 +425,16 @@
 		SET API_CMNC_SCS_YN  = 'N'
 			, LAST_CHG_PRCR_ID = #{lastChgPrcrId}
         	, LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
-        	
-        WHERE EXISTS (
-     					SELECT 1
-       					FROM USCM.TBCM_PRDCT_API_CMNCRSLT_L R
-       						JOIN USCM.TBCM_SAAS_PRDCT_M G
-         					ON G.SAAS_PRDCT_ID = R.SAAS_PRDCT_ID
-         					AND R.SRVR_SE_CD    = M.SRVR_SE_CD
-      					WHERE R.SAAS_PRDCT_ID = M.SAAS_PRDCT_ID
-        					AND R.SRVR_SE_CD    = M.SRVR_SE_CD
-        					AND R.API_ID        = #{apiId}
-        					AND R.API_VER_SN    = #{apiVerSn}
-        					AND G.USE_YN        = 'Y'
-        					AND G.GDS_GDNTC_REG_YN = 'N'
-        					AND G.SAAS_PRDCT_API_VER_SN = #{apiVerSn}
-        				<if test="srvrSeCd != null and srvrSeCd != ''">
-          					AND R.SRVR_SE_CD  = #{srvrSeCd} 
-        				</if>
-  						)
-	   <if test="srvrSeCd != null and srvrSeCd != ''">
-	     AND M.SRVR_SE_CD = #{srvrSeCd}
-	   </if>
+        FROM USCM.TBCM_PRDCT_API_CMNCRSLT_L R
+        JOIN USCM.TBCM_SAAS_PRDCT_M G
+    		ON G.SAAS_PRDCT_ID = R.SAAS_PRDCT_ID
+         WHERE M.SAAS_PRDCT_ID = R.SAAS_PRDCT_ID
+		    AND M.SRVR_SE_CD    = R.SRVR_SE_CD
+		    AND R.API_ID        = #{apiId}
+		    AND R.API_VER_SN    = #{apiVerSn}       
+		    AND G.USE_YN        = 'Y'
+		    AND G.SAAS_PRDCT_API_VER_SN = #{apiVerSn}
+	     	AND M.SRVR_SE_CD = 'A0060002'
 	</update>
 	
 	<select id="selectMaxStndApiVer" resultType="int">

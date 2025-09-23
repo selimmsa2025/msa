@@ -11,11 +11,10 @@ package kr.go.iop.ci.sc.cm.pm.svc.vo;
 
 import java.io.Serializable;
 
-import javax.validation.constraints.Pattern;
-
 import org.hibernate.validator.constraints.URL;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 /**

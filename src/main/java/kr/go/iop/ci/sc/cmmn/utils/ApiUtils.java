@@ -1,15 +1,15 @@
 package kr.go.iop.ci.sc.cmmn.utils;
 
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
+
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 
 import kr.go.iop.ci.sc.cmmn.bean.WebClientConfig;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
-
-import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
 
 /**
  * API 호출 util
@@ -115,8 +115,8 @@ public class ApiUtils {
 				.uri(url)
 				.bodyValue(paramVO)
 				.retrieve()
-				.onStatus(HttpStatus::is4xxClientError, __ -> Mono.error(new IllegalArgumentException("4xx")))
-				.onStatus(HttpStatus::is5xxServerError, __ -> Mono.error(new IllegalArgumentException("5xx")))
+				.onStatus(HttpStatusCode::is4xxClientError, __ -> Mono.error(new IllegalArgumentException("4xx")))
+				.onStatus(HttpStatusCode::is5xxServerError, __ -> Mono.error(new IllegalArgumentException("5xx")))
 				.bodyToMono(Object.class);
 	}
 }

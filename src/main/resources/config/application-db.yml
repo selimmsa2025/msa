@@ -46,7 +46,7 @@ spring:
   config:
     activate:
       on-profile:
-      - saas-db-dev
+      - saas-db-ops
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://192.168.103.125:13100/DBCOMD

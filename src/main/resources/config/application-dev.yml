@@ -51,3 +51,8 @@ mybatis:
   mapper-locations:
   - classpath*:mapper/**/**_SQL.xml
   config-location: classpath:mapper/config/mapper-config.xml
+
+server:
+  port: 9991
+  servlet:
+    context-path: /iop-ci-catalog

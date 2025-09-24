@@ -22,7 +22,21 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    /** 전역 CORS 설정 */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration cfg = new CorsConfiguration();
+        cfg.setAllowedOrigins(List.of("http://localhost:3000")); // 필요한 오리진만 지정
+        cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setExposedHeaders(List.of("Authorization","Content-Type"));
+        cfg.setAllowCredentials(true);                 // axios withCredentials=true 사용시
+        cfg.setMaxAge(Duration.ofHours(1));           // preflight 캐시 시간
 
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cfg);
+        return source;
+    }
 
     /** 모든 요청 허용 (permitAll) */
     @Bean

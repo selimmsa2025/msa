@@ -36,20 +36,20 @@ spring:
       - saas-db-dev
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://192.168.1.2:5432/postgres
-    username: postgres
-    password: selim0516!
+    url: jdbc:postgresql://192.168.103.125:13100/DBCOMD
+    username: uscm
+    password: iopCom1!
     
 ---
-#6. SaaS DB ops
+#3. SaaS DB ops
 spring:
   config:
     activate:
       on-profile:
-      - saas-db-ops
+      - saas-db-dev
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://192.168.1.2:5432/postgres
-    username: postgres
-    password: selim0516!
+    url: jdbc:postgresql://192.168.103.125:13100/DBCOMD
+    username: uscm
+    password: iopCom1!
     

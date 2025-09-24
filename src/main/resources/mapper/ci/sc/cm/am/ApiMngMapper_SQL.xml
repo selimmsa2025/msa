@@ -353,10 +353,9 @@
 	   	FROM USCM.TBCM_SAAS_PRDCT_M G
 	   	WHERE R.API_ID = #{apiId}
 		    AND R.API_VER_SN = #{apiVerSn}
+		    AND R.SRVR_SE_CD  = #{srvrSeCd}
 		    AND R.CMNC_RSLT_CD != #{cmncRsltCd}
-		    AND G.SAAS_PRDCT_ID = R.SAAS_PRDCT_ID
-		    AND G.USE_YN = 'Y'
-		    AND G.GDS_GDNTC_REG_YN = 'N'       
+		    AND G.SAAS_PRDCT_ID = R.SAAS_PRDCT_ID     
 		    AND G.SAAS_PRDCT_API_VER_SN = R.API_VER_SN
 	</update>
 	
@@ -435,6 +434,31 @@
 		    AND G.USE_YN        = 'Y'
 		    AND G.SAAS_PRDCT_API_VER_SN = #{apiVerSn}
 	     	AND M.SRVR_SE_CD = 'A0060002'
+	</update>
+	
+	<update id="updateCertKeyToN" parameterType="amSVO">
+	  UPDATE USCM.TBCM_CMNC_MNG_L M /* SQL_ID: ci.sc.cm.pm.ApiMngMapper.insert.updateCertKeyToN (0923 상품인증관리내역수정) */
+	     SET API_CMNC_SCS_YN  = 'N'
+	       , LAST_CHG_PRCR_ID = #{lastChgPrcrId}
+	       , LAST_CHG_DT      = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+	   WHERE M.SAAS_PRDCT_ID = #{saasPrdctId}
+	     AND M.SRVR_SE_CD    = #{srvrSeCd}
+	     AND M.API_CMNC_SCS_YN = 'Y'  
+	     <if test="apiId != null and apiVerSn != null">
+	       AND EXISTS (
+				         SELECT 1
+				         FROM USCM.TBCM_PRDCT_API_CMNCRSLT_L R
+				         JOIN USCM.TBCM_SAAS_PRDCT_M G
+				         	ON G.SAAS_PRDCT_ID = R.SAAS_PRDCT_ID
+				         WHERE R.SAAS_PRDCT_ID = M.SAAS_PRDCT_ID
+				            AND R.SRVR_SE_CD    = M.SRVR_SE_CD
+				            AND R.API_ID        = #{apiId}
+				            AND R.API_VER_SN    = #{apiVerSn}
+				            AND G.USE_YN        = 'Y'
+				            AND G.GDS_GDNTC_REG_YN = 'N'
+				            AND G.SAAS_PRDCT_API_VER_SN = #{apiVerSn}  
+				       )
+     </if>
 	</update>
 	
 	<select id="selectMaxStndApiVer" resultType="int">

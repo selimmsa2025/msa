@@ -104,4 +104,7 @@ public interface ApiMngMapper {
 	/* 0922 API 최종버전 조회 */
 	public int selectMaxStndApiVer();
 	
+	/* 0923 API 최종버전 조회 */
+	public int updateCertKeyToN(AmSVO vo);
+	
 }

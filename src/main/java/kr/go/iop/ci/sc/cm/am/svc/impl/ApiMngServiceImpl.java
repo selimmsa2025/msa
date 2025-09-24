@@ -10,6 +10,7 @@
 package kr.go.iop.ci.sc.cm.am.svc.impl;
 
 import java.io.IOException;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -117,12 +118,12 @@ public class ApiMngServiceImpl implements ApiMngService {
 		if (apiMngMapper.selectStndApiUriCnt(svo) > 0) {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "이미 사용 중인 URI입니다.");
 		}
-		//0922
+		// 0922
 		int maxApiVer = apiMngMapper.selectMaxStndApiVer();
 		int apiVer = svo.getApiVerSn();
-		if(apiVer != maxApiVer) {
+		if (apiVer != maxApiVer) {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "해당 API 버전이 최신 버전과 일치하지 않습니다.");
-			
+
 		}
 
 		String apiId = apiMngMapper.selectNextStndApiId();
@@ -164,19 +165,18 @@ public class ApiMngServiceImpl implements ApiMngService {
 				if (r2 != 1) {
 					throw new RuntimeException("통신테이블 등록 실패");
 				}
-
+				
+				// 0923 인증관리내역 통신성공여부 Y→N (항상 호출)
+				AmSVO cert = new AmSVO();
+			    cert.setSaasPrdctId(vo.getSaasPrdctId());
+			    cert.setSrvrSeCd(ConstantInfo.TEST_OPS);
+			    cert.setApiId(apiId);                       
+			    cert.setApiVerSn(svo.getApiVerSn());       
+			    cert.setLastChgPrcrId("1");
+			    apiMngMapper.updateCertKeyToN(cert);
 			}
+
 		}
-		
-//		AmSVO p = new AmSVO();
-//		p.setApiId(clonedApiId);
-//		p.setApiVerSn(nextVer);
-//		p.setSrvrSeCd(ConstantInfo.TEST_OPS); 
-//		p.setLastChgPrcrId("1"); // 실제 사용자 ID로 교체
-//		int upd = apiMngMapper.updateCertKey(p);
-//		if (upd == 0) {
-//			log.warn("[insertStndApi] 인증관리 UPDATE 0건 (apiId={}, ver={})", svo.getApiVerSn(), svo.getApiVerSn());
-//		}
 
 		return 1;
 	}
@@ -198,12 +198,12 @@ public class ApiMngServiceImpl implements ApiMngService {
 		if (apiMngMapper.selectStndApiUriCnt(svo) > 0) {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "이미 사용 중인 URI입니다.");
 		}
-		//0922
+		// 0922
 		int maxApiVer = apiMngMapper.selectMaxStndApiVer();
 		int apiVer = svo.getApiVerSn();
-		if(apiVer != maxApiVer) {
+		if (apiVer != maxApiVer) {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "해당 API 버전이 최신 버전과 일치하지 않습니다.");
-			
+
 		}
 
 		int resultCnt = apiMngMapper.updateStndApi(svo);
@@ -223,22 +223,43 @@ public class ApiMngServiceImpl implements ApiMngService {
 			}
 		}
 
-		// 수정후 통신관리 내역 상태코드 update
-		AmProdSVO testUpd = new AmProdSVO();
-		testUpd.setApiId(svo.getApiId());
-		testUpd.setApiVerSn(svo.getApiVerSn());
-		testUpd.setCmncRsltCd(ConstantInfo.TEST_WAIT); // 대기 상태로 update
-		apiMngMapper.updateProdApiTest(testUpd);
-		
-		// 0923 인증관리 통신성공여부 업데이트
-		AmSVO cert = new AmSVO();
-	    cert.setApiId(svo.getApiId());
-	    cert.setApiVerSn(svo.getApiVerSn());
-	    cert.setLastChgPrcrId("1");
-	    int certRows = apiMngMapper.updateCertKey(cert);
-	    log.info("[updateCertKey] 인증관리 N 초기화 rows={}", certRows);
+		List<AmProdDVO> gdsList = apiMngMapper.selectProdList(svo);
+		if (gdsList != null && !gdsList.isEmpty()) {
+			for (AmProdDVO vo : gdsList) {
+				// 1) 해당 상품이 이번 API/버전 테스트행을 갖고 있으면 WAIT로
+				AmProdSVO testUpd = new AmProdSVO();
+				testUpd.setSaasPrdctId(vo.getSaasPrdctId());
+				testUpd.setSrvrSeCd(ConstantInfo.TEST_OPS);
+				testUpd.setApiId(svo.getApiId());
+				testUpd.setApiVerSn(svo.getApiVerSn());
+				testUpd.setCmncRsltCd(ConstantInfo.TEST_WAIT);
+				int updRows = apiMngMapper.updateProdApiTest(testUpd);
+
+				// 0923 인증관리내역 통신성공여부 Y→N (항상 호출)
+		        AmSVO cert = new AmSVO();
+		        cert.setSaasPrdctId(vo.getSaasPrdctId());
+		        cert.setSrvrSeCd(ConstantInfo.TEST_OPS);
+		        cert.setApiId(svo.getApiId());
+		        cert.setApiVerSn(svo.getApiVerSn());     
+		        cert.setLastChgPrcrId("1");
+		        int certRows = apiMngMapper.updateCertKeyToN(cert);
+		        log.info("[updateStndApi] pid={}, updRows(test)={}, certRows(N)={}", vo.getSaasPrdctId(), updRows, certRows);}
+			
+//				// 테스트 대기로 바뀐 것이 있을 때 Y→N 다운그레이드
+//				if (updRows > 0) {
+//					AmSVO cert = new AmSVO();
+//					cert.setSaasPrdctId(vo.getSaasPrdctId());
+//					cert.setSrvrSeCd(ConstantInfo.TEST_OPS);
+//					cert.setApiId(svo.getApiId());
+//					cert.setApiVerSn(svo.getApiVerSn());
+//					cert.setLastChgPrcrId("1");
+//					int certRows = apiMngMapper.updateCertKeyToN(cert);
+//					log.info("[updateStndApi] CERT->N prdctId={}, rows={}", vo.getSaasPrdctId(), certRows);
+//				}
+		}
 
 		return resultCnt;
+
 	}
 
 	/* 표준API삭제_API 기본정보 */
@@ -248,11 +269,11 @@ public class ApiMngServiceImpl implements ApiMngService {
 
 		log.debug("deleteProdApiTest params apiId={}, ver={}, gdsGdntcRegYn={}", svo.getApiId(), svo.getApiVerSn(),
 				svo.getGdsGdntcRegYn());
-
+		
 		deleteProdStndApiR(svo); // 상품-api관계테이블 삭제
 		int delTest = apiMngMapper.deleteProdApiTest(svo); // 통신결과내역테이블 삭제
 		log.debug("deleteProdApiTest deleted rows={}", delTest);
-
+		
 		int result = apiMngMapper.deleteStndApi(svo); // api기본테이블n업데이트
 		if (result != 1) {
 			throw new RuntimeException("기본 정보 삭제 실패");
@@ -372,25 +393,25 @@ public class ApiMngServiceImpl implements ApiMngService {
 					updVo.setSaasPrdctId(vo.getSaasPrdctId());
 					updVo.setApiVerSn(nextVer);
 					apiMngMapper.updateProdApiVer(updVo);
-				}
-				// 0923 인증관리 통신성공여부 업데이트 
-				AmSVO cert = new AmSVO();
-				cert.setApiId(clonedApiId);
-				cert.setApiVerSn(nextVer);          
-				cert.setLastChgPrcrId("1");
-			    int certRows = apiMngMapper.updateCertKey(cert);
-			    log.info("[insertStndApiVer] 인증관리 N 초기화: apiId={}, ver={}, updatedRows={}", clonedApiId, nextVer, certRows);
-			}
 
+					// 0923 인증관리 통신성공여부 업데이트
+					AmSVO cert = new AmSVO();
+					cert.setSaasPrdctId(vo.getSaasPrdctId());
+					cert.setSrvrSeCd(ConstantInfo.TEST_OPS);
+					cert.setApiId(clonedApiId);      
+					cert.setApiVerSn(nextVer);          
+					cert.setLastChgPrcrId("1");
+					int certRows = apiMngMapper.updateCertKeyToN(cert);
+					log.info("[insertStndApiVer] CERT->N pid={}, rows={}", vo.getSaasPrdctId(), certRows);
+				}
+			}
 			// 이전 통신결과내역 데이터 삭제(카탈로그 미등록 상품에 대한 api)
 			AmSVO delParam = new AmSVO();
 			delParam.setApiId(clonedApiId);
 			delParam.setApiVerSn(prevVer);
 			delParam.setGdsGdntcRegYn(ConstantInfo.N_VALUE);// 미등록
 			apiMngMapper.deleteProdApiTest(delParam);
-			
-			
-			
+
 		}
 
 		return apiMngMapper.selectStndApiVerList();

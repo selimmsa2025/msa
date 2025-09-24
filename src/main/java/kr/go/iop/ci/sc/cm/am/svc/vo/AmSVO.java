@@ -83,6 +83,9 @@ public class AmSVO implements Serializable {
 	
 	@Schema(description = "서버구분")
 	private String SrvrSeCd; //
+	
+	@Schema(description = "saas상품아이디")
+	private String SaasPrdctId; //
 
 //	@Schema(description = "페이징여부")
 //	private String pageYn = "Y"; 

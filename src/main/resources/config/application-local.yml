@@ -1,11 +1,11 @@
 spring:
-  # RabbitMQ 연결 정보 (로컬)
-  rabbitmq:
-    host: ${rabbitmq.hostname:localhost}
-    port: ${rabbitmq.port:5672}
-    virtual-host: /${rabbitmq.vhost:onnara}
-    username: ${rabbitmq.username:guest}
-    password: ${rabbitmq.password:guest}
+# RabbitMQ 연결 정보 (로컬)
+#  rabbitmq:
+#    host: ${rabbitmq.hostname:localhost}
+#    port: ${rabbitmq.port:5672}
+#    virtual-host: /${rabbitmq.vhost:iop}
+#    username: ${rabbitmq.username:guest}
+#    password: ${rabbitmq.password:guest}
 
   # 추적 서비스 (로컬)
   sleuth:
@@ -47,65 +47,13 @@ management:
       exposure:
         include: health, info, refresh, busrefresh
 
-web-url:
-  onnara:
-    frontend:
-      web: localhost:8001
-      api: localhost:8000
-  prism:
-    frontend:
-      web: localhost:8501
-      api: localhost:8000
-
 svc-url:
   iop:
-    frontend:
-      sw: http://localhost:8002
     backend:
-      tosaas: http://localhost:9993
-
-
-#svc-url:
-#  onnara:
-#    frontend:
-#      sw: http://localhost:8002
-#    backend:
-#      file: http://localhost:8101
-#      auth: http://localhost:8102    #1. 인증
-#      sys: http://localhost:8103     #2. 시스템 관리
-#      prtl: http://localhost:8104    #3. 포털정보
-#      bbs: http://localhost:8105     #4. 게시판
-#      kndg: http://localhost:8107    #5. 지식
-#      cmnty: http://localhost:8109   #6. 커뮤니티
-#      wiki: http://localhost:8113    #7. 업무위키
-#      blg: http://localhost:8114     #8. 블로그
-#      pnt: http://localhost:8115     #9. 협업포인트
-#
-#  prism:
-#    frontend:
-#      sw: http://localhost:8502
-#    backend:
-#      file: http://localhost:8101
-#      auth: http://localhost:8601     #1. 인증
-#      sys: http://localhost:8602      #2. 시스템 관리
-#      prtl: http://localhost:8603     #3. 포털정보
-#      bscs: http://localhost:8604     #4. 기초정보관리
-#      asmt: http://localhost:8605     #5. 과제관리
-#      stats: http://localhost:8607    #6. 통계관리
-#      chck: http://localhost:8608     #7. 성과점검
-#
-#  onpas:
-#    backend:
-#      evnt: http://localhost:8110     #1. 행사관리
-#      ondt: http://localhost:8111     #2. 당직근무
-#      aply: http://localhost:8112     #3. 신청관리
-#      schdl: http://localhost:8106    #4. 일정
-#      srvy: http://localhost:8108     #5. 설문조사
-#      evnti: http://localhost:8609    #6. 행사관리(인터넷)
-#      ondti: http://localhost:8610    #7. 당직근무(인터넷)
+      tosaas: http://localhost:9993    #. tosaas
 
 auth:
-  token-secret: onnara_cloud_dev
+  token-secret: iop_cloud_dev
 
 mybatis:
   mapper-locations:

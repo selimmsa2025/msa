@@ -1,5 +1,3 @@
-//package kr.go.onnara.cmmn.bean;
-//
 //import org.springframework.amqp.core.Binding;
 //import org.springframework.amqp.core.BindingBuilder;
 //import org.springframework.amqp.core.FanoutExchange;

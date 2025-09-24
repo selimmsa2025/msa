@@ -2,16 +2,18 @@ spring:
   config:
     import:
     - application-db.yml #local db 정보
-    - optional:configserver:${config.server.host:http://localhost:8888/} #configmap
   profiles:
     active: local #default
     group:
       local:
-        - saas-db-local # - kc-onnara-db-local
+        - saas-db-local
       dev:
         - saas-db-dev
       ops:
-        - kc-onnara-db-ops
+        - saas-db-ops
+  cloud:
+    config:
+      enabled: false
 
 ---
 spring:
@@ -27,32 +29,15 @@ spring:
 server:
   port: 9991
 
-system-info: catalog
+system-info: iop-ci-catalog
 
 info:
   app:
-    name: 게시판 서비스 (${spring.profiles.active})
-    description: 게시판을 이용하거나 관리하기 위한 서비스
+    name: 카탈로그 서비스 (${spring.profiles.active})
+    description: 카탈로그 관리자 화면, 카탈로그 포탈 이용하거나 관리하기 위한 서비스
     version: v0.0.1
 
 feign.circuitbreaker.enabled: true
-
----
-#H2 테스트용
-spring:
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-  sql:
-    init:
-      mode: never #always
-      continue-on-error: true
-      data-locations:
-      - classpath:init-data/data.sql
-      schema-locations:
-      - classpath:init-data/tables_new.sql
-      
  
 ---
 saas:

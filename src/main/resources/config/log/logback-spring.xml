@@ -6,7 +6,7 @@
     <property name="PATTERN_LOCAL" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread{10}, %X{traceId:-}, %X{spanId:-}] %logger{20}: %msg%n" />
 
     <springProperty scope="context" name="app_name" source="spring.application.name" defaultValue="application"/>
-    <springProperty scope="context" name="system_info" source="system-info" defaultValue="onnara"/>
+    <springProperty scope="context" name="system_info" source="system-info" defaultValue="iop-ci-catalog"/>
 
     <property name="logger_name" value="%logger:%method:%line" />
     <property name="log_path" value="${LOG_PATH}" />
@@ -18,7 +18,7 @@
         </encoder>
     </appender>
 
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!-- <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <immediateFlush>true</immediateFlush>
         <file>${log_path}/${app_name}/${app_name}-json.log</file>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
@@ -31,7 +31,7 @@
                 <maxFileSize>20MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
-    </appender>
+    </appender> -->
 
     <springProfile name="local,default">
         <root level="DEBUG">

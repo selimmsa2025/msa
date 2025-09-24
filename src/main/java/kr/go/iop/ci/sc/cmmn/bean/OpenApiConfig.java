@@ -35,18 +35,12 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class OpenApiConfig {
 
-	@Value("${system-info:onnara}")
+	@Value("${system-info:iop-ci-catalog}")
 	private String systemInfo;
 	
-	@Value("${web-url.onnara.frontend.api:localhost:8000}")
-	private String onnaraApiUrl;
+	@Value("${web-url.iop-ci-catalog.frontend.api:localhost:8000}")
+	private String iopApiUrl;
 
-	@Value("${web-url.onnara-ext.frontend.api:localhost:8200}")
-	private String onnaraExtApiUrl;
-
-	@Value("${web-url.prism.frontend.api:localhost:8000}")
-	private String prismApiUrl;
-	
 	@Value("${info.app.name}")
 	private String infoAppName;
 
@@ -79,15 +73,10 @@ public class OpenApiConfig {
 	public OpenAPI svcOpenAPIKubernetes() {
 		List<Server> serverList = new ArrayList<>();
 
-		if(systemInfo.equals("onnara") || systemInfo.equals("onpas")) {
-			serverList.add(new Server().url(webProtocol + onnaraApiUrl + "/" + appName));
-
-		} else {
-			serverList.add(new Server().url(webProtocol + prismApiUrl + "/" + appName));
-		}
-
+		if(systemInfo.equals("iop-ci-catalog") ) {
+			serverList.add(new Server().url(webProtocol + iopApiUrl + "/" + appName));
+		} 
 		return new OpenAPI()
-				// .servers(List.of(new Server().url(webProtocol + apiUrl + "/" + appName)))
 				.servers(serverList) // 쿠버네티스 환경에서는 서버 정보를 APIGateway로 표시
 				.components(new Components().addSecuritySchemes(tokenBearer,
 						new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme(tokenBearer).bearerFormat("JWT")))

@@ -20,15 +20,20 @@ file:
 
 svc-url:
   iop:
-    frontend:
-      sw: http://localhost:8002
     backend:
       tosaas: http://localhost:9993
+      
+# 웹 서비스 URL
+web-url:
+  protocol: https://
+  iop-ci-catalog:
+    frontend:
+      api: api.test.iop-ci-catalog.go.kr
 
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
       
 mybatis:
   mapper-locations:

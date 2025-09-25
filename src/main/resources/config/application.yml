@@ -1,16 +1,16 @@
 spring:
   config:
     import:
-    - application-db.yml #local db 정보
+    - application-db.yml #db 정보
   profiles:
-    active: dev #default
+    active: local #default
     group:
       local:
         - saas-db-local
       dev:
         - saas-db-dev
-      ops:
-        - saas-db-ops
+      prod:
+        - saas-db-prod
   cloud:
     config:
       enabled: false
@@ -22,12 +22,9 @@ spring:
       on-profile:
       - local
       - dev
-      - ops
+      - prod
   application:
     name: iop-ci-catalog
-
-server:
-  port: 9991
 
 system-info: iop-ci-catalog
 
@@ -40,14 +37,13 @@ info:
 feign.circuitbreaker.enabled: true
  
 ---
+## API 테스트 URL 추후 변경
 saas:
   dev:
-    url: http://localhost:9991
+    url: http://localhost:9991 
   prod:
     url: http://localhost:9991
     
 ---
-jwt:
-  secret: mySuperSecretKeyForJWTGenerationChangeThisIsLongEnough123!
-  access-expiration: 600000 #3600000        # 1시간 (밀리초)  60000  10분
-  refresh-expiration: 2592000000    # 30일 (밀리초)
+server:
+  port: 9991

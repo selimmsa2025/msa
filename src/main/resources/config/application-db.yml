@@ -41,12 +41,12 @@ spring:
     password: iopCom1!
     
 ---
-#3. SaaS DB ops
+#3. SaaS DB prod
 spring:
   config:
     activate:
       on-profile:
-      - saas-db-ops
+      - saas-db-prod
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://192.168.103.125:13100/DBCOMD

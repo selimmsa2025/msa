@@ -43,15 +43,17 @@
                 ,A.UPDATE_TIME /*수정일시 */
                 ,A.CATALOG_AUTHRT_CD /*카탈로그권한코드 */
                 ,USCM.SF_COMM_CD_NM(A.CATALOG_AUTHRT_CD) AS CATALOG_AUTHRT_NM /*카탈로그권한명 */
-         FROM USCM.TBCM_USER_M A
+         FROM USCM.TBCM_USER_M_TEMP A
          WHERE 1=1
-         ORDER BY A.INSTITUTION_CODE
+         AND CATALOG_AUTHRT_CD IS NOT NULL
+         ORDER BY A.CATALOG_AUTHRT_CD
+                  ,A.INSTITUTION_CODE
 	</select>
 	
 	<select id="selectUserListCnt" parameterType="kr.go.iop.ci.sc.cmmn.vo.UserVO" resultType="int">
 	    SELECT /* 사용자 건수 조회 */
 	           COUNT(USER_ID)
-		FROM USCM.TBCM_USER_M
+		FROM USCM.TBCM_USER_M_TEMP
 	</select>
 	
 	<select id="selectUserInfo" parameterType="kr.go.iop.ci.sc.cmmn.vo.UserVO" resultType="kr.go.iop.ci.sc.cmmn.vo.UserVO">
@@ -94,7 +96,7 @@
                ,A.UPDATE_TIME /*수정일시 */
                ,A.CATALOG_AUTHRT_CD /*카탈로그권한코드 */
                ,USCM.SF_COMM_CD_NM(A.CATALOG_AUTHRT_CD) AS CATALOG_AUTHRT_NM /*카탈로그권한명 */
-        FROM USCM.TBCM_USER_M A
+        FROM USCM.TBCM_USER_M_TEMP A
         WHERE ACCOUNT_ID = #{accountId}			
         ORDER BY INSTITUTION_CODE
 	</select>

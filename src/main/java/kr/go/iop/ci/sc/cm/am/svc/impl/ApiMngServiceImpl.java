@@ -267,8 +267,12 @@ public class ApiMngServiceImpl implements ApiMngService {
 	@Override
 	public int deleteStndApi(AmSVO svo) {
 
-		log.debug("deleteProdApiTest params apiId={}, ver={}, gdsGdntcRegYn={}", svo.getApiId(), svo.getApiVerSn(),
-				svo.getGdsGdntcRegYn());
+		log.debug("deleteProdApiTest params apiId={}, ver={}, gdsGdntcRegYn={}", svo.getApiId(), svo.getApiVerSn(), svo.getGdsGdntcRegYn());
+		
+		List<String> pidList  = apiMngMapper.selectProdListForDelete(svo); // 매핑상품id조회
+		if (pidList == null) pidList = java.util.Collections.emptyList();
+		log.debug("[deleteStndApi] impacted products size={}, apiId={}, ver={}",
+	            pidList.size(), svo.getApiId(), svo.getApiVerSn());
 		
 		deleteProdStndApiR(svo); // 상품-api관계테이블 삭제
 		int delTest = apiMngMapper.deleteProdApiTest(svo); // 통신결과내역테이블 삭제
@@ -278,6 +282,21 @@ public class ApiMngServiceImpl implements ApiMngService {
 		if (result != 1) {
 			throw new RuntimeException("기본 정보 삭제 실패");
 		}
+		
+		//0924 인증관리내역 통신성공여부 업데이트 검증 
+		for (String pid : pidList) {
+	        AmSVO cert = new AmSVO();
+	        cert.setSaasPrdctId(pid);
+	        cert.setApiVerSn(svo.getApiVerSn());
+	        int upd = apiMngMapper.updateCertKey(cert);
+
+	        if (upd == 0) { 
+	            // 행 부재 or 값 동일 등
+	            log.info("[deleteStndApi] CERT recompute no-op pid={}, ver={}", pid, svo.getApiVerSn());
+	        } else {
+	            log.info("[deleteStndApi] CERT recompute updated pid={}, ver={}, rows={}", pid, svo.getApiVerSn(), upd);
+	        }
+	    }
 		return result;
 	}
 

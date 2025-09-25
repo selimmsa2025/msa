@@ -98,13 +98,16 @@ public interface ApiMngMapper {
 	/* 0903상품 버전 업데이트 */
 	public int updateProdApiVer(AmProdSVO vo);
 	
-	/* 0922 인증관리 통신성공여부 update */
-	public int updateCertKey(AmSVO vo);
-	
 	/* 0922 API 최종버전 조회 */
 	public int selectMaxStndApiVer();
 	
-	/* 0923 API 최종버전 조회 */
+	/* 0923 API 인증관리 통신성공여부 update (수정/등록시 사용) */
 	public int updateCertKeyToN(AmSVO vo);
+	
+	/* 0924 인증관리 통신성공여부 update를 위한 상품아이디 조회(삭제시 사용) */
+	public List<String> selectProdListForDelete(AmSVO vo);
+	
+	/* 0924 인증관리 통신성공여부 update (삭제시 사용) */
+	public int updateCertKey(AmSVO vo);
 	
 }

@@ -417,25 +417,6 @@
      	AND (SAAS_PRDCT_API_VER_SN IS NULL OR SAAS_PRDCT_API_VER_SN <![CDATA[<>]]>  #{apiVerSn}) 
 	</update>
 	
-	
-	<update id = "updateCertKey" parameterType = "amSVO">
-		UPDATE /* SQL_ID: ci.sc.cm.pm.ApiMngMapper.insert.updateCertKey (0922 상품인증관리내역수정) */
-			USCM.TBCM_CMNC_MNG_L M
-		SET API_CMNC_SCS_YN  = 'N'
-			, LAST_CHG_PRCR_ID = #{lastChgPrcrId}
-        	, LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
-        FROM USCM.TBCM_PRDCT_API_CMNCRSLT_L R
-        JOIN USCM.TBCM_SAAS_PRDCT_M G
-    		ON G.SAAS_PRDCT_ID = R.SAAS_PRDCT_ID
-         WHERE M.SAAS_PRDCT_ID = R.SAAS_PRDCT_ID
-		    AND M.SRVR_SE_CD    = R.SRVR_SE_CD
-		    AND R.API_ID        = #{apiId}
-		    AND R.API_VER_SN    = #{apiVerSn}       
-		    AND G.USE_YN        = 'Y'
-		    AND G.SAAS_PRDCT_API_VER_SN = #{apiVerSn}
-	     	AND M.SRVR_SE_CD = 'A0060002'
-	</update>
-	
 	<update id="updateCertKeyToN" parameterType="amSVO">
 	  UPDATE USCM.TBCM_CMNC_MNG_L M /* SQL_ID: ci.sc.cm.pm.ApiMngMapper.insert.updateCertKeyToN (0923 상품인증관리내역수정) */
 	     SET API_CMNC_SCS_YN  = 'N'
@@ -467,6 +448,49 @@
 		FROM USCM.TBCM_API_VER_B
 		WHERE USE_YN = 'Y'			/* 사용여부 */
 	</select>
+	
+	<select id="selectProdListForDelete" parameterType="amSVO" resultType="string">
+	   SELECT /* SQL_ID: ci.sc.cm.pm.ApiMngMapper.select.selectProdListForDelete (0924 상품아이디조회_api삭제용) */ 
+	   		G.SAAS_PRDCT_ID
+	   FROM USCM.TBCM_SAAS_PRDCT_M G
+	   WHERE G.USE_YN = 'Y'
+	     	AND G.SAAS_PRDCT_API_VER_SN = #{apiVerSn}
+	      	AND G.GDS_GDNTC_REG_YN = 'N'
+	      	AND EXISTS (
+				           SELECT 1
+				            FROM USCM.TBCM_PRDCT_API_CMNCRSLT_L R
+				            WHERE R.SAAS_PRDCT_ID = G.SAAS_PRDCT_ID
+				              AND R.API_ID        = #{apiId}
+				              AND R.API_VER_SN    = #{apiVerSn}
+				              AND R.SRVR_SE_CD    = 'A0060002'
+				         )
+	</select>
+	
+	<update id="updateCertKey" parameterType="amSVO">
+	   UPDATE /* SQL_ID: ci.sc.cm.pm.ApiMngMapper.update.updateCertKey (0924 상품인증관리내역수정_api삭제용) */ 
+	   		USCM.TBCM_CMNC_MNG_L M
+	   SET API_CMNC_SCS_YN = CASE
+		           WHEN EXISTS (
+				                 SELECT 1
+				                 FROM USCM.TBCM_PRDCT_API_CMNCRSLT_L R1
+				                 WHERE R1.SAAS_PRDCT_ID = M.SAAS_PRDCT_ID
+				                    AND R1.SRVR_SE_CD    = M.SRVR_SE_CD
+				                    AND R1.API_VER_SN    = #{apiVerSn}
+				               )
+		            AND NOT EXISTS (
+					                 SELECT 1
+					                 FROM USCM.TBCM_PRDCT_API_CMNCRSLT_L R2
+					                 WHERE R2.SAAS_PRDCT_ID = M.SAAS_PRDCT_ID
+					                    AND R2.SRVR_SE_CD    = M.SRVR_SE_CD
+					                    AND R2.API_VER_SN    = #{apiVerSn}
+					                    AND R2.CMNC_RSLT_CD != 'A0050002' 
+					               )
+		           THEN 'Y' ELSE 'N' END
+	        , LAST_CHG_PRCR_ID = '1'
+	        , LAST_CHG_DT      = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
+	   WHERE M.SAAS_PRDCT_ID = #{saasPrdctId}
+	     AND M.SRVR_SE_CD    = 'A0060002'
+	</update>
 	
 	
 </mapper>

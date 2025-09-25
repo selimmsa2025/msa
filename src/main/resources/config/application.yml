@@ -3,7 +3,7 @@ spring:
     import:
     - application-db.yml #db 정보
   profiles:
-    active: local #default
+    active: dev #default
     group:
       local:
         - saas-db-local

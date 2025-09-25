@@ -165,7 +165,7 @@
 			, LAST_CHG_DT                              /* 최종변경일시       */
 			, LAST_CHG_PRCR_ID                         /* 최종변경처리자아이디  */
 		FROM USCM.TBCM_SAAS_PRDCT_EVL_L A
-			LEFT OUTER JOIN USCM.TBCM_USER_M B 
+			LEFT OUTER JOIN USCM.TBCM_USER_M_TEMP B 
 				ON A.EVLTR_ID = B.ACCOUNT_ID
 		WHERE 1=1
 		<if test="saasPrdctId != null and !saasPrdctId.equals('')">

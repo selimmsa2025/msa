@@ -23,11 +23,11 @@ management:
     web:
       exposure:
         include: health, info, refresh, busrefresh
-# iop-ci-tosaas 주소 추후 변경
+
 svc-url:
   iop:
     backend:
-      tosaas: http://localhost:9993    #. iop-ci-tosaas
+      tosaas: iop-ci-tosaas-svc.iop-ci.svc.cluster.local:9993    #. iop-ci-tosaas
       
 # 웹 서비스 URL
 web-url:

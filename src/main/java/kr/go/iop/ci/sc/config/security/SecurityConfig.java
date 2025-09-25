@@ -26,7 +26,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of("http://localhost:3000","https://iop-ci-ui.iopdev.kr")); // 필요한 오리진만 지정
+        cfg.setAllowedOrigins(List.of("http://localhost:3000","https://iop-ci-ui.iopdev.kr")); // 필요한 url 지정
         cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setExposedHeaders(List.of("Authorization","Content-Type"));
@@ -42,12 +42,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(Customizer.withDefaults())              // 위 CORS Bean 사용
+            .cors(Customizer.withDefaults())              // CORS Bean 사용
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 프리플라이트
-                .anyRequest().permitAll()                               // ✅ 전부 개방
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 
+                .anyRequest().permitAll()                               // 전부 개방
             );
 
         // http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

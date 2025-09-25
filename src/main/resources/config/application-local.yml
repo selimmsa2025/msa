@@ -1,12 +1,4 @@
 spring:
-# RabbitMQ 연결 정보 (로컬)
-#  rabbitmq:
-#    host: ${rabbitmq.hostname:localhost}
-#    port: ${rabbitmq.port:5672}
-#    virtual-host: /${rabbitmq.vhost:iop}
-#    username: ${rabbitmq.username:guest}
-#    password: ${rabbitmq.password:guest}
-
   # 추적 서비스 (로컬)
   sleuth:
     otel:
@@ -14,6 +6,9 @@ spring:
         otlp:
           enabled: false
     enabled: false
+  devtools:
+    livereload:
+      enabled: false
     
   servlet: 
     multipart: 
@@ -29,12 +24,6 @@ file:
   system-file-path: /iop
   upload-total-size-limit: 52428800 #한번에 올릴수 있는 파일 용량 50MB
   upload-size-limit: 52428800 #파일 한개당 용량 50메가
-    
-#rabbitmq:
-#  queue.name: queue.${spring.application.name} #queue.프로젝트명, application.yml
-#  fanoutexchange.name: ${system-info} #전 프로젝트 동일, application.yml
-#  exchange.name: exchange.${spring.application.name} #exchange.프로젝트명, application.yml
-#  routing.key: key.${spring.application.name} #key.프로젝트명, application.yml
 
 logging:
   config: classpath:config/log/logback-spring.xml
@@ -50,24 +39,27 @@ management:
 svc-url:
   iop:
     backend:
-      tosaas: http://localhost:9993    #. tosaas
+      tosaas: http://localhost:9993    #. iop-ci-tosaas
 
+# 웹 서비스 URL
+web-url:
+  protocol: https://
+  iop-ci-catalog:
+    frontend:
+      api: api.test.iop-ci-catalog.go.kr
+
+health:
+  message: hello-${spring.profiles.active} #application.yml
+  
+jwt:
+  secret: mySuperSecretKeyForJWTGenerationChangeThisIsLongEnough123!
+  access-expiration: 600000 #3600000        # 1시간 (밀리초)  60000  10분
+  refresh-expiration: 2592000000    # 30일 (밀리초)
+  
 auth:
-  token-secret: iop_cloud_dev
+  token-secret: iop_cloud_dev  
 
 mybatis:
   mapper-locations:
   - classpath*:mapper/**/**_SQL.xml
   config-location: classpath:mapper/config/mapper-config.xml
-
-health:
-  message: hello-${spring.profiles.active} #application.yml
-
-jasypt:
-  encryptor:
-    bean: jasyptEncryptorAES
-    
-jwt:
-  secret: mySuperSecretKeyForJWTGenerationChangeThisIsLongEnough123!
-  access-expiration: 600000 #3600000        # 1시간 (밀리초)  60000  10분
-  refresh-expiration: 2592000000    # 30일 (밀리초)

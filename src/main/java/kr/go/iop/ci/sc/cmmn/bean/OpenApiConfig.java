@@ -38,7 +38,7 @@ public class OpenApiConfig {
 	@Value("${system-info:iop-ci-catalog}")
 	private String systemInfo;
 	
-	@Value("${web-url.iop-ci-catalog.frontend.api:localhost:8000}")
+	@Value("${web-url.iop-ci-catalog.frontend.api:localhost:9991}")
 	private String iopApiUrl;
 
 	@Value("${info.app.name}")

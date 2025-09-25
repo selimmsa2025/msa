@@ -1,6 +1,7 @@
 spring:
   config:
     import:
+    - application-db.yml
     - optional:configserver:${CONFIG_SERVER_HOST} 
 
   servlet: 
@@ -22,11 +23,11 @@ management:
     web:
       exposure:
         include: health, info, refresh, busrefresh
-
+# iop-ci-tosaas 주소 추후 변경
 svc-url:
   iop:
     backend:
-      tosaas: iop-ci-catalog-svc.iop-ci.svc.cluster.local:9993    #. iop-ci-tosaas
+      tosaas: http://localhost:9993    #. iop-ci-tosaas
       
 # 웹 서비스 URL
 web-url:
@@ -44,7 +45,7 @@ jwt:
   refresh-expiration: 2592000000    # 30일 (밀리초)
 
 auth:
-  token-secret: iop_cloud_dev
+  token-secret: iop_cloud_prod
       
 mybatis:
   mapper-locations:

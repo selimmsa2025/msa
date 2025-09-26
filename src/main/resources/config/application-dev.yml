@@ -1,17 +1,13 @@
 spring:
-  config:
-    import:
-    - optional:configserver:${CONFIG_SERVER_HOST} 
-
   servlet: 
     multipart: 
-      location: /DATA/msa-attach-volume
+      location: /data/msa-attach-volume
       max-file-size: 50MB
       max-request-size: 50MB 
 
 file:
   allowed-file-ext: jpg|jpeg|gif|png|bmp|txt|pdf|hwp|hwpx|gul|docx|doc|zip|xls|xlsx|ppt|pptx|mp4|avi|wmv|asf|flv|mov|mkv|mpeg|mpg|3gp|wmv|webm|ogm|asx|m2t|m2ts|mts|tif|tiff|wav|mp3
-  upload-base-path: /uploadData/
+  upload-base-path: /data/upload
   upload-file-path: /file
   system-file-path: /iop
   upload-total-size-limit: 52428800 #한번에 올릴수 있는 파일 용량 50MB

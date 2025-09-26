@@ -3,6 +3,7 @@ FROM iodscr-bedjusoj.scr.private.kr-west1.e.samsungsdscloud.com/library/docker.i
 
 RUN mkdir -p /logs
 RUN mkdir -p /data/upload
+RUN mkdir -p /data/msa-attach-volume
 
 ENV APP_HOME=/app
 
@@ -17,6 +18,7 @@ RUN echo "=== /app 디렉토리 내용 ===" && ls -al /app
 RUN addgroup -S iop-app && adduser -u 1000 -S iop-app -G iop-app
 
 RUN chown -R 1000:1000 /data/upload
+RUN chown -R 1000:1000 /data/msa-attach-volume
 RUN chown 1000:1000 /logs
 
 USER 1000

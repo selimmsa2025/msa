@@ -3,3 +3,5 @@
 /.gradle/
 /.settings/
 .temp*
+.metadata/
+.sonarlint

@@ -76,7 +76,7 @@ public class CatalogFileController {
      * @param fileSVO 파일 SVO
      * @return
      */
-    @PostMapping("/v1/cmmn/file/create")
+    @PostMapping(value="/v1/cmmn/file/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponseVO createFile(@ModelAttribute CatalogFileSVO fileSVO) {
         log.info("##### createFile1 호출");
         fileSVO = this.setUser(fileSVO);

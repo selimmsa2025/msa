@@ -23,7 +23,22 @@
 		ON A.SAAS_PRDCT_ID = B.SAAS_PRDCT_ID 
 		AND B.USE_YN = 'Y'               			
 		AND B.GDS_GDNTC_REG_YN = 'Y' 
-		WHERE 1 = 1;
+		WHERE 1 = 1
+	   	AND A.SAAS_PRDCT_ID IS NOT NULL
+	   	UNION ALL 
+	   	SELECT /* 사용자 소속 기관 조회 */ 
+		       C.INSTITUTION_CODE         			/* 기관코드 */
+		      ,C.INSTITUTION_NAME 	           		/* 기관명 */
+		      ,NULL
+		      ,NULL
+		      ,NULL
+		      ,NULL
+		      ,NULL
+		      ,NULL
+		      ,NULL
+		      ,NULL
+		FROM USCM.TBCM_INST_M C
+		WHERE C.INSTITUTION_CODE = #{institutionCode}
 
 	</select>	
 	

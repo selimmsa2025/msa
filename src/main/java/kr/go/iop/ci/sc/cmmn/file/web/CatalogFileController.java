@@ -78,10 +78,11 @@ public class CatalogFileController {
      */
     @PostMapping("/v1/cmmn/file/create")
     public ApiResponseVO createFile(@ModelAttribute CatalogFileSVO fileSVO) {
-        log.debug("##### createFile 호출");
+        log.info("##### createFile1 호출");
         fileSVO = this.setUser(fileSVO);
-        
+        log.info("##### createFile2 호출");
         List<MultipartFile> files = fileSVO.getUploadFile();
+        log.info("##### createFile3 호출");
 
         if (files == null || files.isEmpty()) {
             return ResponseUtils.build("파일이 비어있습니다.");
@@ -98,6 +99,7 @@ public class CatalogFileController {
         String atchFileGroupNo = catalogFileService.selectMaxFileGroupSn();
         fileSVO.setAtchFileGroupNo(atchFileGroupNo);
         }
+        log.info("##### createFile4 호출");
         
         Long maxFileSn = catalogFileService.selectMaxFileSn(fileSVO);
 

@@ -1,7 +1,7 @@
 spring:
   servlet: 
     multipart: 
-      location: /data/msa-attach-volume
+      location: /data/upload
       max-file-size: 50MB
       max-request-size: 50MB 
 

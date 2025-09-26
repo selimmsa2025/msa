@@ -12,7 +12,13 @@ file:
   system-file-path: /iop
   upload-total-size-limit: 52428800 #한번에 올릴수 있는 파일 용량 50MB
   upload-size-limit: 52428800 #파일 한개당 용량 50메가
-  
+
+logging:
+  config: classpath:config/log/logback-spring.xml
+  file:
+    path: /logs
+
+
 management:
   endpoints:
     web:

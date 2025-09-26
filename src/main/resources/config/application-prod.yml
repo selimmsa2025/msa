@@ -1,7 +1,6 @@
 spring:
   config:
     import:
-    - application-db.yml
     - optional:configserver:${CONFIG_SERVER_HOST} 
 
   servlet: 

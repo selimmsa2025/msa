@@ -12,6 +12,7 @@ package kr.go.iop.ci.sc.cmmn.file.web;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -129,11 +130,11 @@ public class CatalogFileController {
 
                 // 저장 경로 생성
                 LocalDate now = LocalDate.now();
-                String datePath = now.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+                String datePath = now.format(DateTimeFormatter.ofPattern("yyyy"+File.separator+"MM"+File.separator+"dd"));
                 String savedFileName = UUID.randomUUID() + "." + extension;
 
                 String servicePath;
-                    servicePath = "ci/pm";
+                    servicePath = "ci"+File.separator+"pm";
 
                 Path fullSavePath = FileSystems.getDefault().getPath(
                         fileInfo.getUploadBasePath(),
@@ -152,7 +153,7 @@ public class CatalogFileController {
 
                 // DB 저장용 경로
                 String atchFilePathNm = fileInfo.getUploadFilePath() + fileInfo.getSystemFilePath()
-                        + (servicePath.isEmpty() ? "" : "/" + servicePath) + "/" + datePath;
+                        + (servicePath.isEmpty() ? "" : File.separator + servicePath) + File.separator + datePath;
 
                 fileSVO.setOrgnlFileNm(originalFileName);
                 fileSVO.setAtchFileNm(savedFileName);

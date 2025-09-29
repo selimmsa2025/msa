@@ -33,6 +33,7 @@ import kr.go.iop.ci.sc.cp.cpm.svc.vo.SubscrProdSVO;
 import kr.go.iop.ci.sc.cp.cpm.svc.vo.SubscrSVO;
 import kr.go.iop.ci.sc.feignapi.IopToSaaSClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 카탈로그 상품 포탈 기능을 위한 구현 클래스
@@ -40,6 +41,7 @@ import lombok.RequiredArgsConstructor;
  * @name_ko 카탈로그 상품 포탈 구현 클래스
  * @author selim
  */
+@Slf4j
 @Service("prodService")
 @RequiredArgsConstructor
 public class ProdServiceImpl implements ProdService {
@@ -89,7 +91,8 @@ public class ProdServiceImpl implements ProdService {
 		int inserted = prodMapper.insertProdSubscrHistoryReq(subscrSVO);
 		isDbSaved = inserted > 0;
 		if (!isDbSaved) {
-			throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "DB 저장 실패");
+			log.error("DB 저장 실패");
+			throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
 		//TODO IOP-ID 추가
@@ -100,16 +103,14 @@ public class ProdServiceImpl implements ProdService {
 			saasResp = iopToSaaSClient.createProdSubscrReq(subscrSVO);
 
 			JsonNode resultData = new ObjectMapper().valueToTree(saasResp.get("resultData"));
+			log.debug("resultData={}",resultData);
 			if (!resultData.isNull()) {
 				isSaasCallSuccess = true;
 			}
 			
-			if (!isDbSaved) {
-				throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "DB 저장 실패");
-			}
-			
 			if (!isSaasCallSuccess) {
-				throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "SaaS 처리 실패: resultData 없음");
+				log.error("SaaS 처리 실패: resultData 없음");
+				throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 			// 최종 응답
 			Map<String, Object> result = new HashMap<>();
@@ -118,7 +119,8 @@ public class ProdServiceImpl implements ProdService {
 			return result;
 
 		} catch (FeignException e) {
-			throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR,"SaaS 호출 실패: ");
+			log.error("SaaS 호출 실패");
+			throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -134,7 +136,8 @@ public class ProdServiceImpl implements ProdService {
 		int inserted = prodMapper.insertProdSubscrHistoryReq(subscrSVO);
 		isDbSaved = inserted > 0;
 		if (!isDbSaved) {
-			throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "DB 저장 실패");
+			log.error("DB 저장 실패");
+			throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		
 		//TODO IOP-ID 추가
@@ -149,12 +152,9 @@ public class ProdServiceImpl implements ProdService {
 				isSaasCallSuccess = true;
 			}
 			
-			if (!isDbSaved) {
-				throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "DB 저장 실패");
-			}
-			
 			if (!isSaasCallSuccess) {
-				throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "SaaS 처리 실패: resultData 없음");
+				log.error("SaaS 처리 실패: resultData 없음");
+				throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 			// 최종 응답
 			Map<String, Object> result = new HashMap<>();
@@ -163,7 +163,8 @@ public class ProdServiceImpl implements ProdService {
 			return result;
 
 		} catch (FeignException e) {
-			throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR,"SaaS 호출 실패: " + e.status());
+			log.error("SaaS 호출 실패");
+			throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 

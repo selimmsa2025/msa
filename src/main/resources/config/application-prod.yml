@@ -51,3 +51,9 @@ mybatis:
   mapper-locations:
   - classpath*:mapper/**/**_SQL.xml
   config-location: classpath:mapper/config/mapper-config.xml
+
+saas:
+  dev:
+    url: https://iop-ci-catalog.iopdev.kr 
+  prod:
+    url: https://iop-ci-catalog.iopdev.kr

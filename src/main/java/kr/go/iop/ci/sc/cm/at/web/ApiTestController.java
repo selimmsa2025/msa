@@ -272,22 +272,67 @@ public class ApiTestController {
 		return ResponseUtils.build(HttpStatus.OK, rtnMap, "성공");
 	}
 	
-	@GetMapping("/package/setting")
-	public ApiResponseVO yyTestList7() {
-		
-		HashMap<String, Object> rtnMap = new HashMap<>();
-		rtnMap.put("test", "Hiiiiiiiiiiii! test 1, 2, 3, 4");
-		
-//		return ResponseUtils.build(HttpStatus.OK, rtnMap, "성공");
-		return ResponseUtils.build(HttpStatus.INTERNAL_SERVER_ERROR, rtnMap
-				, "오류 발생");
-	}
 	
 	@GetMapping("/user/info/updated")
 	public ApiResponseVO yyTestList8(@RequestParam(value = "userId") String userId) {
 		
 		HashMap<String, Object> rtnMap = new HashMap<>();
 		rtnMap.put("test", "Hiiiiiiiiiiii! test 1, djfklsjke");
+		
+		return ResponseUtils.build(HttpStatus.OK, rtnMap, "성공");
+	}
+	
+	
+	@PostMapping("/v1/test/test")
+	public ApiResponseVO yyTestList9() {
+		
+		HashMap<String, Object> rtnMap = new HashMap<>();
+		rtnMap.put("test",  "테스트 완료 되었습니다.");
+		
+		return ResponseUtils.build(HttpStatus.OK, rtnMap, "성공");
+	}
+	
+	@PostMapping("/catalog/v1/saas/prod/create-subscr")
+	public ApiResponseVO createSubscr() {
+		
+		HashMap<String, Object> rtnMap = new HashMap<>();
+		rtnMap.put("test",  "테스트 완료 되었습니다.");
+		
+		return ResponseUtils.build(HttpStatus.OK, rtnMap, "성공");
+	}
+	
+	@PostMapping("/catalog/v1/saas/prod/cancel-subscr")
+	public ApiResponseVO cancelSubscr() {
+		
+		HashMap<String, Object> rtnMap = new HashMap<>();
+		rtnMap.put("test",  "테스트 완료 되었습니다.");
+		
+		return ResponseUtils.build(HttpStatus.OK, rtnMap, "성공");
+	}
+	
+	@PostMapping("/catalog/v1/saas/user/info-rt-modify")
+	public ApiResponseVO infoRtModify() {
+		
+		HashMap<String, Object> rtnMap = new HashMap<>();
+		rtnMap.put("test",  "테스트 완료 되었습니다.");
+		
+		return ResponseUtils.build(HttpStatus.OK, rtnMap, "성공");
+	}
+	
+	@PostMapping("/package/setting")
+	public ApiResponseVO packageSesttingTest() {
+		
+		HashMap<String, Object> rtnMap = new HashMap<>();
+		rtnMap.put("test",  "테스트 완료 되었습니다.");
+		
+		return ResponseUtils.build(HttpStatus.OK, rtnMap, "성공");
+	}
+	
+	@PostMapping("/v1/user/list")
+	public ApiResponseVO userLsit(@RequestBody Boolean sdfs) {
+		
+		HashMap<String, Object> rtnMap = new HashMap<>();
+		rtnMap.put("test",  "테스트 완료 되었습니다.");
 		
 		return ResponseUtils.build(HttpStatus.OK, rtnMap, "성공");
 	}

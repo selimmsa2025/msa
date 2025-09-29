@@ -74,7 +74,7 @@ public class ProdServiceImpl implements ProdService {
 	/* psy e */
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
+	//@Transactional(rollbackFor = Exception.class)
 	public Map<String, Object> insertProdSubscrReq(SubscrSVO subscrSVO) {
 
 		boolean isDbSaved = false;
@@ -129,7 +129,7 @@ public class ProdServiceImpl implements ProdService {
 	}
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
+	//@Transactional(rollbackFor = Exception.class)
 	public Map<String, Object> insertProdSubscrCancelReq(SubscrSVO subscrSVO) {
 		
 		boolean isDbSaved = false;

@@ -83,7 +83,7 @@ public class StandardApiConfig {
 
 				if (resultData instanceof Map) {
 					HashMap<String, Object> resultMap = new HashMap<>();
-					resultMap.putAll((Map<String, Object>) resultData);
+					resultMap.put("resultData", resultData);
 					return resultMap;
 					
 				} else {

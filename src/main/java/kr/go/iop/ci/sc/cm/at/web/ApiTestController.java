@@ -284,7 +284,16 @@ public class ApiTestController {
 	
 	
 	@PostMapping("/v1/test/test")
-	public ApiResponseVO yyTestList9() {
+	public ApiResponseVO yyTestList9(@RequestBody TestVO vo) {
+		
+		HashMap<String, Object> rtnMap = new HashMap<>();
+		rtnMap.put("test",  "테스트 완료 되었습니다.");
+		
+		return ResponseUtils.build(HttpStatus.OK, rtnMap, "성공");
+	}
+	
+	@PostMapping("/v1/test/test2")
+	public ApiResponseVO yyTestList911(@RequestBody TestVO vo) {
 		
 		HashMap<String, Object> rtnMap = new HashMap<>();
 		rtnMap.put("test",  "테스트 완료 되었습니다.");
@@ -293,7 +302,7 @@ public class ApiTestController {
 	}
 	
 	@PostMapping("/catalog/v1/saas/prod/create-subscr")
-	public ApiResponseVO createSubscr() {
+	public ApiResponseVO createSubscr(@RequestBody TestVO vo) {
 		
 		HashMap<String, Object> rtnMap = new HashMap<>();
 		rtnMap.put("test",  "테스트 완료 되었습니다.");
@@ -302,7 +311,7 @@ public class ApiTestController {
 	}
 	
 	@PostMapping("/catalog/v1/saas/prod/cancel-subscr")
-	public ApiResponseVO cancelSubscr() {
+	public ApiResponseVO cancelSubscr(@RequestBody TestVO vo) {
 		
 		HashMap<String, Object> rtnMap = new HashMap<>();
 		rtnMap.put("test",  "테스트 완료 되었습니다.");
@@ -311,7 +320,7 @@ public class ApiTestController {
 	}
 	
 	@PostMapping("/catalog/v1/saas/user/info-rt-modify")
-	public ApiResponseVO infoRtModify() {
+	public ApiResponseVO infoRtModify(@RequestBody TestVO vo) {
 		
 		HashMap<String, Object> rtnMap = new HashMap<>();
 		rtnMap.put("test",  "테스트 완료 되었습니다.");
@@ -320,7 +329,7 @@ public class ApiTestController {
 	}
 	
 	@PostMapping("/package/setting")
-	public ApiResponseVO packageSesttingTest() {
+	public ApiResponseVO packageSesttingTest(@RequestBody TestVO vo) {
 		
 		HashMap<String, Object> rtnMap = new HashMap<>();
 		rtnMap.put("test",  "테스트 완료 되었습니다.");
@@ -329,7 +338,7 @@ public class ApiTestController {
 	}
 	
 	@PostMapping("/v1/user/list")
-	public ApiResponseVO userLsit(@RequestBody Boolean sdfs) {
+	public ApiResponseVO userLsit(@RequestBody TestVO vo) {
 		
 		HashMap<String, Object> rtnMap = new HashMap<>();
 		rtnMap.put("test",  "테스트 완료 되었습니다.");

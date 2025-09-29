@@ -38,10 +38,10 @@ public class AmSVO implements Serializable {
 	private String apiNm;
 
 	@Schema(description = "SAAS제품유형코드")
-	private String saasPrdctTypeCd; //변경
+	private String saasPrdctTypeCd; 
 
 	@Schema(description = "SAAS제품유형명")
-	private String saasPrdctTypeNm; //
+	private String saasPrdctTypeNm; 
 
 	@Schema(description = "API요청응답구분코드")
 	private String apiDmndRspnsSeCd;
@@ -50,10 +50,10 @@ public class AmSVO implements Serializable {
 	private String apiDmndRspnsSeNm;
 
 	@Schema(description = "HTTP통신구분코드")
-	private String httpCmncSeCd; //
+	private String httpCmncSeCd; 
 
 	@Schema(description = "HTTP통신구분코드명")
-	private String httpCmncSeNm; //
+	private String httpCmncSeNm; 
 
 	@Schema(description = "URI주소")
 	private String uriAddr;
@@ -74,7 +74,7 @@ public class AmSVO implements Serializable {
 	private List<AmArtcSVO> paramList;
 	
 	@Schema(description = "카탈로그등록여부")
-	private String gdsGdntcRegYn; //
+	private String gdsGdntcRegYn; 
 
 	@Schema(description = "페이지번호")
 	private int page;
@@ -82,10 +82,10 @@ public class AmSVO implements Serializable {
 	private int offset;
 	
 	@Schema(description = "서버구분")
-	private String SrvrSeCd; //
+	private String SrvrSeCd; 
 	
 	@Schema(description = "saas상품아이디")
-	private String SaasPrdctId; //
+	private String SaasPrdctId; 
 
 //	@Schema(description = "페이징여부")
 //	private String pageYn = "Y"; 

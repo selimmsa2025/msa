@@ -46,10 +46,10 @@ public class AmArtcDVO implements Serializable {
 	private String apiArtclAtrbNm;
 
 	@Schema(description = "API항목자료유형코드")
-	private String apiArtclDataTypeCd; //
+	private String apiArtclDataTypeCd; 
 
 	@Schema(description = "API항목자료유형코드명")
-	private String apiArtclDataTypeNm; //
+	private String apiArtclDataTypeNm; 
 
 	@Schema(description = "API항목필수여부")
 	private String apiArtclEsntlYn;

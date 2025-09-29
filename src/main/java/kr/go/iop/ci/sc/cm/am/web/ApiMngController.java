@@ -13,22 +13,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.json.simple.parser.ParseException;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import kr.go.iop.ci.sc.cm.am.mapper.vo.AmDVO;
-import kr.go.iop.ci.sc.cm.am.mapper.vo.AmProdDVO;
 import kr.go.iop.ci.sc.cm.am.svc.ApiMngService;
 import kr.go.iop.ci.sc.cm.am.svc.vo.AmSVO;
 import kr.go.iop.ci.sc.cm.am.svc.vo.ApiVerSVO;
-import kr.go.iop.ci.sc.cm.am.svc.vo.AmProdSVO;
+import kr.go.iop.ci.sc.cmmn.exception.ApiBizException;
 import kr.go.iop.ci.sc.cmmn.utils.ResponseUtils;
 import kr.go.iop.ci.sc.cmmn.vo.ApiResponseVO;
 import kr.go.iop.ci.sc.config.info.ConstantInfo;
@@ -100,9 +99,9 @@ public class ApiMngController {
 	@Operation(summary = "표준API 삭제", description = "표준API 삭제 요청")
 	public ApiResponseVO deleteStndApi(@RequestBody List<AmSVO> list) throws ParseException {
 		log.debug("##### deleteStndApi");
-
+		
 		HashMap<String, Object> rtnMap = new HashMap<>();
-
+		
 		try {
 			int count = 0;
 			for (AmSVO svo : list) {
@@ -143,7 +142,8 @@ public class ApiMngController {
 	@Operation(summary = "버전 추가", description = "API 버전을 추가")
 	public ApiResponseVO createStndApiVer(@RequestBody ApiVerSVO svo) throws ParseException {
 		log.debug("##### createStndApiVer");
-
+		
+		
 		Map<String, Object> rtnMap = new HashMap<>();
 
 		List<Integer> updatedVersionList = apiMngService.insertStndApiVer(svo);
@@ -158,37 +158,46 @@ public class ApiMngController {
 		log.info("##### getStndApiVerList");
 
 		Map<String, Object> rtnMap = new HashMap<>();
-		
-		log.info("##### getStndApiVerList 2");
 
 		try {
-		List<Integer> versions = apiMngService.selectStndApiVerList();
-		
-		log.info("##### getStndApiVerList 3");
-		rtnMap.put(ConstantInfo.RESULT_LIST, versions);
+			List<Integer> versions = apiMngService.selectStndApiVerList();
+			rtnMap.put(ConstantInfo.RESULT_LIST, versions);
 		} catch (Exception e) {
-	        log.error("API 버전 조회 실패", e);
-	        throw new RuntimeException("API 버전 조회 중 오류 발생");
-	    }
-		
-		log.info("##### getStndApiVerList 4");
-
+			log.error("API 버전 조회 실패", e);
+			throw new RuntimeException("API 버전 조회 중 오류 발생");
+		}
 		return ResponseUtils.build(rtnMap);
 	}
+	
+//	private AmSVO checkAuthInfo(AmSVO vo) {
+//  
+//	UserVO userVO = CurrentUserUtils.getCurrentUser2();
+//
+//	boolean checkAuth = CurrentUserUtils.checkUserAuth2(userVO, "C0010001");
+//	
+//	if(checkAuth) {
+//  vo.setFrstCrtPrcrId(userVO.getAccountId());
+//  vo.setLastChgPrcrId(userVO.getAccountId());
+//	}else {
+//		throw new ApiBizException(HttpStatus.UNAUTHORIZED, "시스템관리자 권한이 없습니다.");
+//	}
+//  
+//  return vo;
+//}
 
 	@PostMapping("/v1/am/api/export-list.xlsx")
 	@Operation(summary = "API 목록 엑셀 다운로드", description = "현재 목록 페이지 데이터 목록을 엑셀 다운로드한다")
 	public void excelDownloadList(HttpServletRequest request, HttpServletResponse response, @RequestBody AmSVO vo) {
-		// response.reset(); //기존 헤더/바디 제거
-		apiMngService.selectStndApiListExcelDownload(request, response, vo, "current"); //현재페이지만
+		apiMngService.selectStndApiListExcelDownload(request, response, vo, "current"); // 현재페이지만
 
 	}
 
 	@PostMapping("/v1/am/api/export-info.xlsx")
 	@Operation(summary = "API 상세 엑셀 다운로드", description = "현재 목록 페이지 데이터 목록을 엑셀 다운로드한다")
 	public void excelDownloadInfo(HttpServletRequest request, HttpServletResponse response, @RequestBody AmSVO vo) {
-		// response.reset(); //기존 헤더/바디 제거
 		apiMngService.selectStndApiInfoExcelDownload(request, response, vo);
 
 	}
+
+
 }

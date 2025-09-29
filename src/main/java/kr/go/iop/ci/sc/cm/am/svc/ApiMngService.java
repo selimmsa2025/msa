@@ -81,14 +81,15 @@ public interface ApiMngService {
 
 	/* 상품 API 통신 항목 삭제 */
 	public int deleteProdApiTest(AmSVO vo);
-	
-	/* 표준 API 목록 엑셀 다운로드 (현재페이지/전체) */
-    void selectStndApiListExcelDownload(HttpServletRequest request, HttpServletResponse response, AmSVO svo, String scope);
 
-    /* 표준 API 상세 엑셀 다운로드 */
-    void selectStndApiInfoExcelDownload(HttpServletRequest request, HttpServletResponse response, AmSVO svo);
-    
-    public int updateCertKey(AmSVO vo);
-	
+	/* 표준 API 목록 엑셀 다운로드 (현재페이지/전체) */
+	void selectStndApiListExcelDownload(HttpServletRequest request, HttpServletResponse response, AmSVO svo,
+			String scope);
+
+	/* 표준 API 상세 엑셀 다운로드 */
+	void selectStndApiInfoExcelDownload(HttpServletRequest request, HttpServletResponse response, AmSVO svo);
+
+	public int updateCertKey(AmSVO vo);
+
 
 }

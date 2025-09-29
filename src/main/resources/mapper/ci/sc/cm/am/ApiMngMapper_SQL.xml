@@ -174,9 +174,9 @@
 										,#{apiDmndRspnsSeCd}
 										,#{httpCmncSeCd}
 										,#{uriAddr}
-										,'1'
+										,#{frstCrtPrcrId}
 										,TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS') 
-										,'1'
+										,#{lastChgPrcrId}
 										,TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS') 
 										,'Y'
 									)
@@ -207,19 +207,19 @@
 										,#{apiArtclDataTypeCd}
 										,#{apiArtclEsntlYn}
 										,#{apiArtclCn}
-										,'1'
+										,#{frstCrtPrcrId}
 										,TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
-										,'1'
+										,#{lastChgPrcrId}
 										,TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
 									)
 	</insert>
 
 	<update id="deleteStndApi" parameterType="amSVO">
-		UPDATE /* SQL_ID: ci.sc.cm.am.ApiMngMapper.delete.deleteStndApi (표준API삭제_API항목정보) */
+		UPDATE /* SQL_ID: ci.sc.cm.am.ApiMngMapper.delete.deleteStndApi (표준API삭제_API정보) */
 		USCM.TBCM_STD_API_M
 		SET
 			USE_YN = 'N'
-         	,LAST_CHG_PRCR_ID = '1'
+         	,LAST_CHG_PRCR_ID = #{lastChgPrcrId}
          	,LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS') 
 		WHERE API_VER_SN = #{apiVerSn} 
 		AND API_ID = #{apiId};
@@ -241,7 +241,7 @@
 			,API_DMND_RSPNS_SE_CD = #{apiDmndRspnsSeCd}							/* API요청응답구분코드 	*/
 			,HTTP_CMNC_SE_CD = #{httpCmncSeCd}									/* HTTP통신구분코드 	*/
 			,URI_ADDR = #{uriAddr}												/* URI주소 			*/
-			,LAST_CHG_PRCR_ID = '1'								/* 최종변경처리자아이디 	*/
+			,LAST_CHG_PRCR_ID = #{lastChgPrcrId}								/* 최종변경처리자아이디 	*/
 			,LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')		/* 최종변경일시 		*/
 		WHERE API_ID = #{apiId}
 		AND API_VER_SN = #{apiVerSn}
@@ -269,9 +269,9 @@
 										,#{apiVerChgRsn}
 										,#{useYn}
 										,TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
-										,'1'
+										,#{frstCrtPrcrId}
 										,TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
-										,'1'
+										,#{lastChgPrcrId}
 									)
 	</insert>
 
@@ -334,9 +334,9 @@
 			, #{apiId}
 			, #{apiVerSn}  
 			, #{cmncRsltCd}
-			, '1'
+			, #{frstCrtPrcrId}
 			, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
-			, '1'
+			, #{lastChgPrcrId}
 			, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
 		)
 	</insert>
@@ -346,7 +346,7 @@
 	  		USCM.TBCM_PRDCT_API_CMNCRSLT_L R
 	    SET 
 	    	CMNC_RSLT_CD = #{cmncRsltCd}                  
-	        , LAST_CHG_PRCR_ID = '1'
+	        , LAST_CHG_PRCR_ID = #{lastChgPrcrId}
 	        , CMNC_DT = NULL 
 	        , CMNC_RSLT_CN = NULL                                      
 	        , LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
@@ -486,7 +486,7 @@
 					                    AND R2.CMNC_RSLT_CD != 'A0050002' 
 					               )
 		           THEN 'Y' ELSE 'N' END
-	        , LAST_CHG_PRCR_ID = '1'
+	        , LAST_CHG_PRCR_ID = #{lastChgPrcrId}
 	        , LAST_CHG_DT      = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
 	   WHERE M.SAAS_PRDCT_ID = #{saasPrdctId}
 	     AND M.SRVR_SE_CD    = 'A0060002'

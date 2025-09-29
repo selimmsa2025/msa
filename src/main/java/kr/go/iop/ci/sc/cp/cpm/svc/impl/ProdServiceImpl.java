@@ -17,6 +17,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import feign.FeignException;
 import kr.go.iop.ci.sc.cmmn.exception.ApiBizException;
 import kr.go.iop.ci.sc.cp.cpm.mapper.ProdMapper;
@@ -72,10 +75,8 @@ public class ProdServiceImpl implements ProdService {
 	@Transactional(rollbackFor = Exception.class)
 	public Map<String, Object> insertProdSubscrReq(SubscrSVO subscrSVO) {
 
-		String dbMsg = "";
-		String saasMsg = "";
-		boolean dbOk = false;
-		boolean saasOk = false;
+		boolean isDbSaved = false;
+		boolean isSaasCallSuccess = false;
 		
 		//구독 요청일때는 구독시작일자 종료일자 null
 		if ("A0040001".equals(subscrSVO.getPrdsbscSttsCd())) {
@@ -86,10 +87,9 @@ public class ProdServiceImpl implements ProdService {
 		// DB insert
 		prodMapper.insertProdSubscrReq(subscrSVO);
 		int inserted = prodMapper.insertProdSubscrHistoryReq(subscrSVO);
-		dbOk = inserted > 0;
-		dbMsg = dbOk ? "DB 저장 성공" : "DB 저장 실패";
-		if (!dbOk) {
-			throw new IllegalStateException(dbMsg);
+		isDbSaved = inserted > 0;
+		if (!isDbSaved) {
+			throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "DB 저장 실패");
 		}
 		
 		//TODO IOP-ID 추가
@@ -99,29 +99,26 @@ public class ProdServiceImpl implements ProdService {
 		try {
 			saasResp = iopToSaaSClient.createProdSubscrReq(subscrSVO);
 
-			String status = saasResp.get("status") != null ? saasResp.get("status").toString() : "";
-			String resultCd = saasResp.get("resultCd") != null ? saasResp.get("resultCd").toString() : "";
-			String resultMsg = saasResp.get("resultMsg") != null ? saasResp.get("resultMsg").toString() : "SaaS 응답 메시지 없음";
-
-			saasOk = "SUCCESS".equalsIgnoreCase(status) || "200".equals(resultCd);
-			saasMsg = (saasOk ? "SaaS 호출 성공: " : "SaaS 호출 실패: ") + resultMsg;
-
-			// 최종 성공
-			if (!(dbOk && saasOk)) {
-				throw new IllegalStateException("부분 실패(DB:" + dbOk + ", SaaS:" + saasOk + ")");
+			JsonNode resultData = new ObjectMapper().valueToTree(saasResp.get("resultData"));
+			if (!resultData.isNull()) {
+				isSaasCallSuccess = true;
 			}
-
+			
+			if (!isDbSaved) {
+				throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "DB 저장 실패");
+			}
+			
+			if (!isSaasCallSuccess) {
+				throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "SaaS 처리 실패: resultData 없음");
+			}
 			// 최종 응답
 			Map<String, Object> result = new HashMap<>();
 			result.put("resultCnt", inserted);
 			result.put("resultData", saasResp.get("resultData")); 
-			result.put("status", status);
-			result.put("resultCd", resultCd);
 			return result;
 
 		} catch (FeignException e) {
-			saasMsg = "SaaS 호출 실패: " + e.status();
-			throw new IllegalStateException(saasMsg, e);
+			throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR,"SaaS 호출 실패: ");
 		}
 	}
 
@@ -129,18 +126,15 @@ public class ProdServiceImpl implements ProdService {
 	@Transactional(rollbackFor = Exception.class)
 	public Map<String, Object> insertProdSubscrCancelReq(SubscrSVO subscrSVO) {
 		
-		String dbMsg = "";
-		String saasMsg = "";
-		boolean dbOk = false;
-		boolean saasOk = false;
+		boolean isDbSaved = false;
+		boolean isSaasCallSuccess = false;
 
 		// DB insert
 		prodMapper.updateProdSubscrReq(subscrSVO);
 		int inserted = prodMapper.insertProdSubscrHistoryReq(subscrSVO);
-		dbOk = inserted > 0;
-		dbMsg = dbOk ? "DB 저장 성공" : "DB 저장 실패";
-		if (!dbOk) {
-			throw new IllegalStateException(dbMsg);
+		isDbSaved = inserted > 0;
+		if (!isDbSaved) {
+			throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "DB 저장 실패");
 		}
 		
 		//TODO IOP-ID 추가
@@ -148,31 +142,28 @@ public class ProdServiceImpl implements ProdService {
 
 		Map<String, Object> saasResp;
 		try {
-			saasResp = iopToSaaSClient.createProdSubscrReq(subscrSVO);
+			saasResp = iopToSaaSClient.createProdSubscrCancelReq(subscrSVO);
 
-			String status = saasResp.get("status") != null ? saasResp.get("status").toString() : "";
-			String resultCd = saasResp.get("resultCd") != null ? saasResp.get("resultCd").toString() : "";
-			String resultMsg = saasResp.get("resultMsg") != null ? saasResp.get("resultMsg").toString() : "SaaS 응답 메시지 없음";
-
-			saasOk = "SUCCESS".equalsIgnoreCase(status) || "200".equals(resultCd);
-			saasMsg = (saasOk ? "SaaS 호출 성공: " : "SaaS 호출 실패: ") + resultMsg;
-
-			// 최종 성공
-			if (!(dbOk && saasOk)) {
-				throw new IllegalStateException("부분 실패(DB:" + dbOk + ", SaaS:" + saasOk + ")");
+			JsonNode resultData = new ObjectMapper().valueToTree(saasResp.get("resultData"));
+			if (!resultData.isNull()) {
+				isSaasCallSuccess = true;
 			}
-
+			
+			if (!isDbSaved) {
+				throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "DB 저장 실패");
+			}
+			
+			if (!isSaasCallSuccess) {
+				throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "SaaS 처리 실패: resultData 없음");
+			}
 			// 최종 응답
 			Map<String, Object> result = new HashMap<>();
 			result.put("resultCnt", inserted);
 			result.put("resultData", saasResp.get("resultData")); 
-			result.put("status", status);
-			result.put("resultCd", resultCd);
 			return result;
 
 		} catch (FeignException e) {
-			saasMsg = "SaaS 호출 실패: " + e.status();
-			throw new IllegalStateException(saasMsg, e);
+			throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR,"SaaS 호출 실패: " + e.status());
 		}
 	}
 

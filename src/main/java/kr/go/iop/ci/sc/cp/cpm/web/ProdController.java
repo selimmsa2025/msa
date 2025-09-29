@@ -201,13 +201,8 @@ public class ProdController {
 		try {
 			Map<String, Object> result = prodService.insertProdSubscrReq(subscrSVO);
 			return ResponseUtils.build(HttpStatus.OK, result, "정상 처리되었습니다.");
-		} catch (IllegalStateException e) {
-			Map<String, Object> result = new HashMap<>();
-			log.error("SaaS 요청/DB 작업수행중 오류", e);
-			return ResponseUtils.build(HttpStatus.BAD_REQUEST, result, "구독 요청 실패");
-		} catch (Exception e) {
-			log.error("구독 요청 처리 중 내부 오류", e);
-			return ResponseUtils.build(HttpStatus.INTERNAL_SERVER_ERROR, null, "구독 요청 실패");
+		} catch(ApiBizException e) {
+			return ResponseUtils.build(e.getStatus(), "구독 요청 실패");
 		}
 	}
 
@@ -227,13 +222,8 @@ public class ProdController {
 		try {
 			Map<String, Object> result = prodService.insertProdSubscrCancelReq(subscrSVO);
 			return ResponseUtils.build(HttpStatus.OK, result, "정상 처리되었습니다.");
-		} catch (IllegalStateException e) {
-			Map<String, Object> result = new HashMap<>();
-			log.error("SaaS 요청/DB 작업수행중 오류", e);
-			return ResponseUtils.build(HttpStatus.BAD_REQUEST, result, "구독 요청 실패");
-		} catch (Exception e) {
-			log.error("구독 요청 처리 중 내부 오류", e);
-			return ResponseUtils.build(HttpStatus.INTERNAL_SERVER_ERROR, null, "구독 요청 실패");
+		} catch(ApiBizException e) {
+			return ResponseUtils.build(e.getStatus(), "구독 취소 요청 실패");
 		}
 	}
 

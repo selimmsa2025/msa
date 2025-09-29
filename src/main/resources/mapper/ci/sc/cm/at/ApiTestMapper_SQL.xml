@@ -12,6 +12,9 @@
 
 	<!-- API 테스트 목록 조회 -->
 	<select id="selectProdApiTestList" parameterType="ApiTestSVO" resultType="ApiTestDVO">
+		WITH VER AS (
+			<include refid="LatestApiVersion"/>
+		)
 	    SELECT	  /* ci.sc.cm.at.ApiTestMapper.select.selectProdApiTestList - API 테스트 목록 조회 */ 
 	    		  RSLT.SAAS_PRDCT_ID											/* SAAS제품아이디 */
 	    		, PRDCT.SAAS_PRDCT_NM											/* SAAS제품명 */
@@ -20,7 +23,7 @@
 	    		, USCM.SF_COMM_CD_NM(RSLT.SRVR_SE_CD) AS SRVR_SE_NM				/* 서버구분코드명 */
 	    		, PRDCT.GDS_GDNTC_REG_YN										/* 상품안내문등록여부 */
 	    		, COALESCE(MAX(RSLT.CMNC_DT), null) AS CMNC_DT 					/* 통신일시(최댓값) */
-	    		, ( <include refid="LatestApiVersion"/> ) AS API_LATEST_VER		/* API 최신 버전 */
+	    		, ( SELECT LATEST_VER FROM VER ) AS API_LATEST_VER		/* API 최신 버전 */
 	    		, COALESCE(CM.API_CMNC_SCS_YN, 'N') AS API_CMNC_SCS_YN			/* API통신성공여부 */
 	    		, PRDCT.SAAS_PRDCT_API_VER_SN									/* SAAS제품API버전일련번호 */
 	    FROM	USCM.TBCM_PRDCT_API_CMNCRSLT_L RSLT
@@ -40,9 +43,13 @@
 	    </if>
 	    <if test="gdsGdntcRegYn != null and gdsGdntcRegYn != ''">
 	    AND 	PRDCT.GDS_GDNTC_REG_YN = #{gdsGdntcRegYn}
+	    AND		RSLT.API_VER_SN = PRDCT.SAAS_PRDCT_API_VER_SN
 	    </if>
 	    <if test="apiCmncScsYn != null and apiCmncScsYn != ''">
-	    AND 	COALESCE(CM.API_CMNC_SCS_YN, 'N') = #{apiCmncScsYn}
+	    AND		(CASE
+					WHEN RSLT.API_VER_SN = ( SELECT LATEST_VER FROM VER ) THEN COALESCE(CM.API_CMNC_SCS_YN, 'N')
+					ELSE 'Y'
+				END) = #{apiCmncScsYn}
 	    </if>
 	    GROUP BY RSLT.SAAS_PRDCT_ID, PRDCT.SAAS_PRDCT_NM, RSLT.API_VER_SN, RSLT.SRVR_SE_CD, PRDCT.GDS_GDNTC_REG_YN, CM.API_CMNC_SCS_YN, PRDCT.SAAS_PRDCT_API_VER_SN
 	    ORDER BY PRDCT.SAAS_PRDCT_NM, RSLT.API_VER_SN DESC 
@@ -53,9 +60,13 @@
 	
 	<!-- API 테스트 목록 수 조회 -->
 	<select id="selectApiTestTot" parameterType="ApiTestSVO" resultType="Integer">
+		
 		SELECT  /* ci.sc.cm.at.ApiTestMapper.select.selectApiTestTot - API 테스트 목록 수 조회 */ 
 				COUNT(1)
 		FROM (
+				WITH VER AS (
+					<include refid="LatestApiVersion"/>
+				)
 			    SELECT	  RSLT.SAAS_PRDCT_ID
 			    		, RSLT.SRVR_SE_CD
 			    		, RSLT.API_VER_SN
@@ -76,9 +87,13 @@
 			    </if>
 			    <if test="gdsGdntcRegYn != null and gdsGdntcRegYn != ''">
 			    AND 	PRDCT.GDS_GDNTC_REG_YN = #{gdsGdntcRegYn}
+			    AND		RSLT.API_VER_SN = PRDCT.SAAS_PRDCT_API_VER_SN
 			    </if>
 			    <if test="apiCmncScsYn != null and apiCmncScsYn != ''">
-			    AND 	COALESCE(CM.API_CMNC_SCS_YN, 'N') = #{apiCmncScsYn}
+			     AND	(CASE
+							WHEN RSLT.API_VER_SN = ( SELECT LATEST_VER FROM VER ) THEN COALESCE(CM.API_CMNC_SCS_YN, 'N')
+							ELSE 'Y'
+						END) = #{apiCmncScsYn}
 			    </if>
 			    GROUP BY  RSLT.SAAS_PRDCT_ID, RSLT.SRVR_SE_CD, RSLT.API_VER_SN
 		) 

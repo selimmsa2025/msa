@@ -9,10 +9,6 @@
  */
 package kr.go.iop.ci.sc.cm.am.svc.impl;
 
-import java.io.IOException;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,20 +19,6 @@ import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.poi.ss.usermodel.BorderStyle;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.VerticalAlignment;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.RegionUtil;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -111,6 +93,7 @@ public class ApiMngServiceImpl implements ApiMngService {
 	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public int insertStndApi(AmSVO svo) {
+		
 		// 중복검사
 		if (apiMngMapper.selectStndApiNmCnt(svo) > 0) {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "이미 사용 중인 API명입니다.");
@@ -118,7 +101,6 @@ public class ApiMngServiceImpl implements ApiMngService {
 		if (apiMngMapper.selectStndApiUriCnt(svo) > 0) {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "이미 사용 중인 URI입니다.");
 		}
-		// 0922
 		int maxApiVer = apiMngMapper.selectMaxStndApiVer();
 		int apiVer = svo.getApiVerSn();
 		if (apiVer != maxApiVer) {
@@ -129,7 +111,9 @@ public class ApiMngServiceImpl implements ApiMngService {
 		String apiId = apiMngMapper.selectNextStndApiId();
 		svo.setApiId(apiId);
 		log.info("[insertStndApi] 발급된 apiId={}", apiId);
-
+		
+		svo.setFrstCrtPrcrId("admin");
+		svo.setLastChgPrcrId("admin");
 		int result = apiMngMapper.insertStndApi(svo);
 		if (result != 1) {
 			throw new RuntimeException("기본 정보 등록 실패");
@@ -139,6 +123,8 @@ public class ApiMngServiceImpl implements ApiMngService {
 		if (paramList != null && !paramList.isEmpty()) {
 			for (AmArtcSVO artc : paramList) {
 				artc.setApiId(apiId);
+				artc.setFrstCrtPrcrId("admin");
+	            artc.setLastChgPrcrId("admin");
 				int row = apiMngMapper.insertStndApiArtcl(artc);
 				if (row != 1) {
 					throw new RuntimeException("항목 등록 실패");
@@ -147,6 +133,7 @@ public class ApiMngServiceImpl implements ApiMngService {
 		}
 
 		// 상품api테스트 초기 세팅
+
 		List<AmProdDVO> gdsList = apiMngMapper.selectProdList(svo);
 		if (gdsList != null && !gdsList.isEmpty()) {
 			for (AmProdDVO vo : gdsList) {
@@ -154,9 +141,10 @@ public class ApiMngServiceImpl implements ApiMngService {
 				insertVo.setSaasPrdctId(vo.getSaasPrdctId());
 				insertVo.setApiVerSn(svo.getApiVerSn());
 				insertVo.setApiId(apiId);
+				insertVo.setFrstCrtPrcrId("admin");
+				insertVo.setLastChgPrcrId("admin");
 				insertVo.setSrvrSeCd(ConstantInfo.TEST_OPS);
 				insertVo.setCmncRsltCd(ConstantInfo.TEST_WAIT); // 대기
-				insertVo.setFrstCrtPrcrId("1");
 				int r = apiMngMapper.insertProdStndApiR(insertVo); // 상품-표준API 관계
 				if (r != 1) {
 					throw new RuntimeException("상품-표준API 관계 등록 실패");
@@ -165,15 +153,15 @@ public class ApiMngServiceImpl implements ApiMngService {
 				if (r2 != 1) {
 					throw new RuntimeException("통신테이블 등록 실패");
 				}
-				
+
 				// 0923 인증관리내역 통신성공여부 Y→N (항상 호출)
 				AmSVO cert = new AmSVO();
-			    cert.setSaasPrdctId(vo.getSaasPrdctId());
-			    cert.setSrvrSeCd(ConstantInfo.TEST_OPS);
-			    cert.setApiId(apiId);                       
-			    cert.setApiVerSn(svo.getApiVerSn());       
-			    cert.setLastChgPrcrId("1");
-			    apiMngMapper.updateCertKeyToN(cert);
+				cert.setSaasPrdctId(vo.getSaasPrdctId());
+				cert.setSrvrSeCd(ConstantInfo.TEST_OPS);
+				cert.setApiId(apiId);
+				cert.setLastChgPrcrId("admin");
+				cert.setApiVerSn(svo.getApiVerSn());
+				apiMngMapper.updateCertKeyToN(cert);
 			}
 
 		}
@@ -192,6 +180,7 @@ public class ApiMngServiceImpl implements ApiMngService {
 	@Transactional
 	@Override
 	public int updateStndApi(AmSVO svo) {
+
 		if (apiMngMapper.selectStndApiNmCnt(svo) > 0) {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "이미 사용 중인 API명입니다.");
 		}
@@ -205,7 +194,8 @@ public class ApiMngServiceImpl implements ApiMngService {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "해당 API 버전이 최신 버전과 일치하지 않습니다.");
 
 		}
-
+		
+		svo.setLastChgPrcrId("admin");
 		int resultCnt = apiMngMapper.updateStndApi(svo);
 		if (resultCnt < 1) {
 			throw new RuntimeException("API 수정 실패 또는 대상 없음");
@@ -216,6 +206,8 @@ public class ApiMngServiceImpl implements ApiMngService {
 		if (paramList != null && !paramList.isEmpty()) {
 			for (AmArtcSVO artc : paramList) {
 				artc.setApiId(svo.getApiId());
+				artc.setFrstCrtPrcrId("admin");
+				artc.setLastChgPrcrId("admin");
 				int row = apiMngMapper.insertStndApiArtcl(artc);
 				if (row != 1) {
 					throw new RuntimeException("항목 등록 실패");
@@ -226,25 +218,28 @@ public class ApiMngServiceImpl implements ApiMngService {
 		List<AmProdDVO> gdsList = apiMngMapper.selectProdList(svo);
 		if (gdsList != null && !gdsList.isEmpty()) {
 			for (AmProdDVO vo : gdsList) {
-				// 1) 해당 상품이 이번 API/버전 테스트행을 갖고 있으면 WAIT로
+				// 해당 상품이 API/버전 테스트행을 갖고 있으면 WAIT로
 				AmProdSVO testUpd = new AmProdSVO();
 				testUpd.setSaasPrdctId(vo.getSaasPrdctId());
 				testUpd.setSrvrSeCd(ConstantInfo.TEST_OPS);
 				testUpd.setApiId(svo.getApiId());
 				testUpd.setApiVerSn(svo.getApiVerSn());
+				testUpd.setLastChgPrcrId("admin");
 				testUpd.setCmncRsltCd(ConstantInfo.TEST_WAIT);
 				int updRows = apiMngMapper.updateProdApiTest(testUpd);
 
 				// 0923 인증관리내역 통신성공여부 Y→N (항상 호출)
-		        AmSVO cert = new AmSVO();
-		        cert.setSaasPrdctId(vo.getSaasPrdctId());
-		        cert.setSrvrSeCd(ConstantInfo.TEST_OPS);
-		        cert.setApiId(svo.getApiId());
-		        cert.setApiVerSn(svo.getApiVerSn());     
-		        cert.setLastChgPrcrId("1");
-		        int certRows = apiMngMapper.updateCertKeyToN(cert);
-		        log.info("[updateStndApi] pid={}, updRows(test)={}, certRows(N)={}", vo.getSaasPrdctId(), updRows, certRows);}
-			
+				AmSVO cert = new AmSVO();
+				cert.setSaasPrdctId(vo.getSaasPrdctId());
+				cert.setSrvrSeCd(ConstantInfo.TEST_OPS);
+				cert.setApiId(svo.getApiId());
+				cert.setApiVerSn(svo.getApiVerSn());
+				cert.setLastChgPrcrId("admin");
+				int certRows = apiMngMapper.updateCertKeyToN(cert);
+				log.info("[updateStndApi] pid={}, updRows(test)={}, certRows(N)={}", vo.getSaasPrdctId(), updRows,
+						certRows);
+			}
+
 //				// 테스트 대기로 바뀐 것이 있을 때 Y→N 다운그레이드
 //				if (updRows > 0) {
 //					AmSVO cert = new AmSVO();
@@ -252,7 +247,6 @@ public class ApiMngServiceImpl implements ApiMngService {
 //					cert.setSrvrSeCd(ConstantInfo.TEST_OPS);
 //					cert.setApiId(svo.getApiId());
 //					cert.setApiVerSn(svo.getApiVerSn());
-//					cert.setLastChgPrcrId("1");
 //					int certRows = apiMngMapper.updateCertKeyToN(cert);
 //					log.info("[updateStndApi] CERT->N prdctId={}, rows={}", vo.getSaasPrdctId(), certRows);
 //				}
@@ -267,36 +261,37 @@ public class ApiMngServiceImpl implements ApiMngService {
 	@Override
 	public int deleteStndApi(AmSVO svo) {
 
-		log.debug("deleteProdApiTest params apiId={}, ver={}, gdsGdntcRegYn={}", svo.getApiId(), svo.getApiVerSn(), svo.getGdsGdntcRegYn());
-		
-		List<String> pidList  = apiMngMapper.selectProdListForDelete(svo); // 매핑상품id조회
-		if (pidList == null) pidList = java.util.Collections.emptyList();
-		log.debug("[deleteStndApi] impacted products size={}, apiId={}, ver={}",
-	            pidList.size(), svo.getApiId(), svo.getApiVerSn());
-		
+		List<String> pidList = apiMngMapper.selectProdListForDelete(svo); // 매핑상품id조회
+		if (pidList == null)
+			pidList = java.util.Collections.emptyList();
+		log.debug("[deleteStndApi] impacted products size={}, apiId={}, ver={}", pidList.size(), svo.getApiId(),
+				svo.getApiVerSn());
+
 		deleteProdStndApiR(svo); // 상품-api관계테이블 삭제
 		int delTest = apiMngMapper.deleteProdApiTest(svo); // 통신결과내역테이블 삭제
 		log.debug("deleteProdApiTest deleted rows={}", delTest);
 		
+		svo.setLastChgPrcrId("admin");
 		int result = apiMngMapper.deleteStndApi(svo); // api기본테이블n업데이트
 		if (result != 1) {
 			throw new RuntimeException("기본 정보 삭제 실패");
 		}
-		
-		//0924 인증관리내역 통신성공여부 업데이트 검증 
-		for (String pid : pidList) {
-	        AmSVO cert = new AmSVO();
-	        cert.setSaasPrdctId(pid);
-	        cert.setApiVerSn(svo.getApiVerSn());
-	        int upd = apiMngMapper.updateCertKey(cert);
 
-	        if (upd == 0) { 
-	            // 행 부재 or 값 동일 등
-	            log.info("[deleteStndApi] CERT recompute no-op pid={}, ver={}", pid, svo.getApiVerSn());
-	        } else {
-	            log.info("[deleteStndApi] CERT recompute updated pid={}, ver={}, rows={}", pid, svo.getApiVerSn(), upd);
-	        }
-	    }
+		// 0924 인증관리내역 통신성공여부 업데이트 검증
+		for (String pid : pidList) {
+			AmSVO cert = new AmSVO();
+			cert.setSaasPrdctId(pid);
+			cert.setApiVerSn(svo.getApiVerSn());
+			cert.setLastChgPrcrId("admin");
+			int upd = apiMngMapper.updateCertKey(cert);
+
+			if (upd == 0) {
+				// 행 부재 or 값 동일 등
+				log.info("[deleteStndApi] CERT recompute no-op pid={}, ver={}", pid, svo.getApiVerSn());
+			} else {
+				log.info("[deleteStndApi] CERT recompute updated pid={}, ver={}, rows={}", pid, svo.getApiVerSn(), upd);
+			}
+		}
 		return result;
 	}
 
@@ -322,10 +317,8 @@ public class ApiMngServiceImpl implements ApiMngService {
 		if (verInserted != 1) {
 			throw new RuntimeException("버전 등록 실패 (apiVerSn=" + nextVer + ")");
 		}
-		// 현재(직전버전)
 		final int prevVer = nextVer - 1;
 
-		// 초기상태(직전버전없을경우)
 		if (prevVer <= 0) {
 			return apiMngMapper.selectStndApiVerList();
 		}
@@ -360,6 +353,8 @@ public class ApiMngServiceImpl implements ApiMngService {
 			insertApi.setApiDmndRspnsSeCd(apiDetail.getApiDmndRspnsSeCd());
 			insertApi.setHttpCmncSeCd(apiDetail.getHttpCmncSeCd());
 			insertApi.setUriAddr(apiDetail.getUriAddr());
+			insertApi.setFrstCrtPrcrId("admin");
+			insertApi.setLastChgPrcrId("admin");
 
 			List<AmArtcDVO> paramList = apiMngMapper.selectStndApiArtclList(infoParam);
 			List<AmArtcSVO> paramListForInsert = new ArrayList<>();
@@ -375,6 +370,8 @@ public class ApiMngServiceImpl implements ApiMngService {
 					s.setApiArtclDataTypeCd(d.getApiArtclDataTypeCd());
 					s.setApiArtclEsntlYn(d.getApiArtclEsntlYn());
 					s.setApiArtclCn(d.getApiArtclCn());
+					s.setFrstCrtPrcrId("admin");
+					s.setLastChgPrcrId("admin");
 					paramListForInsert.add(s);
 				}
 			}
@@ -403,7 +400,8 @@ public class ApiMngServiceImpl implements ApiMngService {
 					insertVo.setApiId(clonedApiId);
 					insertVo.setSrvrSeCd(ConstantInfo.TEST_OPS);// 테스트결과 초기 셋팅 : 운영서버
 					insertVo.setCmncRsltCd(ConstantInfo.TEST_WAIT);// 테스트결과 초기 셋팅 : 대기
-					insertVo.setFrstCrtPrcrId("1");
+					insertApi.setFrstCrtPrcrId("admin");
+					insertApi.setLastChgPrcrId("admin");
 					apiMngMapper.insertProdStndApiR(insertVo);
 					apiMngMapper.insertProdApiTest(insertVo);
 
@@ -417,9 +415,9 @@ public class ApiMngServiceImpl implements ApiMngService {
 					AmSVO cert = new AmSVO();
 					cert.setSaasPrdctId(vo.getSaasPrdctId());
 					cert.setSrvrSeCd(ConstantInfo.TEST_OPS);
-					cert.setApiId(clonedApiId);      
-					cert.setApiVerSn(nextVer);          
-					cert.setLastChgPrcrId("1");
+					cert.setApiId(clonedApiId);
+					cert.setApiVerSn(nextVer);
+					cert.setLastChgPrcrId("admin");
 					int certRows = apiMngMapper.updateCertKeyToN(cert);
 					log.info("[insertStndApiVer] CERT->N pid={}, rows={}", vo.getSaasPrdctId(), certRows);
 				}
@@ -482,7 +480,7 @@ public class ApiMngServiceImpl implements ApiMngService {
 		}
 	}
 
-	/* 표준 API 목록 엑셀 다운로드 (현재페이지/전체) */
+	/* 표준 API 목록 엑셀 다운로드 (현재페이지) */
 	@Override
 	public void selectStndApiListExcelDownload(HttpServletRequest request, HttpServletResponse response, AmSVO svo,
 			String scope) {

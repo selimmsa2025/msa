@@ -54,6 +54,6 @@ mybatis:
 
 saas:
   dev:
-    url: https://iop-ci-catalog.iopdev.kr 
+    url: http://localhost:9991
   prod:
-    url: https://iop-ci-catalog.iopdev.kr
+    url: http://localhost:9991

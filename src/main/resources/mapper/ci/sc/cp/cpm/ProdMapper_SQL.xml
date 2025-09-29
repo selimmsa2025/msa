@@ -109,7 +109,7 @@
 		)
 	</update>
 	
-	<update id="insertProdSubscrHistoryReq" parameterType="SubscrSVO">
+	<insert id="insertProdSubscrHistoryReq" parameterType="SubscrSVO">
 		/* SQL_ID: ci.sc.cp.cpm.mapper.ProdMapper.insert.insertProdSubscrHistoryReq - 상품 구독 요청 (구독이력) */
 		<selectKey keyProperty="prdsbscHstrySn" resultType="java.lang.Integer" order="BEFORE">
 			SELECT
@@ -146,7 +146,7 @@
 			, TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS') 
 			, #{accountId}
 		)
-	</update>
+	</insert>
 	
 	<update id="updateProdSubscrReq" parameterType="SubscrSVO">
 		UPDATE /* SQL_ID: ci.sc.cp.cpm.mapper.ProdMapper.update.updateProdSubscrReq - 상품 구독 취소 요청 */

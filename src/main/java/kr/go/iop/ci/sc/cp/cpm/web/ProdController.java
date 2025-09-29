@@ -195,6 +195,8 @@ public class ProdController {
 	@Operation(summary = "상품 구독 요청 API", description = "상품 구독 요청 API")
 	public ApiResponseVO createProdSubscrReq(@RequestBody SubscrSVO subscrSVO) throws ParseException {
 		log.debug("createProdSubscrReq");
+		
+		//TO-DO 구독요청시 관리자 권한 체크
 
 		try {
 			Map<String, Object> result = prodService.insertProdSubscrReq(subscrSVO);
@@ -220,6 +222,8 @@ public class ProdController {
 	public ApiResponseVO createProdSubscrCancelReq(@RequestBody SubscrSVO subscrSVO) throws ParseException {
 		log.debug("createProdSubscrCancelReq");
 
+		//TO-DO 구독요청시 관리자 권한 체크
+		
 		try {
 			Map<String, Object> result = prodService.insertProdSubscrCancelReq(subscrSVO);
 			return ResponseUtils.build(HttpStatus.OK, result, "정상 처리되었습니다.");

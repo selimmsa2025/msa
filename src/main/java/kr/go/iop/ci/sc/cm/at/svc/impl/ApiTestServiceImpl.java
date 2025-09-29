@@ -319,7 +319,7 @@ public class ApiTestServiceImpl implements ApiTestService {
 		return webClientConfig.webClient()
 			.method(callMethod)
 			.uri(uri)
-			.headers(h -> headerContents.forEach(h::add))
+//			.headers(h -> headerContents.forEach(h::add))
 			.body(reqBdyContents != null ? BodyInserters.fromValue(reqBdyContents) : BodyInserters.empty())
 			.exchangeToMono(this::handleResponse)
 			.block();
@@ -537,13 +537,15 @@ public class ApiTestServiceImpl implements ApiTestService {
 			
 			String value = "";
 			
-			if (ConstantInfo.API_ARTCL_SE_CD_HEADER.equals(artlInfo.getApiArtclSeCd())) {	// Header
-				value = headerMap.get(atrbNm);
-				if(ConstantInfo.Y_VALUE.equals(esntlYn) 
-					&& ( !headerMap.containsKey(atrbNm) || value == null  || value.isBlank())) {
-					throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "필수 Header key 누락");
-				}
-			} else if (ConstantInfo.API_ARTCL_SE_CD_REQUEST.equals(artlInfo.getApiArtclSeCd())) {	// Request Parameter
+//			if (ConstantInfo.API_ARTCL_SE_CD_HEADER.equals(artlInfo.getApiArtclSeCd())) {	// Header
+//				value = headerMap.get(atrbNm);
+//				if(ConstantInfo.Y_VALUE.equals(esntlYn) 
+//					&& ( !headerMap.containsKey(atrbNm) || value == null  || value.isBlank())) {
+//					throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "필수 Header key 누락");
+//				}
+//			} else 
+			
+			if (ConstantInfo.API_ARTCL_SE_CD_REQUEST.equals(artlInfo.getApiArtclSeCd())) {	// Request Parameter
 				value = String.valueOf(reqBdyMap.get(atrbNm));
 				if(ConstantInfo.Y_VALUE.equals(esntlYn) && 
 						( !reqBdyMap.containsKey(atrbNm) || reqBdyMap.get(atrbNm) == null || StringUtils.isBlank(value))) {

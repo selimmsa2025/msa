@@ -59,10 +59,10 @@ public class SubscrSVO implements Serializable {
 	
 	// 외부 SaaS 연계 s 
 	@Schema(description = "기관코드")
-	private String InstCd;
+	private String institutionCode;
 
 	@Schema(description = "기관명")
-	private String InstNm;
+	private String institutionName;
 
 	@Schema(description = "지능형ID")
 	private String iopId;

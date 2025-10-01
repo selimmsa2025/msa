@@ -170,6 +170,7 @@ public class ApiTestServiceImpl implements ApiTestService {
 		ApiCertKeyReqSVO keyVo = new ApiCertKeyReqSVO();
 		keyVo.setSaasPrdctId(req.getSaasPrdctId());
 		keyVo.setSrvrSeCd(req.getSrvrSeCd());
+		keyVo.setCertSeCd(CommonCode.CertSeCd.TEST_AUTH.getCode());
 		List<CertInfoDVO> keyList = apiCertKeyMapper.selectApiCertInfoList(keyVo);
 		
 		// 최종 API 리스트 + 파라미터 합치고 리턴
@@ -558,6 +559,7 @@ public class ApiTestServiceImpl implements ApiTestService {
 		ApiCertKeyReqSVO keyVo = new ApiCertKeyReqSVO();
 		keyVo.setSaasPrdctId(req.getSaasPrdctId());
 		keyVo.setSrvrSeCd(req.getSrvrSeCd());
+		keyVo.setCertSeCd(CommonCode.CertSeCd.TEST_AUTH.getCode());
 		List<CertInfoDVO> keyList = apiCertKeyMapper.selectApiCertInfoList(keyVo);
 		
 		// 파라미터 그외의 값 들어올경우 필터링

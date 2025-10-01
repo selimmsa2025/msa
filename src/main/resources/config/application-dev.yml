@@ -59,7 +59,5 @@ mybatis:
   config-location: classpath:mapper/config/mapper-config.xml
 
 saas:
-  dev:
-    url: http://localhost:9991
   prod:
-    url: http://localhost:9991
+    url: http://iop-ci-tosaas-svc.iop-ci.svc.cluster.local:9993

@@ -280,6 +280,8 @@ public class ApiTestController {
 		rtnMap.put("test", "Hiiiiiiiiiiii! test 1, djfklsjke");
 		
 		return ResponseUtils.build(HttpStatus.OK, rtnMap, "성공");
+//		return ResponseUtils.build(HttpStatus.INTERNAL_SERVER_ERROR, rtnMap
+//		, "오류 발생");
 	}
 	
 	

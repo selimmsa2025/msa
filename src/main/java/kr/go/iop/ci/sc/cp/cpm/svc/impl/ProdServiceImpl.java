@@ -74,7 +74,7 @@ public class ProdServiceImpl implements ProdService {
 	/* psy e */
 
 	@Override
-	//@Transactional(rollbackFor = Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public Map<String, Object> insertProdSubscrReq(SubscrSVO subscrSVO) {
 
 		boolean isDbSaved = false;
@@ -110,7 +110,7 @@ public class ProdServiceImpl implements ProdService {
 			
 			if (!isSaasCallSuccess) {
 				log.error("SaaS 처리 실패: resultData 없음");
-				//throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR);
+				throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 			// 최종 응답
 			Map<String, Object> result = new HashMap<>();
@@ -119,17 +119,13 @@ public class ProdServiceImpl implements ProdService {
 			return result;
 
 		} catch (FeignException e) {
-			//TO-DO 임시로수정
 			log.error("SaaS 호출 실패");
-			Map<String, Object> result = new HashMap<>();
-			result.put("resultCnt", inserted);
-			return result;
-			//throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	@Override
-	//@Transactional(rollbackFor = Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public Map<String, Object> insertProdSubscrCancelReq(SubscrSVO subscrSVO) {
 		
 		boolean isDbSaved = false;
@@ -158,8 +154,7 @@ public class ProdServiceImpl implements ProdService {
 			
 			if (!isSaasCallSuccess) {
 				log.error("SaaS 처리 실패: resultData 없음");
-				//TO-DO 임시로수정
-				//throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR);
+				throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 			// 최종 응답
 			Map<String, Object> result = new HashMap<>();
@@ -168,12 +163,8 @@ public class ProdServiceImpl implements ProdService {
 			return result;
 
 		} catch (FeignException e) {
-			//TO-DO 임시로수정
 			log.error("SaaS 호출 실패");
-			Map<String, Object> result = new HashMap<>();
-			result.put("resultCnt", inserted);
-			return result;
-			//throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 

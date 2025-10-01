@@ -455,4 +455,18 @@
 		  AND SAAS_PRDCT_ID <![CDATA[<>]]> #{saasPrdctId}
 		</if>
 	</select>
+	
+	<select id="selectPrdctPrdsbscTest" resultType="int">
+		SELECT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.select.selectPrdctPrdsbscTest -- 상품 구독 기관 갯수 */ 
+			COUNT(*) 
+		 FROM USCM.TBCM_PRDSBSC_L A
+		WHERE A.SAAS_PRDCT_ID = #{saasPrdctId}
+		  AND A.PRDSBSC_STTS_CD IN ('A0040001', 'A0040002')
+		  AND EXISTS (
+		        SELECT 1
+		        FROM USCM.TBCM_SAAS_PRDCT_M B
+		        WHERE B.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
+		          AND B.GDS_GDNTC_REG_YN = 'Y'
+		      )
+	</select>
 </mapper>

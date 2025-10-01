@@ -74,4 +74,7 @@ public interface ProdMngService {
 	
 	/* 상품명 중복검사 */
 	public int selectPrdctNmDupeTest(ProdMngSVO vo);
+	
+	/* 상품 구독 기관 갯수 */
+	public int selectPrdctPrdsbscTest(ProdMngSVO vo);
 }

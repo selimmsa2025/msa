@@ -144,8 +144,13 @@ public class ProdMngController {
 
 		checkAuthInfo(vo);
 	     
-	    //TO-BE 상품 삭제 시 서비스 일괄삭제 할지 검토
 	    vo.setSrvcId("");
+	    
+	    int checkValidation = prodMngService.selectPrdctPrdsbscTest(vo);
+	    
+	    if(checkValidation > 0) {
+	    	throw new ApiBizException(HttpStatus.BAD_REQUEST, "해당 상품을 구독 중인 기관이 있습니다.");	    	
+	    }
 	     
 	    int resultCnt = prodMngService.deleteProd(vo);
 	    
@@ -243,6 +248,12 @@ public class ProdMngController {
 		log.debug("deleteService");
 
 		checkAuthInfo(vo);
+		
+	    int checkValidation = prodMngService.selectPrdctPrdsbscTest(vo);
+	    
+	    if(checkValidation > 0) {
+	    	throw new ApiBizException(HttpStatus.BAD_REQUEST, "해당 상품을 구독 중인 기관이 있습니다.");	    	
+	    }
 	        
 	    int resultCnt = prodMngService.deleteService(vo);
 	     
@@ -278,7 +289,30 @@ public class ProdMngController {
 	        
 	    int resultCnt = prodMngService.selectPrdctNmDupeTest(vo);
 	    String result;
-	    if(resultCnt>0) {
+	    if(resultCnt > 0) {
+	    	result = ConstantInfo.RTN_STTS_FAIL;
+	    }else {
+	    	result = ConstantInfo.RTN_STTS_SUCCESS;
+	    }
+	    
+	    HashMap<String, Object> rtnMap = new HashMap<>();
+	    rtnMap.put(ConstantInfo.RESULT, result);
+	        
+	    return ResponseUtils.build(rtnMap);
+		
+	}
+	
+	@PostMapping("/v1/pm/prod/prdsbsc-test")
+	@Operation(summary = "상품 구독 기관 검사", description = "상품과 서비스 삭제 시 해당 상품을 구독중인 기관이 있는지 검사")	
+	public ApiResponseVO getPrdctPrdsbscTest(@RequestBody ProdMngSVO vo) throws ParseException{
+		
+		log.debug("selectPrdctPrdsbscTest");
+		
+		checkAuthInfo(vo);
+	        
+	    int resultCnt = prodMngService.selectPrdctPrdsbscTest(vo);
+	    String result;
+	    if(resultCnt > 0) {
 	    	result = ConstantInfo.RTN_STTS_FAIL;
 	    }else {
 	    	result = ConstantInfo.RTN_STTS_SUCCESS;

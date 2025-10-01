@@ -169,5 +169,11 @@ public class ProdMngServiceImpl implements ProdMngService {
 	public int selectPrdctNmDupeTest(ProdMngSVO vo) {
 		return prodMngMapper.selectPrdctNmDupeTest(vo);
 	}
+	
+	/* 상품 구독 기관 갯수 */
+	@Override
+	public int selectPrdctPrdsbscTest(ProdMngSVO vo) {
+		return prodMngMapper.selectPrdctPrdsbscTest(vo);
+	}
 
 }

@@ -65,7 +65,5 @@ mybatis:
   config-location: classpath:mapper/config/mapper-config.xml
 
 saas:
-  dev:
-    url: http://localhost:9991
   prod:
-    url: http://localhost:9991
+    url: http://localhost:9993

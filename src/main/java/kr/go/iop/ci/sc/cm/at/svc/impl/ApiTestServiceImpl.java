@@ -79,12 +79,9 @@ public class ApiTestServiceImpl implements ApiTestService {
 	
 	private final ProdCertMapper apiCertKeyMapper;
 	
-	@Value("${saas.dev.url}")
-	private String saasDevUrl;
-	
 	@Value("${saas.prod.url}")
 	private String saasProdUrl;
-
+	
 	/**
 	 * 게시물 목록 조회
 	 */
@@ -257,7 +254,8 @@ public class ApiTestServiceImpl implements ApiTestService {
 		
 		HttpMethod callMethod = HttpMethod.valueOf(apiInfo.getHttpCmncSeNm());
 		Map<String, String> headerContents = req.getHeaderContents();
-		String baseUrl = req.getSrvrSeCd().equals(ConstantInfo.TEST_DEV) ? saasDevUrl : saasProdUrl;
+		
+		String baseUrl = saasProdUrl;
 		
 		PrdctApiCmncRsltDVO apiTestVO = new PrdctApiCmncRsltDVO();
 		Map<String, Object> apiResult = new HashMap<>();
@@ -319,6 +317,7 @@ public class ApiTestServiceImpl implements ApiTestService {
 		return webClientConfig.webClient()
 			.method(callMethod)
 			.uri(uri)
+			// 임시 주석
 //			.headers(h -> headerContents.forEach(h::add))
 			.body(reqBdyContents != null ? BodyInserters.fromValue(reqBdyContents) : BodyInserters.empty())
 			.exchangeToMono(this::handleResponse)
@@ -537,6 +536,7 @@ public class ApiTestServiceImpl implements ApiTestService {
 			
 			String value = "";
 			
+			// 임시 주석
 //			if (ConstantInfo.API_ARTCL_SE_CD_HEADER.equals(artlInfo.getApiArtclSeCd())) {	// Header
 //				value = headerMap.get(atrbNm);
 //				if(ConstantInfo.Y_VALUE.equals(esntlYn) 

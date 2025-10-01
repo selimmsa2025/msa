@@ -147,7 +147,7 @@
 						   AND RSLT.API_VER_SN = SA.API_VER_SN
 		WHERE	RSLT.SAAS_PRDCT_ID = #{saasPrdctId}
 		  AND	PRDCT.USE_YN = 'Y'
-		  AND	SA.USE_YN = 'Y'
+		  <!-- AND	SA.USE_YN = 'Y' -->
 		  AND	RSLT.SRVR_SE_CD = #{srvrSeCd}
 		  AND	RSLT.API_VER_SN = #{apiVerSn}
 		ORDER BY RSLT.API_ID

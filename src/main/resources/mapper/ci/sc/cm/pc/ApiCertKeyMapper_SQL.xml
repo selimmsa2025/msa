@@ -31,6 +31,7 @@
 		LEFT JOIN USCM.TBCM_SAAS_PRDCT_M B
 			ON A.SAAS_PRDCT_ID = B.SAAS_PRDCT_ID
 		WHERE B.USE_YN = 'Y'
+			AND A.SRVR_SE_CD = 'A0060002'
 		    <if test="saasPrdctPvsnMthSeCd != null and saasPrdctPvsnMthSeCd != ''">
 		        AND B.SAAS_PRDCT_PVSN_MTH_SE_CD = #{saasPrdctPvsnMthSeCd}
 		    </if>
@@ -81,6 +82,7 @@
 		LEFT JOIN USCM.TBCM_SAAS_PRDCT_M B
 			ON A.SAAS_PRDCT_ID = B.SAAS_PRDCT_ID
 		WHERE B.USE_YN = 'Y'
+			AND A.SRVR_SE_CD = 'A0060002'
 		    <if test="saasPrdctPvsnMthSeCd != null and saasPrdctPvsnMthSeCd != ''">
 		        AND B.SAAS_PRDCT_PVSN_MTH_SE_CD = #{saasPrdctPvsnMthSeCd}
 		    </if>
@@ -279,6 +281,9 @@
 			SAAS_PRDCT_ID = #{saasPrdctId}
 		AND 
 			SRVR_SE_CD = #{srvrSeCd}
+		<if test="certSeCd != null and certSeCd != ''">
+		AND	CERT_SE_CD = #{certSeCd}
+		</if>
 	 </select>
 
 	<!-- 인증키 관리 상세조회 - 구독 상세 조회 -->		 

@@ -32,4 +32,30 @@ public class CommonCode {
         }
     }
 	
+	// 인증구분코드
+	public enum CertSeCd {
+		
+		TEST_AUTH("A0080001", "테스트인증"),
+		SUBSCRIPTION_AUTH("A0080002", "구독요청인증"),
+		;
+
+        private final String code;
+        private final String description;
+
+        CertSeCd(String code, String description) {
+            this.code = code;
+            this.description = description;
+        }
+
+        public String getCode() { return code; }
+        public String getDescription() { return description; }
+
+        public static CertSeCd fromCode(String code) {
+            for (CertSeCd s : values()) {
+                if (s.code.equals(code)) return s;
+            }
+            throw new IllegalArgumentException("Unknown code: " + code);
+        }
+    }
+	
 }

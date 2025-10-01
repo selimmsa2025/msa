@@ -139,5 +139,8 @@ public class ApiCertKeyReqSVO implements Serializable {
 
 	@Schema(description = "상세 구분값")
 	private String gubun;
+	
+	@Schema(description = "인증구분코드")
+	private String certSeCd;
 
 }

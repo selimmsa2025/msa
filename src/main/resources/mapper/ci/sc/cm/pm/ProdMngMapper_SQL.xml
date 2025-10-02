@@ -276,6 +276,8 @@
 	  AND (  SAAS_PRDCT_TYPE_CD = 'A0020001'
 	  	  OR SAAS_PRDCT_TYPE_CD = #{saasPrdctTypeCd}
 			)
+	  AND API_DMND_RSPNS_SE_CD = 'B0010001'
+	  AND USE_YN = 'Y'
 	</select>
 	
 	<update id = "insertStdApi" parameterType = "ProdMngSVO">

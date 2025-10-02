@@ -9,7 +9,9 @@
  */
 package kr.go.iop.ci.sc.cm.pc.svc.impl;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,6 +85,15 @@ public class ProdCertServiceImpl implements ProdCertService {
 	public int updateApiCertInfo(ApiCertKeyReqSVO vo) {
 		deleteApiCertInfo(vo);
 		List<CertInfoSVO> paramList = vo.getParamList();
+
+		// authkeyNm 중복 체크
+		Set<String> keySet = new HashSet<>();
+		for (CertInfoSVO svo : paramList) {
+			if (!keySet.add(svo.getAuthkeyNm())) {
+				return -2; // 중복 에러 코드
+			}
+		}
+
 		try {
 			for (CertInfoSVO svo : paramList) {
 				apiCertKeyMapper.insertApiCertInfo(svo);

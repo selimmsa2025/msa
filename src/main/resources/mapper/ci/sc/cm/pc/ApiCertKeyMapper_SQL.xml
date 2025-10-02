@@ -97,21 +97,25 @@
 		    </if>
 			<if test="hasTestCert != null and hasTestCert != ''">
 			    <choose>
-			        <when test="hasTestCert == 'Y'.toString()">
-			            AND EXISTS (
+			        <when test="hasTestCert =='Y'.toString()">
+			        	AND EXISTS (
 					                SELECT 1 
-					                FROM USCM.TBCM_PRDSBSC_CERT_L C
+					                FROM USCM.TBCM_CMNC_CERT_L D
 					                WHERE 
-					                	C.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
-			            			)
+					                	D.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
+					                AND 
+					                	D.SRVR_SE_CD = A.SRVR_SE_CD
+						           )
 			        </when>
-			        <when test="hasTestCert == 'N'.toString()">
-			            AND NOT EXISTS (
+			        <when test="hasTestCert =='N'.toString()">
+			        	AND NOT EXISTS (
 						                SELECT 1 
-						                FROM USCM.TBCM_PRDSBSC_CERT_L D 
+						                FROM USCM.TBCM_CMNC_CERT_L E
 						                WHERE 
-						                	D.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
-							            )
+						                	E.SAAS_PRDCT_ID = A.SAAS_PRDCT_ID
+						                AND 
+						                	E.SRVR_SE_CD = A.SRVR_SE_CD
+							           )
 			        </when>
 			    </choose>
 			</if>

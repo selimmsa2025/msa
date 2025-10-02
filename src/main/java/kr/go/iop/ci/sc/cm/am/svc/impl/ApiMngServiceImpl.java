@@ -12,9 +12,11 @@ package kr.go.iop.ci.sc.cm.am.svc.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -93,7 +95,7 @@ public class ApiMngServiceImpl implements ApiMngService {
 	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public int insertStndApi(AmSVO svo) {
-		
+
 		// 중복검사
 		if (apiMngMapper.selectStndApiNmCnt(svo) > 0) {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "이미 사용 중인 API명입니다.");
@@ -101,6 +103,9 @@ public class ApiMngServiceImpl implements ApiMngService {
 		if (apiMngMapper.selectStndApiUriCnt(svo) > 0) {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "이미 사용 중인 URI입니다.");
 		}
+		// 1002 파라미터 내 중복 검사
+		checkParamDup(svo.getParamList());
+
 		int maxApiVer = apiMngMapper.selectMaxStndApiVer();
 		int apiVer = svo.getApiVerSn();
 		if (apiVer != maxApiVer) {
@@ -111,7 +116,7 @@ public class ApiMngServiceImpl implements ApiMngService {
 		String apiId = apiMngMapper.selectNextStndApiId();
 		svo.setApiId(apiId);
 		log.info("[insertStndApi] 발급된 apiId={}", apiId);
-		
+
 		svo.setFrstCrtPrcrId("admin");
 		svo.setLastChgPrcrId("admin");
 		int result = apiMngMapper.insertStndApi(svo);
@@ -124,7 +129,7 @@ public class ApiMngServiceImpl implements ApiMngService {
 			for (AmArtcSVO artc : paramList) {
 				artc.setApiId(apiId);
 				artc.setFrstCrtPrcrId("admin");
-	            artc.setLastChgPrcrId("admin");
+				artc.setLastChgPrcrId("admin");
 				int row = apiMngMapper.insertStndApiArtcl(artc);
 				if (row != 1) {
 					throw new RuntimeException("항목 등록 실패");
@@ -133,7 +138,6 @@ public class ApiMngServiceImpl implements ApiMngService {
 		}
 
 		// 상품api테스트 초기 세팅
-
 		List<AmProdDVO> gdsList = apiMngMapper.selectProdList(svo);
 		if (gdsList != null && !gdsList.isEmpty()) {
 			for (AmProdDVO vo : gdsList) {
@@ -149,23 +153,28 @@ public class ApiMngServiceImpl implements ApiMngService {
 				if (r != 1) {
 					throw new RuntimeException("상품-표준API 관계 등록 실패");
 				}
-				int r2 = apiMngMapper.insertProdApiTest(insertVo); // 통신결과세팅
-				if (r2 != 1) {
-					throw new RuntimeException("통신테이블 등록 실패");
+				// 1001 요청만 통신결과 세팅
+				if (ConstantInfo.API_DMND_RSPNS_REQ.equals(svo.getApiDmndRspnsSeCd())) {
+					int r2 = apiMngMapper.insertProdApiTest(insertVo); // 통신결과세팅
+					if (r2 != 1) {
+						throw new RuntimeException("통신테이블 등록 실패");
+					}
+
+					// 인증관리내역 통신성공여부 Y→N (요청일 때만)
+					AmSVO cert = new AmSVO();
+					cert.setSaasPrdctId(vo.getSaasPrdctId());
+					cert.setSrvrSeCd(ConstantInfo.TEST_OPS);
+					cert.setApiId(apiId);
+					cert.setLastChgPrcrId("admin");
+					cert.setApiVerSn(svo.getApiVerSn());
+					apiMngMapper.updateCertKeyToN(cert);
+				} else {
+					// 응답이면 스킵 (로그만)
+					log.info("[insertStndApi] 응답 API이므로 테스트테이블 세팅 스킵. apiId={}, ver={}, prd={}", apiId,
+							svo.getApiVerSn(), vo.getSaasPrdctId());
 				}
-
-				// 0923 인증관리내역 통신성공여부 Y→N (항상 호출)
-				AmSVO cert = new AmSVO();
-				cert.setSaasPrdctId(vo.getSaasPrdctId());
-				cert.setSrvrSeCd(ConstantInfo.TEST_OPS);
-				cert.setApiId(apiId);
-				cert.setLastChgPrcrId("admin");
-				cert.setApiVerSn(svo.getApiVerSn());
-				apiMngMapper.updateCertKeyToN(cert);
 			}
-
 		}
-
 		return 1;
 	}
 
@@ -187,6 +196,8 @@ public class ApiMngServiceImpl implements ApiMngService {
 		if (apiMngMapper.selectStndApiUriCnt(svo) > 0) {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "이미 사용 중인 URI입니다.");
 		}
+		// 1002 파라미터 내 중복 검사
+		checkParamDup(svo.getParamList());
 		// 0922
 		int maxApiVer = apiMngMapper.selectMaxStndApiVer();
 		int apiVer = svo.getApiVerSn();
@@ -194,14 +205,13 @@ public class ApiMngServiceImpl implements ApiMngService {
 			throw new ApiBizException(HttpStatus.BAD_REQUEST, "해당 API 버전이 최신 버전과 일치하지 않습니다.");
 
 		}
-		
+
 		svo.setLastChgPrcrId("admin");
 		int resultCnt = apiMngMapper.updateStndApi(svo);
 		if (resultCnt < 1) {
 			throw new RuntimeException("API 수정 실패 또는 대상 없음");
 		}
 		deleteStndApiArtcl(svo);
-
 		List<AmArtcSVO> paramList = svo.getParamList();
 		if (paramList != null && !paramList.isEmpty()) {
 			for (AmArtcSVO artc : paramList) {
@@ -270,7 +280,7 @@ public class ApiMngServiceImpl implements ApiMngService {
 		deleteProdStndApiR(svo); // 상품-api관계테이블 삭제
 		int delTest = apiMngMapper.deleteProdApiTest(svo); // 통신결과내역테이블 삭제
 		log.debug("deleteProdApiTest deleted rows={}", delTest);
-		
+
 		svo.setLastChgPrcrId("admin");
 		int result = apiMngMapper.deleteStndApi(svo); // api기본테이블n업데이트
 		if (result != 1) {
@@ -312,7 +322,8 @@ public class ApiMngServiceImpl implements ApiMngService {
 
 		Integer nextVer = apiMngMapper.selectNextStndApiVer();
 		svo.setApiVerSn(nextVer);
-
+		svo.setFrstCrtPrcrId("admin");
+		svo.setLastChgPrcrId("admin");
 		int verInserted = apiMngMapper.insertStndApiVer(svo);
 		if (verInserted != 1) {
 			throw new RuntimeException("버전 등록 실패 (apiVerSn=" + nextVer + ")");
@@ -400,26 +411,32 @@ public class ApiMngServiceImpl implements ApiMngService {
 					insertVo.setApiId(clonedApiId);
 					insertVo.setSrvrSeCd(ConstantInfo.TEST_OPS);// 테스트결과 초기 셋팅 : 운영서버
 					insertVo.setCmncRsltCd(ConstantInfo.TEST_WAIT);// 테스트결과 초기 셋팅 : 대기
-					insertApi.setFrstCrtPrcrId("admin");
-					insertApi.setLastChgPrcrId("admin");
+					insertVo.setFrstCrtPrcrId("admin");
+					insertVo.setLastChgPrcrId("admin");
 					apiMngMapper.insertProdStndApiR(insertVo);
-					apiMngMapper.insertProdApiTest(insertVo);
+
+					// 1001
+					if (ConstantInfo.API_DMND_RSPNS_REQ.equals(apiDetail.getApiDmndRspnsSeCd())) {
+						apiMngMapper.insertProdApiTest(insertVo);
+						// 0923 인증관리 통신성공여부 업데이트
+						AmSVO cert = new AmSVO();
+						cert.setSaasPrdctId(vo.getSaasPrdctId());
+						cert.setSrvrSeCd(ConstantInfo.TEST_OPS);
+						cert.setApiId(clonedApiId);
+						cert.setApiVerSn(nextVer);
+						cert.setLastChgPrcrId("admin");
+						int certRows = apiMngMapper.updateCertKeyToN(cert);
+						log.info("[insertStndApiVer] (요청) CERT->N pid={}, rows={}", vo.getSaasPrdctId(), certRows);
+					} else {
+						log.info("[insertStndApiVer] 응답 API → 테스트테이블 스킵. apiId={}, ver={}, prd={}", clonedApiId,
+								nextVer, vo.getSaasPrdctId());
+					}
 
 					// 카탈로그 미등록 상품 버전 업데이트
 					AmProdSVO updVo = new AmProdSVO();
 					updVo.setSaasPrdctId(vo.getSaasPrdctId());
 					updVo.setApiVerSn(nextVer);
 					apiMngMapper.updateProdApiVer(updVo);
-
-					// 0923 인증관리 통신성공여부 업데이트
-					AmSVO cert = new AmSVO();
-					cert.setSaasPrdctId(vo.getSaasPrdctId());
-					cert.setSrvrSeCd(ConstantInfo.TEST_OPS);
-					cert.setApiId(clonedApiId);
-					cert.setApiVerSn(nextVer);
-					cert.setLastChgPrcrId("admin");
-					int certRows = apiMngMapper.updateCertKeyToN(cert);
-					log.info("[insertStndApiVer] CERT->N pid={}, rows={}", vo.getSaasPrdctId(), certRows);
 				}
 			}
 			// 이전 통신결과내역 데이터 삭제(카탈로그 미등록 상품에 대한 api)
@@ -428,7 +445,6 @@ public class ApiMngServiceImpl implements ApiMngService {
 			delParam.setApiVerSn(prevVer);
 			delParam.setGdsGdntcRegYn(ConstantInfo.N_VALUE);// 미등록
 			apiMngMapper.deleteProdApiTest(delParam);
-
 		}
 
 		return apiMngMapper.selectStndApiVerList();
@@ -612,4 +628,26 @@ public class ApiMngServiceImpl implements ApiMngService {
 		return apiMngMapper.updateCertKey(vo);
 	}
 
+	// 1002 null확인
+	private String nvl(String s) {
+		return s == null ? "" : s;
+	}
+
+	// 1002 파라미터 중복확인
+	private void checkParamDup(List<AmArtcSVO> paramList) {
+		if (paramList == null || paramList.isEmpty())
+			return;
+
+		Map<String, Set<String>> groupDupMap = new HashMap<>();
+		for (AmArtcSVO p : paramList) {
+			String group = nvl(p.getApiArtclSeCd());
+			String key = nvl(p.getApiArtclAtrbNm()).trim().toLowerCase() + "|" + nvl(p.getApiArtclDataTypeCd()).trim()
+					+ "|" + nvl(p.getApiArtclEsntlYn()).trim().toUpperCase();
+
+			groupDupMap.putIfAbsent(group, new HashSet<>());
+			if (!groupDupMap.get(group).add(key)) {
+				throw new ApiBizException(HttpStatus.BAD_REQUEST, "같은 구분항목 내에 동일한 (속성명/타입/필수여부) 조합이 중복되었습니다.");
+			}
+		}
+	}
 }

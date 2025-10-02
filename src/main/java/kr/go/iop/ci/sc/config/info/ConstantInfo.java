@@ -120,6 +120,9 @@ public final class ConstantInfo {
 	public static final String API_ARTCL_ATRB_CD_LIST = "B0040008";
 	public static final String API_ARTCL_ATRB_CD_OBJECT = "B0040009";
 	
+	//1001 API요청응답구분코드
+	public static final String API_DMND_RSPNS_REQ = "B0010001";
+	
 	
 	
 	private ConstantInfo() {

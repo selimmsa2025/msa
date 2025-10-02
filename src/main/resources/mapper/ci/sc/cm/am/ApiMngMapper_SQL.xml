@@ -346,9 +346,9 @@
 	  		USCM.TBCM_PRDCT_API_CMNCRSLT_L R
 	    SET 
 	    	CMNC_RSLT_CD = #{cmncRsltCd}                  
-	        , LAST_CHG_PRCR_ID = #{lastChgPrcrId}
 	        , CMNC_DT = NULL 
-	        , CMNC_RSLT_CN = NULL                                      
+	        , CMNC_RSLT_CN = NULL  
+	        , LAST_CHG_PRCR_ID = #{lastChgPrcrId}
 	        , LAST_CHG_DT = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
 	   	FROM USCM.TBCM_SAAS_PRDCT_M G
 	   	WHERE R.API_ID = #{apiId}
@@ -491,6 +491,5 @@
 	   WHERE M.SAAS_PRDCT_ID = #{saasPrdctId}
 	     AND M.SRVR_SE_CD    = 'A0060002'
 	</update>
-	
 	
 </mapper>

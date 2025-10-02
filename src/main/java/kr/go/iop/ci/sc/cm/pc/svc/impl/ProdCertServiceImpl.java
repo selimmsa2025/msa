@@ -9,8 +9,10 @@
  */
 package kr.go.iop.ci.sc.cm.pc.svc.impl;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -86,13 +88,20 @@ public class ProdCertServiceImpl implements ProdCertService {
 		deleteApiCertInfo(vo);
 		List<CertInfoSVO> paramList = vo.getParamList();
 
-		// authkeyNm 중복 체크
-		Set<String> keySet = new HashSet<>();
-		for (CertInfoSVO svo : paramList) {
-			if (!keySet.add(svo.getAuthkeyNm())) {
-				return -2; // 중복 에러 코드
-			}
-		}
+		  // certSeCd 별로 그룹핑해서 중복 체크
+	    Map<String, Set<String>> duplicateCheckMap = new HashMap<>();
+
+	    for (CertInfoSVO svo : paramList) {
+	        String certSeCd = svo.getCertSeCd();
+	        String authkeyNm = svo.getAuthkeyNm();
+
+	        duplicateCheckMap.putIfAbsent(certSeCd, new HashSet<>());
+
+	        // 같은 certSeCd 그룹 내에서 중복 검사
+	        if (!duplicateCheckMap.get(certSeCd).add(authkeyNm)) {
+	            return -2; // 동일 그룹 내 중복 → 에러
+	        }
+	    }
 
 		try {
 			for (CertInfoSVO svo : paramList) {

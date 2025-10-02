@@ -612,7 +612,7 @@
 			AND A.SAAS_PRDCT_TYPE_CD = #{saasPrdctTypeCd}
 		</if>
 		<if test="saasPrdctNm != null and !''.equals(saasPrdctNm)">
-			AND A.SAAS_PRDCT_NM LIKE '%' || #{saasPrdctNm} || '%'
+			AND LOWER(A.SAAS_PRDCT_NM) LIKE '%' || LOWER(#{saasPrdctNm}) || '%'
 		</if>
 		<choose>
 			<when test="'rate_desc'.equals(sortCd)">

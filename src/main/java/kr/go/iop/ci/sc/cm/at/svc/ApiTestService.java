@@ -196,4 +196,11 @@ public interface ApiTestService {
 	 * @param req
 	 */
 	public int updateTestStatus(ApiTestSaveRstSVO req);
+	
+	/**
+	 * 테스트대상 API항목내역 조회
+	 * @param req
+	 * @return
+	 */
+	public Map<String, Object> getTestArtclInfo(PrdctApiCmncRsltSVO req);
 }

@@ -60,4 +60,7 @@ public class ApiTestPrdctDVO implements Serializable {
 	@Schema(description = "API버전일련번호")
 	private Integer apiVerSn;
 	
+	@Schema(description = "상품최신버전")
+	private Integer prdctLatestVer;
+	
 }

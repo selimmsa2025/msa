@@ -13,8 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.validation.Valid;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -25,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import kr.go.iop.ci.sc.cm.at.mapper.vo.ApiTestDVO;
 import kr.go.iop.ci.sc.cm.at.mapper.vo.ApiTestDetailListDVO;
 import kr.go.iop.ci.sc.cm.at.mapper.vo.ApiTestPrdctDVO;
@@ -114,10 +113,19 @@ public class ApiTestController {
 	@PostMapping("/v1/at/prod/delete-api-test")
 	@Operation(summary = "SaaS 상품 테스트 삭제", description = "SaaS 상품 테스트 삭제 API")
 	public ApiResponseVO deleteProdApiTest(@RequestBody @Valid PrdctApiCmncRsltSVO req) {
+		
+		// 삭제
 		int deletedCount = apiTestService.deleteApiCommRslt(req);
 		
+		// 통신완료여부 처리
+		ApiTestSaveRstSVO testStatusSVO = new ApiTestSaveRstSVO();
+		testStatusSVO.setSaasPrdctId(req.getSaasPrdctId());
+		testStatusSVO.setSrvrSeCd(req.getSrvrSeCd());
+		testStatusSVO.setApiVerSn(req.getApiVerSn());
+		int completedCount = apiTestService.updateTestStatus(testStatusSVO);
+		
 		HashMap<String, Object> rtnMap = new HashMap<>();
-		rtnMap.put(ConstantInfo.RESULT_CNT, deletedCount);
+		rtnMap.put(ConstantInfo.RESULT_CNT, deletedCount + completedCount);
 		return ResponseUtils.build(rtnMap);
 	}
 	
@@ -186,6 +194,15 @@ public class ApiTestController {
 		HashMap<String, Object> rtnMap = new HashMap<>();
 		int updatedCount = apiTestService.updateCatalogVersion(req);
 		rtnMap.put(ConstantInfo.RESULT_CNT, updatedCount);
+		return ResponseUtils.build(rtnMap);
+	}
+	
+	@PostMapping("/v1/at/prod/test-artcl-info")
+	@Operation(summary = "테스트대상 API항목내역 조회", description = "테스트대상 API항목내역 조회 API")
+	public ApiResponseVO getTestArtclInfo(@RequestBody PrdctApiCmncRsltSVO req) {
+		HashMap<String, Object> rtnMap = new HashMap<>();
+		Map<String, Object> testArtclInfo = apiTestService.getTestArtclInfo(req);
+		rtnMap.put(ConstantInfo.RESULT_INFO, testArtclInfo);
 		return ResponseUtils.build(rtnMap);
 	}
 	

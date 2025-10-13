@@ -67,7 +67,7 @@ public class ProdCertServiceImpl implements ProdCertService {
 	public ApiCertKeyDVO selectApiCertKeydetail(ApiCertKeyReqSVO vo) {
 
 		ApiCertKeyDVO dvo = new ApiCertKeyDVO();
-		if (vo.getGubun().equals("sub")) {
+		if (vo.getGubun().equals("sub")) { // front - PcSubListBoard.jsx
 			dvo = apiCertKeyMapper.selectSubCertKeyDetail(vo);
 			List<CertInfoDVO> paramList = apiCertKeyMapper.selectSubCertInfoList(vo);
 			dvo.setParamList(paramList);
@@ -88,20 +88,19 @@ public class ProdCertServiceImpl implements ProdCertService {
 		deleteApiCertInfo(vo);
 		List<CertInfoSVO> paramList = vo.getParamList();
 
-		  // certSeCd 별로 그룹핑해서 중복 체크
-	    Map<String, Set<String>> duplicateCheckMap = new HashMap<>();
+		// certSeCd 별로 그룹핑해서 중복 체크
+		Map<String, Set<String>> duplicateCheckMap = new HashMap<>();
 
-	    for (CertInfoSVO svo : paramList) {
-	        String certSeCd = svo.getCertSeCd();
-	        String authkeyNm = svo.getAuthkeyNm();
+		for (CertInfoSVO svo : paramList) {
+			String certSeCd = svo.getCertSeCd();
+			String authkeyNm = svo.getAuthkeyNm();
 
-	        duplicateCheckMap.putIfAbsent(certSeCd, new HashSet<>());
-
-	        // 같은 certSeCd 그룹 내에서 중복 검사
-	        if (!duplicateCheckMap.get(certSeCd).add(authkeyNm)) {
-	            return -2; // 동일 그룹 내 중복 → 에러
-	        }
-	    }
+			duplicateCheckMap.putIfAbsent(certSeCd, new HashSet<>());
+			// 같은 certSeCd(인증구분코드 : 테스트인증, 구독요청인증) 그룹 내에서 중복 검사
+			if (!duplicateCheckMap.get(certSeCd).add(authkeyNm)) {
+				return -2; // 동일 그룹 내 중복 → 에러
+			}
+		}
 
 		try {
 			for (CertInfoSVO svo : paramList) {

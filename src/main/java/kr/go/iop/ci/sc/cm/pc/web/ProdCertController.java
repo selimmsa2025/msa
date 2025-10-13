@@ -42,17 +42,10 @@ public class ProdCertController {
 
 	private final ProdCertService apiCertKeyService;
 
-	/**
-	 * 통신테스트 인증키 목록 조회
-	 * 
-	 * @param vo
-	 * @return
-	 * @throws ParseException
-	 */
-//	@PostMapping("/v1/pc/prod/list-cert")
 	@PostMapping("/v1/pc/prod/list-cert-key")
 	@Operation(summary = "통신테스트 인증목록 조회", description = "통신테스트 인증키 목록 조회")
 	public ApiResponseVO getCertKeyList(@RequestBody ApiCertKeyReqSVO vo) throws ParseException {
+
 		log.debug("##### getCertKeyList");
 
 		List<ApiCertKeyDVO> list = apiCertKeyService.selectApiCertKeyList(vo);
@@ -65,17 +58,10 @@ public class ProdCertController {
 		return ResponseUtils.build(rtnMap);
 	}
 
-	/**
-	 * 구독상품 인증키 목록 조회
-	 * 
-	 * @param vo
-	 * @return
-	 * @throws ParseException
-	 */
-//	@PostMapping("/v1/pc/prod/list-cert-sub")
 	@PostMapping("/v1/pc/prod/sub-cert-key")
 	@Operation(summary = "구독상품 인증목록 조회", description = "구독상품 인증키 목록 조회")
 	public ApiResponseVO getSubCertKeyList(@RequestBody ApiCertKeyReqSVO vo) throws ParseException {
+
 		log.debug("##### getSubCertKeyList");
 
 		List<ApiCertKeyDVO> list = apiCertKeyService.selectSubCertKeyList(vo);
@@ -88,17 +74,10 @@ public class ProdCertController {
 		return ResponseUtils.build(rtnMap);
 	}
 
-	/**
-	 * API 인증키 상세 및 API 구독 인증키 상세 조회
-	 * 
-	 * @param vo
-	 * @return
-	 * @throws ParseException
-	 */
-//	@PostMapping("/v1/pc/prod/info-cert")
 	@PostMapping("/v1/pc/prod/info-cert-key")
-	@Operation(summary = "API 인증키 상세 조회", description = "API 인증키 상세 조회")
+	@Operation(summary = "API 인증키 상세 조회", description = "[공통]API 인증키 상세 조회 - 통신테스트, 구독상품")
 	public ApiResponseVO selectApiCertKeydetail(@RequestBody ApiCertKeyReqSVO vo) throws ParseException {
+
 		log.debug("##### selectApiCertKeydetail");
 
 		ApiCertKeyDVO apiCertKeyDVO = apiCertKeyService.selectApiCertKeydetail(vo);
@@ -109,52 +88,34 @@ public class ProdCertController {
 		return ResponseUtils.build(rtnMap);
 	}
 
-	/**
-	 * API 인증정보 수정
-	 * 
-	 * @param map
-	 * @return
-	 * @throws ParseException
-	 */
-//	@PostMapping("/v1/pc/prod/update-cert")
 	@PostMapping("/v1/pc/prod/update-cert-key")
+	@Operation(summary = "API 인증키 정보 수정", description = "[공통]API 인증키 정보 수정 - 통신테스트(사용), 구독상품(미사용)")
 	public ApiResponseVO createApiCertInfo(@RequestBody ApiCertKeyReqSVO vo) throws ParseException {
+
 		log.debug("##### createApiCertInfo");
 
-		HashMap<String, Object> rtnMap = new HashMap<>();
+		int resultCnt = apiCertKeyService.updateApiCertInfo(vo);
 
-		int result = apiCertKeyService.updateApiCertInfo(vo);
-		rtnMap.put(ConstantInfo.RESULT_CNT, result);
+		HashMap<String, Object> rtnMap = new HashMap<>();
+		rtnMap.put(ConstantInfo.RESULT_CNT, resultCnt);
 
 		return ResponseUtils.build(rtnMap);
 	}
 
-	/**
-	 * API 인증정보 삭제
-	 * 
-	 * @param map
-	 * @return
-	 * @throws ParseException
-	 */
-//	@PostMapping("/v1/pc/prod/delete-cert")
 	@PostMapping("/v1/pc/prod/delete-cert-key")
+	@Operation(summary = "API 인증키 정보 삭제", description = "[공통]API 인증키 정보 삭제 - 통신테스트(사용), 구독상품(미사용)")
 	public ApiResponseVO deleteApiCertInfo(@RequestBody ApiCertKeyReqSVO vo) throws ParseException {
-		log.debug("##### deleteApiCertInfo");
-		HashMap<String, Object> rtnMap = new HashMap<>();
 
-		int result = apiCertKeyService.deleteApiCertInfo(vo);
-		rtnMap.put(ConstantInfo.RESULT_CNT, result);
+		log.debug("##### deleteApiCertInfo");
+
+		int resultCnt = apiCertKeyService.deleteApiCertInfo(vo);
+
+		HashMap<String, Object> rtnMap = new HashMap<>();
+		rtnMap.put(ConstantInfo.RESULT_CNT, resultCnt);
 
 		return ResponseUtils.build(rtnMap);
 	}
 
-	/**
-	 * API 인증키 생성
-	 * 
-	 * @param vo
-	 * @return
-	 * @throws ParseException
-	 */
 	@PostMapping("/v1/ac/prod/create-jwt-key")
 	@Operation(summary = "API 인증키 등록", description = "API 인증키 등록 요청")
 	public ApiResponseVO createJwtKey(@RequestBody ApiCertKeyReqSVO vo) throws ParseException {

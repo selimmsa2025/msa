@@ -24,11 +24,8 @@ public interface ProdCertService {
 
 	/* API 인증키 관리 목록조회 (통신테스트 목록조회 및 구독 목록조회) */
 	public List<ApiCertKeyDVO> selectApiCertKeyList(ApiCertKeyReqSVO vo);
-
 	public int selectApiCertKeyListCnt(ApiCertKeyReqSVO vo);
-
 	public List<ApiCertKeyDVO> selectSubCertKeyList(ApiCertKeyReqSVO vo);
-
 	public int selectSubCertKeyListCnt(ApiCertKeyReqSVO vo);
 
 	/* API 인증키 상세 및 API 구독 인증키 상세 */

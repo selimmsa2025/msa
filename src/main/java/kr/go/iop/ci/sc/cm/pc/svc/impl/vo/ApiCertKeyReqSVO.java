@@ -119,13 +119,13 @@ public class ApiCertKeyReqSVO implements Serializable {
 	@Schema(description = "기관사용자통합아이디(FK)")
 	private String instUserIntgId;
 
-	@Schema(description = "기관사용자구분코드(A007)") // 기관사용자구분코드 (A007)
+	@Schema(description = "기관사용자구분코드(A007)")
 	private String instUserSeCd;
 
 	@Schema(description = "구독일련번호(PK)")
 	private int subSn;
 
-	@Schema(description = "제품구독상태코드(A004)") // 제품구독상태코드 (A004: 트라이얼/유료/취소 등)
+	@Schema(description = "제품구독상태코드(A004): 트라이얼/유료/취소 등")
 	private String subSttsCd;
 
 	@Schema(description = "구독시작일자(YYYY-MM-DD)")

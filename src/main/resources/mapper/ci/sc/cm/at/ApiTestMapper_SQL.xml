@@ -140,6 +140,7 @@
 				, RSLT.SRVR_SE_CD															/* HTTP서버구분코드 */
 				, RSLT.CMNC_DT																/* 통신일시 */
 				, PRDCT.SAAS_PRDCT_ID														/* SAAS제품아이디 */
+				, RSLT.CMNC_RSLT_CN																/* 통신결과내용 */
 		FROM	USCM.TBCM_PRDCT_API_CMNCRSLT_L RSLT
 					INNER JOIN USCM.TBCM_SAAS_PRDCT_M PRDCT
 							ON RSLT.SAAS_PRDCT_ID = PRDCT.SAAS_PRDCT_ID

@@ -35,6 +35,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import kr.go.iop.ci.sc.cm.am.mapper.vo.AmArtcDVO;
+import kr.go.iop.ci.sc.cm.am.mapper.vo.AmDVO;
+import kr.go.iop.ci.sc.cm.am.svc.ApiMngService;
+import kr.go.iop.ci.sc.cm.am.svc.vo.AmSVO;
 import kr.go.iop.ci.sc.cm.at.mapper.ApiTestMapper;
 import kr.go.iop.ci.sc.cm.at.mapper.vo.ApiTestDVO;
 import kr.go.iop.ci.sc.cm.at.mapper.vo.ApiTestDetailListDVO;
@@ -78,6 +82,8 @@ public class ApiTestServiceImpl implements ApiTestService {
 	private final WebClientConfig webClientConfig;
 	
 	private final ProdCertMapper apiCertKeyMapper;
+	
+	private final ApiMngService apiMngService;
 	
 	@Value("${saas.prod.url}")
 	private String saasProdUrl;
@@ -138,40 +144,12 @@ public class ApiTestServiceImpl implements ApiTestService {
 		
 		Map<String, Map<String, HeaderParamValue>> headerParamMap = new HashMap<>();
 		Map<String, Map<String, ParamValue>> reqParamMap = new HashMap<>();
-		
-		// API 만 존재하고 파라미터 존재하지 않은 경우는 아예 headerParamMap, reqParamMap 가 생기지 않음
-		// Header, request Body Parameter Map 생성
-		for (StdApiArtclDVO apiParam : apiParamList) {
-			
-			// ApiId, ApiVerSn 복합키 Map 구조
-			// 각 Header, Request Body 에 맞는 Map 설정
-			switch (apiParam.getApiArtclSeCd()) {
-				// Header Parameter
-				case ConstantInfo.API_ARTCL_SE_CD_HEADER -> { 
-					Map<String, HeaderParamValue> groupMap = headerParamMap.computeIfAbsent(apiParam.getApiId(), k -> new HashMap<>());
-					// ApiVerSn 따른 Map 생성
-					HeaderParamValue paramValue = groupMap.computeIfAbsent(String.valueOf(apiParam.getApiVerSn()), ver -> new HeaderParamValue(new LinkedHashMap<>()));
-					// Header 기본 String Setting
-					paramValue.values.put(apiParam.getApiArtclAtrbNm(), "");
-				}
-				// Request Body
-				case ConstantInfo.API_ARTCL_SE_CD_REQUEST -> { 
-					Map<String, ParamValue> groupMap = reqParamMap.computeIfAbsent(apiParam.getApiId(), k -> new HashMap<>());
-					// ApiVerSn 따른 Map 생성
-					ParamValue paramValue = groupMap.computeIfAbsent(String.valueOf(apiParam.getApiVerSn()), ver -> new ParamValue(new LinkedHashMap<>()));
-					// 파라미터 컬럼, 기본 값 추가
-					paramValue.values.put(apiParam.getApiArtclAtrbNm(), getDefaultValue(apiParam.getApiArtclDataTypeCd()));
-				}
-				default -> new HashMap<>();
-			}
-		}
+
+		// 파라미터 셋팅
+		setAllParamMap(headerParamMap, reqParamMap, apiParamList);
 		
 		// 통신 인증 내역 정보 (인증 키)
-		ApiCertKeyReqSVO keyVo = new ApiCertKeyReqSVO();
-		keyVo.setSaasPrdctId(req.getSaasPrdctId());
-		keyVo.setSrvrSeCd(req.getSrvrSeCd());
-		keyVo.setCertSeCd(CommonCode.CertSeCd.TEST_AUTH.getCode());
-		List<CertInfoDVO> keyList = apiCertKeyMapper.selectApiCertInfoList(keyVo);
+		List<CertInfoDVO> keyList = getCertKeyList(req.getSaasPrdctId(), req.getSrvrSeCd());
 		
 		// 최종 API 리스트 + 파라미터 합치고 리턴
 		return apiTestList.stream()
@@ -199,6 +177,14 @@ public class ApiTestServiceImpl implements ApiTestService {
 	
 	private record ParamValue(Map<String, Object> values) {}
 	private record HeaderParamValue(Map<String, String> values) {}
+	
+	public List<CertInfoDVO> getCertKeyList(String saasPrdctId, String srvrSeCd) {
+		ApiCertKeyReqSVO keyVo = new ApiCertKeyReqSVO();
+		keyVo.setSaasPrdctId(saasPrdctId);
+		keyVo.setSrvrSeCd(srvrSeCd);
+		keyVo.setCertSeCd(CommonCode.CertSeCd.TEST_AUTH.getCode());
+		return apiCertKeyMapper.selectApiCertInfoList(keyVo);
+	}
 	
 	/**
 	 * 
@@ -542,7 +528,7 @@ public class ApiTestServiceImpl implements ApiTestService {
 //				value = headerMap.get(atrbNm);
 //				if(ConstantInfo.Y_VALUE.equals(esntlYn) 
 //					&& ( !headerMap.containsKey(atrbNm) || value == null  || value.isBlank())) {
-//					throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "필수 Header key 누락");
+//					throw new ApiBizException(HttpStatus.BAD_REQUEST, "필수 Header key 누락");
 //				}
 //			} else 
 			
@@ -550,17 +536,13 @@ public class ApiTestServiceImpl implements ApiTestService {
 				value = String.valueOf(reqBdyMap.get(atrbNm));
 				if(ConstantInfo.Y_VALUE.equals(esntlYn) && 
 						( !reqBdyMap.containsKey(atrbNm) || reqBdyMap.get(atrbNm) == null || StringUtils.isBlank(value))) {
-						throw new ApiBizException(HttpStatus.INTERNAL_SERVER_ERROR, "필수 Request Parameter key 누락");
+						throw new ApiBizException(HttpStatus.BAD_REQUEST, "필수 Request Parameter key 누락");
 				}
 			}
 		} 
 		
-		// 통신 인증 내역 정보 (인증 키)
-		ApiCertKeyReqSVO keyVo = new ApiCertKeyReqSVO();
-		keyVo.setSaasPrdctId(req.getSaasPrdctId());
-		keyVo.setSrvrSeCd(req.getSrvrSeCd());
-		keyVo.setCertSeCd(CommonCode.CertSeCd.TEST_AUTH.getCode());
-		List<CertInfoDVO> keyList = apiCertKeyMapper.selectApiCertInfoList(keyVo);
+		// 통신 인증 내역 정보 (인증 키)		
+		List<CertInfoDVO> keyList = getCertKeyList(req.getSaasPrdctId(), req.getSrvrSeCd());
 		
 		// 파라미터 그외의 값 들어올경우 필터링
 		Set<String> headerKeys = artclList.stream()
@@ -671,6 +653,100 @@ public class ApiTestServiceImpl implements ApiTestService {
 		}
 		
 		return count;
+	}
+	
+	public void setAllParamMap(Map<String, Map<String, HeaderParamValue>> headerParamMap, Map<String, Map<String, ParamValue>> reqParamMap, List<StdApiArtclDVO> apiParamList) {
+		// API 만 존재하고 파라미터 존재하지 않은 경우는 아예 headerParamMap, reqParamMap 가 생기지 않음
+		// Header, request Body Parameter Map 생성
+		for (StdApiArtclDVO apiParam : apiParamList) {
+			
+			// ApiId, ApiVerSn 복합키 Map 구조
+			// 각 Header, Request Body 에 맞는 Map 설정
+			switch (apiParam.getApiArtclSeCd()) {
+				// Header Parameter
+				case ConstantInfo.API_ARTCL_SE_CD_HEADER -> { 
+					Map<String, HeaderParamValue> groupMap = headerParamMap.computeIfAbsent(apiParam.getApiId(), k -> new HashMap<>());
+					// ApiVerSn 따른 Map 생성
+					HeaderParamValue paramValue = groupMap.computeIfAbsent(String.valueOf(apiParam.getApiVerSn()), ver -> new HeaderParamValue(new LinkedHashMap<>()));
+					// Header 기본 String Setting
+					paramValue.values.put(apiParam.getApiArtclAtrbNm(), "");
+				}
+				// Request Body
+				case ConstantInfo.API_ARTCL_SE_CD_REQUEST -> { 
+					Map<String, ParamValue> groupMap = reqParamMap.computeIfAbsent(apiParam.getApiId(), k -> new HashMap<>());
+					// ApiVerSn 따른 Map 생성
+					ParamValue paramValue = groupMap.computeIfAbsent(String.valueOf(apiParam.getApiVerSn()), ver -> new ParamValue(new LinkedHashMap<>()));
+					// 파라미터 컬럼, 기본 값 추가
+					paramValue.values.put(apiParam.getApiArtclAtrbNm(), getDefaultValue(apiParam.getApiArtclDataTypeCd()));
+				}
+				default -> new HashMap<>();
+			}
+		}
+	}
+	
+	
+	@Override
+	public Map<String, Object> getTestArtclInfo(PrdctApiCmncRsltSVO req) {
+		String apiId = req.getApiId();
+		Integer apiVerSn = req.getApiVerSn();
+		
+		AmSVO amSvo = new AmSVO();
+		amSvo.setApiId(apiId);
+		amSvo.setApiVerSn(apiVerSn);
+		AmDVO stndApiInfo = apiMngService.selectStndApiInfo(amSvo);
+		
+		Map<String, Object> paramResult = new HashMap<>();
+		Map<String, String> headerMap = new HashMap<>();
+		Map<String, Object> reqBdyContents = new HashMap<>();
+		
+		if (stndApiInfo != null) {
+			List<AmArtcDVO> paramList = stndApiInfo.getParamList();
+			List<StdApiArtclDVO> apiParamList = new ArrayList<>();
+			
+			for(AmArtcDVO artcl : paramList) {
+				StdApiArtclDVO artclDvo = new StdApiArtclDVO();
+				artclDvo.setApiId(apiId);
+				artclDvo.setApiVerSn(apiVerSn);
+				artclDvo.setApiArtclSeCd(artcl.getApiArtclSeCd());
+				artclDvo.setApiArtclAtrbNm(artcl.getApiArtclAtrbNm());
+				artclDvo.setApiArtclDataTypeCd(artcl.getApiArtclDataTypeCd());
+				
+				apiParamList.add(artclDvo);
+			}
+			
+			Map<String, Map<String, HeaderParamValue>> headerParamMap = new HashMap<>();
+			Map<String, Map<String, ParamValue>> reqParamMap = new HashMap<>();
+			
+			// 파라미터 셋팅
+			setAllParamMap(headerParamMap, reqParamMap, apiParamList);
+			
+			List<CertInfoDVO> keyList = getCertKeyList(req.getSaasPrdctId(), req.getSrvrSeCd());
+			
+			HeaderParamValue headerInfo = Optional.ofNullable(headerParamMap.get(apiId))
+						.map(inner -> inner.get(String.valueOf(apiVerSn)))
+						.orElse(null);
+			
+			if(headerInfo != null) {
+				headerMap = headerInfo.values();
+			}
+			
+			// 인증키 정보 셋팅
+			for (CertInfoDVO certInfo : keyList ) {
+				headerMap.put(certInfo.getAuthkeyNm(), certInfo.getAuthkey());
+			}
+			
+			ParamValue reqInfo = Optional.ofNullable(reqParamMap.get(apiId))
+					.map(inner -> inner.get(String.valueOf(apiVerSn)))
+					.orElse(null);
+			
+			if (reqInfo != null) {
+				reqBdyContents = reqInfo.values();
+			}
+		}
+		
+		paramResult.put("headerContents", headerMap);
+		paramResult.put("reqBdyContents", reqBdyContents);
+		return paramResult;
 	}
 	
 

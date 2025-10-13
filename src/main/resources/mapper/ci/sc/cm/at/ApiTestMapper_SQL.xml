@@ -103,17 +103,18 @@
 	<select id="selectProdApiTestInfo" parameterType="ApiTestPrdctSVO" resultType="ApiTestPrdctDVO" >
 		SELECT 	  /* ci.sc.cm.at.ApiTestMapper.select.selectProdApiTestInfo - 등록 테스트 상품 정보 */ 
 				  DISTINCT 
-				  PRDCT.SAAS_PRDCT_PVSN_MTH_SE_CD														/* SAAS제품제공방식구분코드 */
+				  PRDCT.SAAS_PRDCT_PVSN_MTH_SE_CD													/* SAAS제품제공방식구분코드 */
 				, USCM.SF_COMM_CD_NM(PRDCT.SAAS_PRDCT_PVSN_MTH_SE_CD) AS SAAS_PRDCT_PVSN_MTH_SE_NM	/* SAAS제품제공방식구분코드명 */
-				, PRDCT.SAAS_PRDCT_ID																	/* SAAS제품아이디 */
-				, PRDCT.SAAS_PRDCT_NM																	/* SAAS제품명 */
-				, PRDCT.SAAS_PRDCT_MKR_CD																/* SAAS제품제조사코드 */
+				, PRDCT.SAAS_PRDCT_ID																/* SAAS제품아이디 */
+				, PRDCT.SAAS_PRDCT_NM																/* SAAS제품명 */
+				, PRDCT.SAAS_PRDCT_MKR_CD															/* SAAS제품제조사코드 */
 				, USCM.SF_COMM_CD_NM(PRDCT.SAAS_PRDCT_MKR_CD) AS SAAS_PRDCT_MKR_NM					/* SAAS제품제조사코드명 */
-				, PRDCT.SAAS_PRDCT_TYPE_CD																/* SAAS제품유형코드 */
-				, USCM.SF_COMM_CD_NM(PRDCT.SAAS_PRDCT_TYPE_CD) AS SAAS_PRDCT_TYPE_NM					/* SAAS제품유형코드명*/
-				, RSLT.SRVR_SE_CD																		/* 서버구분코드 */
+				, PRDCT.SAAS_PRDCT_TYPE_CD															/* SAAS제품유형코드 */
+				, USCM.SF_COMM_CD_NM(PRDCT.SAAS_PRDCT_TYPE_CD) AS SAAS_PRDCT_TYPE_NM				/* SAAS제품유형코드명*/
+				, RSLT.SRVR_SE_CD																	/* 서버구분코드 */
 				, USCM.SF_COMM_CD_NM(RSLT.SRVR_SE_CD) AS SRVR_SE_NM									/* 서버구분코드명 */
-				, RSLT.API_VER_SN																		/* API버전일련번호 */
+				, RSLT.API_VER_SN																	/* API버전일련번호 */
+				, ( <include refid="LatestApiVersion"/> ) AS PRDCT_LATEST_VER						/* 상품최신버전 */
 		FROM	USCM.TBCM_PRDCT_API_CMNCRSLT_L RSLT
 					INNER JOIN USCM.TBCM_SAAS_PRDCT_M PRDCT
 	    					ON RSLT.SAAS_PRDCT_ID = PRDCT.SAAS_PRDCT_ID
@@ -147,7 +148,6 @@
 						   AND RSLT.API_VER_SN = SA.API_VER_SN
 		WHERE	RSLT.SAAS_PRDCT_ID = #{saasPrdctId}
 		  AND	PRDCT.USE_YN = 'Y'
-		  <!-- AND	SA.USE_YN = 'Y' -->
 		  AND	RSLT.SRVR_SE_CD = #{srvrSeCd}
 		  AND	RSLT.API_VER_SN = #{apiVerSn}
 		ORDER BY RSLT.API_ID
@@ -169,6 +169,7 @@
 							ON RSLT.SAAS_PRDCT_ID = PRDCT.SAAS_PRDCT_ID
 					INNER JOIN USCM.TBCM_STD_API_ARTCL_L ARTCL
 							ON RSLT.API_ID = ARTCL.API_ID
+						   AND RSLT.API_VER_SN = ARTCL.API_VER_SN
 		WHERE	RSLT.SAAS_PRDCT_ID = #{saasPrdctId}
 		  AND	PRDCT.USE_YN = 'Y'
 		  AND	RSLT.SRVR_SE_CD = #{srvrSeCd}
@@ -412,7 +413,7 @@
 				, LAST_CHG_PRCR_ID 													/* 최종변경처리자아이디 	*/
 				, LAST_CHG_DT 	
 		FROM	USCM.TBCM_STD_API_M SA
-		WHERE	SA.USE_YN = 'Y'
+		WHERE	1 = 1
 		AND		SA.API_VER_SN = #{apiVerSn}
 		AND		SA.API_ID = #{apiId}
 	</select>

@@ -375,7 +375,7 @@
 	 	ON AC.SAAS_PRDCT_ID = AB.SAAS_PRDCT_ID
 	 	WHERE 1=1
 	 	AND AC.SAAS_PRDCT_PVSN_MTH_SE_CD ='A0010001'  /* 상품제공형태코드 : 기관(SAAS) */
-	 	AND AB.PRDSBSC_STTS_CD IN ('A0040002','A0040003')        /* 구독상태 : 구독중, 구독 취소요청 */
+	 	AND AB.PRDSBSC_STTS_CD IN ('A0040002','A0040004')        /* 구독상태 : 구독중, 구독 취소요청 */
 	 	AND AC.USE_YN ='Y'
 	 	AND AC.SAAS_PRDCT_ID = #{saasPrdctId}
 	</select>

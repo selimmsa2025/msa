@@ -615,10 +615,10 @@
 			AND LOWER(A.SAAS_PRDCT_NM) LIKE '%' || LOWER(#{saasPrdctNm}) || '%'
 		</if>
 		<choose>
-			<when test="'rate_desc'.equals(sortCd)">
+			<when test="'rateDesc'.equals(sortCd)">
 				ORDER BY D.SAAS_PRDCT_REV_SCR_AVG DESC NULLS LAST, D.SAAS_PRDCT_REV_CNT DESC, A.FRST_CRT_DT DESC
 			</when>
-			<when test="'date_desc'.equals(sortCd)">
+			<when test="'dateDesc'.equals(sortCd)">
 				ORDER BY A.FRST_CRT_DT DESC
 			</when>
 		</choose>

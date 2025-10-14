@@ -6,12 +6,10 @@ pluginManagement {
         maven {
             url NEXUS_MAVEN_PUBLIC_URL
             setAllowInsecureProtocol(true)
-            /**
             credentials { 
                 username NEXUS_USERNAME
                 password NEXUS_PASSWORD
             }
-            */
         }
         
     }

@@ -91,7 +91,7 @@
 	        AND SAAS_PRDCT_TYPE_CD = #{saasPrdctTypeCd}								/* SAAS제품유형코드 */
 	      </if>
 	      <if test="saasPrdctNm != null and saasPrdctNm != ''">
-	        AND SAAS_PRDCT_NM LIKE '%' || #{saasPrdctNm} || '%'						/* SAAS제품명 */
+	        AND LOWER(SAAS_PRDCT_NM) LIKE '%' || LOWER(#{saasPrdctNm}) || '%'						/* SAAS제품명 */
 	      </if>
 	      <if test="saasPrdctApiVerSn != null">
 	        AND SAAS_PRDCT_API_VER_SN = #{saasPrdctApiVerSn}						/* SAAS제품API버전일련번호 */
@@ -148,7 +148,7 @@
 	        AND SAAS_PRDCT_TYPE_CD = #{saasPrdctTypeCd}
 	      </if>
 	      <if test="saasPrdctNm != null and saasPrdctNm != ''">
-	        AND SAAS_PRDCT_NM LIKE '%' || #{saasPrdctNm} || '%'
+	        AND LOWER(SAAS_PRDCT_NM) LIKE '%' || LOWER(#{saasPrdctNm}) || '%'
 	      </if>
 	      <if test="saasPrdctApiVerSn != null">
 	        AND SAAS_PRDCT_API_VER_SN = #{saasPrdctApiVerSn}

@@ -259,7 +259,7 @@
 										API_VER_SN			/* API버전일련번호 		*/
 										,API_VER_CHG_RSN	/* API버전변경사유 		*/
 										,USE_YN				/* 사용여부 			*/
-										,FRST_CRT_DT		/* FRST_CRT_DT 		*/
+										,FRST_CRT_DT		/* 최초생성일자 		*/
 										,FRST_CRT_PRCR_ID	/* 최초생성처리자아이디	*/
 							 			,LAST_CHG_DT		/* 최종변경일자			*/
 							 			,LAST_CHG_PRCR_ID	/* 최종변경처리자아이디	*/
@@ -288,8 +288,8 @@
 	
 	<select id = "selectProdList" parameterType = "amSVO" resultType= "AmProdDVO">
 		SELECT /* SQL_ID: ci.sc.cm.am.ApiMngMapper.select.selectProdList (상품-표준API관계, 통신내역 테이블 등록 위한 상품정보 조회) */
-		       G.SAAS_PRDCT_ID 	
-		     , G.SAAS_PRDCT_TYPE_CD
+		       G.SAAS_PRDCT_ID 			/* SAAS제품아이디	*/
+		     , G.SAAS_PRDCT_TYPE_CD		/* SAAS제품유형코드	*/
 		FROM   USCM.TBCM_SAAS_PRDCT_M G
 		WHERE  G.USE_YN = 'Y'
 		AND (
@@ -418,13 +418,15 @@
 	</update>
 	
 	<update id="updateCertKeyToN" parameterType="amSVO">
-	  UPDATE USCM.TBCM_CMNC_MNG_L M /* SQL_ID: ci.sc.cm.pm.ApiMngMapper.insert.updateCertKeyToN (0923 상품인증관리내역수정) */
-	     SET API_CMNC_SCS_YN  = 'N'
+	  	UPDATE  /* SQL_ID: ci.sc.cm.pm.ApiMngMapper.insert.updateCertKeyToN (0923 상품인증관리내역수정) */
+	  		USCM.TBCM_CMNC_MNG_L M  
+	  	SET 
+	  		API_CMNC_SCS_YN  = 'N'
 	       , LAST_CHG_PRCR_ID = #{lastChgPrcrId}
 	       , LAST_CHG_DT      = TO_CHAR(CURRENT_TIMESTAMP,'YYYYMMDDHH24MISS')
-	   WHERE M.SAAS_PRDCT_ID = #{saasPrdctId}
-	     AND M.SRVR_SE_CD    = #{srvrSeCd}
-	     AND M.API_CMNC_SCS_YN = 'Y'  
+	   	WHERE M.SAAS_PRDCT_ID = #{saasPrdctId}
+	    AND M.SRVR_SE_CD    = #{srvrSeCd}
+	    AND M.API_CMNC_SCS_YN = 'Y'  
 	     <if test="apiId != null and apiVerSn != null">
 	       AND EXISTS (
 				         SELECT 1
@@ -439,7 +441,7 @@
 				            AND G.GDS_GDNTC_REG_YN = 'N'
 				            AND G.SAAS_PRDCT_API_VER_SN = #{apiVerSn}  
 				       )
-     </if>
+     	</if>
 	</update>
 	
 	<select id="selectMaxStndApiVer" resultType="int">

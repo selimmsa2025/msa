@@ -72,7 +72,8 @@ public class ExcelUtil {
 	private ExcelUtil() {
 
 	}
-
+	
+	
 	public static void excelFileDownload(HttpServletRequest request, HttpServletResponse response,
 			Map<String, String> mapInfo, List<String> titleList, List<String> codeList, List<String[]> dataList) {
 		try (ServletOutputStream sOutputStream = response.getOutputStream();
@@ -103,6 +104,7 @@ public class ExcelUtil {
 
 			XSSFCellStyle styleContents = workbook.createCellStyle();
 			setXSSFCellStyle(styleContents, fontConts, null, HorizontalAlignment.LEFT);
+			styleContents.setWrapText(true); // 줄바꿈 
 
 			// Data Row Cell
 			XSSFRow row = null;
@@ -175,8 +177,12 @@ public class ExcelUtil {
 
 			// 컬럼 크기 마지막에 맞춰주려고 밖으로 따로 뺌
 			for (int i = 0; i < titleList.size(); i++) {
-				sheet1.autoSizeColumn(i);
-				sheet1.setColumnWidth(i, (sheet1.getColumnWidth(i)) + 1000);
+//				sheet1.autoSizeColumn(i);
+//				sheet1.setColumnWidth(i, (sheet1.getColumnWidth(i)) + 1000);
+				sheet1.autoSizeColumn(i, true);
+			    int w = sheet1.getColumnWidth(i) + 1000;           // 패딩
+			    int max = 255 * 256 - 1;                           // POI 최대 허용
+			    sheet1.setColumnWidth(i, Math.min(w, max));        // ★ 한도 내로 캡
 			}
 
 			setHeaderFileName(request, response, mapInfo.get("fileName"));
@@ -222,7 +228,8 @@ public class ExcelUtil {
 
 			XSSFCellStyle styleContents = workbook.createCellStyle();
 			setXSSFCellStyle(styleContents, fontNormal, null, HorizontalAlignment.LEFT);
-
+			styleContents.setWrapText(true); // 줄바꿈 
+			
 			XSSFCellStyle styleSectionTitle = setXSSFCellParamStyle(workbook, true, HorizontalAlignment.LEFT);
 
 			int rowIndex = 0;
@@ -231,10 +238,10 @@ public class ExcelUtil {
 			int sectionCols = (sectionHeader != null) ? sectionHeader.size() : 0;
 			int maxCols = Math.max(sectionCols, 4);
 
-			for (int i = 0; i < sectionHeader.size(); i++) {
-				sheet1.autoSizeColumn(i);
-				sheet1.setColumnWidth(i, sheet1.getColumnWidth(i) + 1000);
-			}
+//			for (int i = 0; i < sectionHeader.size(); i++) {
+//				sheet1.autoSizeColumn(i);
+//				sheet1.setColumnWidth(i, sheet1.getColumnWidth(i) + 1000);
+//			}
 
 			String excelTitle = mapInfo.get("excelTitle");
 			if (excelTitle != null && !excelTitle.trim().isEmpty()) {
@@ -306,10 +313,17 @@ public class ExcelUtil {
 					rowIndex++;
 				}
 			}
-			for (int i = 0; i < maxCols; i++) {
-				sheet1.autoSizeColumn(i);
-				sheet1.setColumnWidth(i, sheet1.getColumnWidth(i) + 1000);
-			}
+//			for (int i = 0; i < maxCols; i++) {
+//				sheet1.autoSizeColumn(i);
+//				sheet1.setColumnWidth(i, sheet1.getColumnWidth(i) + 1000);
+//			}
+	        // ★ 마지막 한 번만 autoSize + 하드 캡(255*256 - 1)
+	        for (int i = 0; i < maxCols; i++) {
+	            sheet1.autoSizeColumn(i, true);
+	            int w = sheet1.getColumnWidth(i) + 1000;  // 여유
+	            int max = 255 * 256 - 1;                  // POI 한도
+	            sheet1.setColumnWidth(i, Math.min(w, max));
+	        }
 			
 			setHeaderFileName(request, response, mapInfo.get("fileName"));
 			response.setContentType(

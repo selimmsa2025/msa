@@ -268,11 +268,9 @@
 		WHERE 	1 = 1
 		AND 	SA.USE_YN = 'Y'
 		AND		SA.API_VER_SN = ( <include refid="LatestApiVersion"/> )
+		AND 	API_DMND_RSPNS_SE_CD = #{apiDmndRspnsSeCd}
 		<if test="apiNm != null and apiNm != ''">
 			AND API_NM LIKE '%' || #{apiNm} || '%'
-		</if>
-		<if test="apiDmndRspnsSeCd != null and apiDmndRspnsSeCd != ''">
-			AND API_DMND_RSPNS_SE_CD = #{apiDmndRspnsSeCd}
 		</if>
 		<if test="saasPrdctTypeCd != null and saasPrdctTypeCd != ''">
 			AND SAAS_PRDCT_TYPE_CD = #{saasPrdctTypeCd}
@@ -297,11 +295,9 @@
 		WHERE 	1 = 1
 		AND 	SA.USE_YN = 'Y'
 		AND		SA.API_VER_SN = ( <include refid="LatestApiVersion"/> )
+		AND 	API_DMND_RSPNS_SE_CD = #{apiDmndRspnsSeCd}
 		<if test="apiNm != null and apiNm != ''">
 			AND API_NM LIKE '%' || #{apiNm} || '%'
-		</if>
-		<if test="apiDmndRspnsSeCd != null and apiDmndRspnsSeCd != ''">
-			AND API_DMND_RSPNS_SE_CD = #{apiDmndRspnsSeCd}
 		</if>
 		<if test="saasPrdctTypeCd != null and saasPrdctTypeCd != ''">
 			AND SAAS_PRDCT_TYPE_CD = #{saasPrdctTypeCd}

@@ -42,7 +42,7 @@
 		        AND A.SRVR_SE_CD = #{srvrSeCd} 
 		    </if>
 		    <if test="saasPrdctNm != null and saasPrdctNm != ''"> 
-		        AND B.SAAS_PRDCT_NM LIKE CONCAT('%', #{saasPrdctNm}, '%')
+		        AND B.SAAS_PRDCT_NM ILIKE CONCAT('%', #{saasPrdctNm}, '%')
 		    </if>
 			<if test="hasTestCert != null and hasTestCert != ''">
 				    <choose>

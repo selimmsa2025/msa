@@ -72,10 +72,10 @@ public class ExcelUtil {
 	private ExcelUtil() {
 
 	}
-	
-	
+
 	public static void excelFileDownload(HttpServletRequest request, HttpServletResponse response,
-			Map<String, String> mapInfo, List<String> titleList, List<String> codeList, List<String[]> dataList) {
+			Map<String, String> mapInfo, List<String> titleList, List<String> codeList, List<String[]> dataList,
+			Map<Integer, Integer> widthHints) {
 		try (ServletOutputStream sOutputStream = response.getOutputStream();
 				XSSFWorkbook workbook = new XSSFWorkbook()) {
 
@@ -104,7 +104,7 @@ public class ExcelUtil {
 
 			XSSFCellStyle styleContents = workbook.createCellStyle();
 			setXSSFCellStyle(styleContents, fontConts, null, HorizontalAlignment.LEFT);
-			styleContents.setWrapText(true); // 줄바꿈 
+			styleContents.setWrapText(true); // 줄바꿈
 
 			// Data Row Cell
 			XSSFRow row = null;
@@ -180,9 +180,18 @@ public class ExcelUtil {
 //				sheet1.autoSizeColumn(i);
 //				sheet1.setColumnWidth(i, (sheet1.getColumnWidth(i)) + 1000);
 				sheet1.autoSizeColumn(i, true);
-			    int w = sheet1.getColumnWidth(i) + 1000;           // 패딩
-			    int max = 255 * 256 - 1;                           // POI 최대 허용
-			    sheet1.setColumnWidth(i, Math.min(w, max));        // ★ 한도 내로 캡
+				int w = sheet1.getColumnWidth(i) + 1000; // 패딩
+				int max = 255 * 256 - 1; // POI 최대 허용
+				sheet1.setColumnWidth(i, Math.min(w, max)); // ★ 한도 내로 캡
+			}
+			// 고정폭 힌트가 있으면 덮어쓰
+			if (widthHints != null && !widthHints.isEmpty()) {
+				for (Map.Entry<Integer, Integer> e : widthHints.entrySet()) {
+					int colIdx = e.getKey();
+					int chars = Math.max(1, e.getValue());
+					int max = 255 * 256 - 1; // POI 한도
+					sheet1.setColumnWidth(colIdx, Math.min(chars * 256, max));
+				}
 			}
 
 			setHeaderFileName(request, response, mapInfo.get("fileName"));
@@ -202,7 +211,8 @@ public class ExcelUtil {
 
 	public static void excelFileDownload(HttpServletRequest request, HttpServletResponse response,
 			Map<String, String> mapInfo, List<String> apiTitleList, List<String> apiDataList,
-			Map<String, List<String[]>> sectionDataMap, List<String> sectionHeader) {
+			Map<String, List<String[]>> sectionDataMap, List<String> sectionHeader, Map<Integer, Integer> widthHints,  
+			boolean wrapDescription) {
 		try (ServletOutputStream sOutputStream = response.getOutputStream();
 				XSSFWorkbook workbook = new XSSFWorkbook()) {
 
@@ -228,8 +238,8 @@ public class ExcelUtil {
 
 			XSSFCellStyle styleContents = workbook.createCellStyle();
 			setXSSFCellStyle(styleContents, fontNormal, null, HorizontalAlignment.LEFT);
-			styleContents.setWrapText(true); // 줄바꿈 
-			
+			styleContents.setWrapText(true); // 줄바꿈
+
 			XSSFCellStyle styleSectionTitle = setXSSFCellParamStyle(workbook, true, HorizontalAlignment.LEFT);
 
 			int rowIndex = 0;
@@ -317,14 +327,25 @@ public class ExcelUtil {
 //				sheet1.autoSizeColumn(i);
 //				sheet1.setColumnWidth(i, sheet1.getColumnWidth(i) + 1000);
 //			}
-	        // ★ 마지막 한 번만 autoSize + 하드 캡(255*256 - 1)
-	        for (int i = 0; i < maxCols; i++) {
-	            sheet1.autoSizeColumn(i, true);
-	            int w = sheet1.getColumnWidth(i) + 1000;  // 여유
-	            int max = 255 * 256 - 1;                  // POI 한도
-	            sheet1.setColumnWidth(i, Math.min(w, max));
-	        }
 			
+			 // ★ 마지막 한 번만 autoSize + 하드 캡(255*256 - 1)
+			for (int i = 0; i < maxCols; i++) {
+				sheet1.autoSizeColumn(i, true);
+				int w = sheet1.getColumnWidth(i) + 1000; // 여유
+				int max = 255 * 256 - 1; // POI 한도
+				sheet1.setColumnWidth(i, Math.min(w, max));
+			}
+
+			// ★★★ widthHints가 있으면 autosize 결과 위에 '덮어쓰기'
+			if (widthHints != null && !widthHints.isEmpty()) {
+				int EXCEL_MAX = 255 * 256 - 1;
+				for (Map.Entry<Integer, Integer> e : widthHints.entrySet()) {
+					int colIdx = e.getKey();
+					int chars = Math.max(1, e.getValue());
+					sheet1.setColumnWidth(colIdx, Math.min(chars * 256, EXCEL_MAX));
+				}
+			}
+
 			setHeaderFileName(request, response, mapInfo.get("fileName"));
 			response.setContentType(
 					"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; charset=" + CHARSET_UTF8);

@@ -121,6 +121,7 @@ podTemplate(
                             ls -al &&
                             cat gradle.properties &&
                             sed -i "s|${localNexusUrl}|${nexusUrl}|g" gradle.properties &&
+                            cat gradle.properties &&
                             gradle --no-daemon bootJar --info -Dorg.gradle.jvmargs="-Xmx1g"
                         """
                         

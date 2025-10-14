@@ -20,11 +20,11 @@ dependencyResolutionManagement {
     repositories {
         /**
         mavenCentral()
-        */
+        
         maven { url "https://maven.egovframe.go.kr/maven/" }
         
         mavenLocal()
-        
+        */
         /**
         maven {
             url NEXUS_MAVEN_EGOV_URL

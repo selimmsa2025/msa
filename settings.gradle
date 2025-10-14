@@ -33,6 +33,7 @@ dependencyResolutionManagement {
                 artifact()
             }
         }
+        */
         maven {
             url NEXUS_MAVEN_PUBLIC_URL
             setAllowInsecureProtocol(true)
@@ -41,7 +42,7 @@ dependencyResolutionManagement {
                 password NEXUS_PASSWORD
             }
         }
-        */
+        
     }
 }
 

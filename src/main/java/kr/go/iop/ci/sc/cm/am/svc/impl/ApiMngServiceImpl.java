@@ -329,7 +329,6 @@ public class ApiMngServiceImpl implements ApiMngService {
 			throw new RuntimeException("버전 등록 실패 (apiVerSn=" + nextVer + ")");
 		}
 		final int prevVer = nextVer - 1;
-
 		if (prevVer <= 0) {
 			return apiMngMapper.selectStndApiVerList();
 		}
@@ -511,16 +510,16 @@ public class ApiMngServiceImpl implements ApiMngService {
 		mapInfo.put("sheetName", "표준API 목록");
 		mapInfo.put("excelTitle", "표준API 목록");
 
-		int page = (svo.getPage() < 1) ? 1 : svo.getPage();
-		int pageSize = (svo.getPageSize() < 1) ? 10 : svo.getPageSize();
-		int offset = (page - 1) * pageSize;
-
+		int page = svo.getPage() <= 0 ? 1 : svo.getPage();
+		int offset = (page - 1) * svo.getPageSize();
+		log.info("excel page={}, pageSize={}", svo.getPage(), svo.getPageSize());
+		
 		svo.setPage(page);
-		svo.setPageSize(pageSize);
+		svo.setPageSize(svo.getPageSize());
 		svo.setOffset(offset);
-
+		
 		List<AmDVO> apiList = apiMngMapper.selectStndApiList(svo);
-
+		
 		// 엑셀 열 제목
 		titleList.add("번호");
 		titleList.add("API ID");

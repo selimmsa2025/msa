@@ -167,6 +167,7 @@ public class ApiTestController {
 	@Operation(summary = "API선택 목록", description = "API선택 목록 API")
 	public ApiResponseVO getApiSelectList(@RequestBody StdApiSVO req) {
 		HashMap<String, Object> rtnMap = new HashMap<>();
+		req.setApiDmndRspnsSeCd(ConstantInfo.API_DMND_RSPNS_REQ);
 		List<StdApiDVO> selectStdApiList = apiTestService.selectStdApiList(req);
 		
 		int totalCnt = apiTestService.selectStdApiListTot(req);

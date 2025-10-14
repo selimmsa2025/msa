@@ -118,6 +118,8 @@ podTemplate(
                         sh """
                             set +x
                             cd ${jenkinsProjectSourcePath}/ &&
+                            ls -al &&
+                            cat gradle.properties &&
                             sed -i 's|${localNexusUrl}|${nexusUrl}|g' gradle.properties &&
                             gradle --no-daemon bootJar --info -Dorg.gradle.jvmargs="-Xmx1g"
                         """

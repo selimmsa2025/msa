@@ -513,23 +513,22 @@ public class ApiMngServiceImpl implements ApiMngService {
 		int page = svo.getPage() <= 0 ? 1 : svo.getPage();
 		int offset = (page - 1) * svo.getPageSize();
 		log.info("excel page={}, pageSize={}", svo.getPage(), svo.getPageSize());
-		
+
 		svo.setPage(page);
 		svo.setPageSize(svo.getPageSize());
 		svo.setOffset(offset);
-		
+
 		List<AmDVO> apiList = apiMngMapper.selectStndApiList(svo);
-		
+
 		// 엑셀 열 제목
 		titleList.add("번호");
-		titleList.add("API ID");
 		titleList.add("API명");
-		titleList.add("API 버전번호");
+		titleList.add("구분");
+		titleList.add("통신방식");
 		titleList.add("제공유형");
-		titleList.add("요청/응답");
-		titleList.add("HTTP통신구분");
-		titleList.add("URI주소");
-		titleList.add("등록일시");
+		titleList.add("표준URI");
+		titleList.add("버전");
+		// titleList.add("등록일시");
 
 		if (apiList != null && !apiList.isEmpty()) {
 			String[] resultArray = null;
@@ -539,25 +538,33 @@ public class ApiMngServiceImpl implements ApiMngService {
 				int num = offset + i + 1;
 				resultArray = new String[titleList.size()];
 				resultArray[0] = String.valueOf(num);
-				resultArray[1] = result.getApiId();
-				resultArray[2] = result.getApiNm();
-				resultArray[3] = String.valueOf(result.getApiVerSn());
+				resultArray[1] = result.getApiNm();
+				resultArray[2] = result.getApiDmndRspnsSeNm();
+				resultArray[3] = result.getHttpCmncSeNm();
 				resultArray[4] = result.getSaasPrdctTypeNm();
-				resultArray[5] = result.getApiDmndRspnsSeNm();
-				resultArray[6] = result.getHttpCmncSeNm();
-				resultArray[7] = result.getUriAddr();
-				resultArray[8] = result.getFrstCrtDt();
+				resultArray[5] = result.getUriAddr();
+				resultArray[6] = String.valueOf(result.getApiVerSn());
+				// resultArray[7] = formatTimestampToYmdHms(result.getFrstCrtDt();
 
 				dataList.add(resultArray);
 			}
 		}
-		ExcelUtil.excelFileDownload(request, response, mapInfo, titleList, null, dataList);
+		int apiNmColIdx = titleList.indexOf("API명");
+		int uriColIdx = titleList.indexOf("표준URI");
+		Map<Integer, Integer> widthHints = new HashMap<>(); // {열인덱스: 문자수}
+		widthHints.put(apiNmColIdx, 50);
+		widthHints.put(uriColIdx, 100); // 표준URI는 60자 폭 권장
+		ExcelUtil.excelFileDownload(request, response, mapInfo, titleList, null, dataList, widthHints);
 	}
 
 	/* 표준 API 상세 엑셀 다운로드 */
 	@Override
 	public void selectStndApiInfoExcelDownload(HttpServletRequest request, HttpServletResponse response, AmSVO svo) {
-		String excelFileName = DateUtil.getNowDateString() + "_" + "API 상세(" + svo.getApiId() + ").xlsx";
+
+		AmDVO api = apiMngMapper.selectStndApiInfo(svo);
+		List<AmArtcDVO> paramList = apiMngMapper.selectStndApiArtclList(svo);
+		
+		String excelFileName = DateUtil.getNowDateString() + "_" + "표준API 상세(" + api.getApiNm() + ").xlsx";
 
 		Map<String, String> mapInfo = new HashMap<>();
 		mapInfo.put("fileName", excelFileName);
@@ -567,15 +574,13 @@ public class ApiMngServiceImpl implements ApiMngService {
 		List<String> apiTitleList = new ArrayList<>();
 		List<String> apiDataList = new ArrayList<>();
 
-		AmDVO api = apiMngMapper.selectStndApiInfo(svo);
-		List<AmArtcDVO> paramList = apiMngMapper.selectStndApiArtclList(svo);
-
 		if (api != null) {
 			api.setParamList(paramList);
-			String[][] basics = { { "API ID", nz(api.getApiId()) }, { "API명", nz(api.getApiNm()) },
-					{ "API 버전번호", String.valueOf(api.getApiVerSn()) }, { "제공유형", nz(api.getSaasPrdctTypeNm()) },
-					{ "요청/응답", nz(api.getApiDmndRspnsSeNm()) }, { "HTTP통신구분", nz(api.getHttpCmncSeNm()) },
-					{ "URI주소", nz(api.getUriAddr()) }, { "등록일시", nz(api.getFrstCrtDt()) } };
+			String[][] basics = { { "API명", nz(api.getApiNm()) }, { "요청/응답", nz(api.getApiDmndRspnsSeNm()) },
+					{ "제공유형", nz(api.getSaasPrdctTypeNm()) }, { "버전", String.valueOf(api.getApiVerSn()) },
+					{ "표준URI", nz(api.getUriAddr()) },
+					// { "등록일시", formatTimestampToYmdHms(api.getFrstCrtDt()) }
+			};
 			for (String[] b : basics) {
 				apiTitleList.add(b[0]);
 				apiDataList.add(b[1]);
@@ -604,9 +609,16 @@ public class ApiMngServiceImpl implements ApiMngService {
 				}
 			}
 		}
+		Map<Integer, Integer> widthHints = new HashMap<>();
+		widthHints.put(0, 30); // 속성명: 50자
+		widthHints.put(1, 16); // 타입: 16자
+		widthHints.put(2, 6); // 필수: 6자
+		widthHints.put(3, 100); // 설명: 100자 (길게)
 
 		ExcelUtil.excelFileDownload(request, response, mapInfo, apiTitleList, apiDataList, sectionDataMap,
-				sectionHeader);
+				sectionHeader, widthHints, // ★ 추가ㄹ // 설명 열 너비(문자수). 44~60 사이 권장
+				true // 설명 셀 줄바꿈 허용
+		);
 	}
 
 	// 상세 엑셀 헬퍼

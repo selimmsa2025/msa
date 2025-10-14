@@ -54,7 +54,7 @@
 		<if test="apiDmndRspnsSeCd != null and apiDmndRspnsSeCd != ''">
 			AND API_DMND_RSPNS_SE_CD = #{apiDmndRspnsSeCd}
 		</if>
-		ORDER BY API_VER_SN DESC, API_NM ASC
+		ORDER BY API_VER_SN DESC, FRST_CRT_DT DESC, API_NM ASC
 		LIMIT #{pageSize} OFFSET #{offset}
 	</select>
 

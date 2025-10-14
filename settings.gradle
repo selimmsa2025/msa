@@ -17,8 +17,9 @@ pluginManagement {
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
-        maven { url "https://maven.egovframe.go.kr/maven/" }
-        
+        /**maven { url "https://maven.egovframe.go.kr/maven/" } */
+        maven { url "http://nexus-nexus3.iop-cicd.svc.cluster.local:8081" }
+
         mavenLocal()
         
         /**

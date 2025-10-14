@@ -1,9 +1,5 @@
 pluginManagement {
     repositories {
-        /**
-        gradlePluginPortal()
-        mavenLocal()
-        */
         maven {
             url NEXUS_MAVEN_PUBLIC_URL
             setAllowInsecureProtocol(true)
@@ -12,32 +8,10 @@ pluginManagement {
                 password NEXUS_PASSWORD
             }
         }
-        mavenLocal()
-
     }
 }
 dependencyResolutionManagement {
     repositories {
-        /**
-        mavenCentral()
-        
-        maven { url "https://maven.egovframe.go.kr/maven/" }
-        
-        mavenLocal()
-        */
-        /**
-        maven {
-            url NEXUS_MAVEN_EGOV_URL
-            setAllowInsecureProtocol(true)
-            credentials {
-                username NEXUS_USERNAME
-                password NEXUS_PASSWORD
-            }
-            metadataSources {
-                artifact()
-            }
-        }
-        */
         maven {
             url NEXUS_MAVEN_PUBLIC_URL
             setAllowInsecureProtocol(true)

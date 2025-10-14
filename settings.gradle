@@ -2,7 +2,7 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         mavenLocal()
-        /**
+        
         maven {
             url NEXUS_MAVEN_PUBLIC_URL
             setAllowInsecureProtocol(true)
@@ -11,7 +11,7 @@ pluginManagement {
                 password NEXUS_PASSWORD
             }
         }
-        */
+        
     }
 }
 dependencyResolutionManagement {

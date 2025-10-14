@@ -436,6 +436,7 @@
 		   AND A.GDS_GDNTC_REG_YN = 'Y'
 		   AND E.PRDSBSC_STTS_CD IN ('A0040002', 'A0040004')	/* 구독중 */
 		   AND E.INST_USER_INTG_ID = #{institutionCode}
+		 ORDER BY A.FRST_CRT_DT DESC
 	</select>
 	
 	<select id="selectPopularProdList" parameterType="ProdSVO" resultType="ProdDVO">

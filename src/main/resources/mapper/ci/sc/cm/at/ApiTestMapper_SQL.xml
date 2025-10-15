@@ -15,31 +15,36 @@
 		WITH VER AS (
 			<include refid="LatestApiVersion"/>
 		)
-	    SELECT	  /* ci.sc.cm.at.ApiTestMapper.select.selectProdApiTestList - API 테스트 목록 조회 */ 
-	    		  RSLT.SAAS_PRDCT_ID											/* SAAS제품아이디 */
-	    		, PRDCT.SAAS_PRDCT_NM											/* SAAS제품명 */
-	    		, RSLT.API_VER_SN												/* API버전일련번호 */
-	    		, RSLT.SRVR_SE_CD												/* 서버구분코드 */
-	    		, USCM.SF_COMM_CD_NM(RSLT.SRVR_SE_CD) AS SRVR_SE_NM				/* 서버구분코드명 */
-	    		, PRDCT.GDS_GDNTC_REG_YN										/* 상품안내문등록여부 */
-	    		, COALESCE(MAX(RSLT.CMNC_DT), null) AS CMNC_DT 					/* 통신일시(최댓값) */
-	    		, ( SELECT LATEST_VER FROM VER ) AS API_LATEST_VER		/* API 최신 버전 */
-	    		, COALESCE(CM.API_CMNC_SCS_YN, 'N') AS API_CMNC_SCS_YN			/* API통신성공여부 */
-	    		, PRDCT.SAAS_PRDCT_API_VER_SN									/* SAAS제품API버전일련번호 */
-	    FROM	USCM.TBCM_PRDCT_API_CMNCRSLT_L RSLT
-	    				LEFT OUTER JOIN USCM.TBCM_SAAS_PRDCT_M PRDCT
-	    							 ON RSLT.SAAS_PRDCT_ID = PRDCT.SAAS_PRDCT_ID
+		SELECT	  /* ci.sc.cm.at.ApiTestMapper.select.selectProdApiTestList - API 테스트 목록 조회 */ 
+	    		  PRDCT.SAAS_PRDCT_ID										/* SAAS제품아이디 */
+	    		, PRDCT.SAAS_PRDCT_NM										/* SAAS제품명 */
+	    		, RSLT.API_VER_SN											/* API버전일련번호 */
+	    		, RSLT.SRVR_SE_CD											/* 서버구분코드 */
+	    		, (CASE WHEN RSLT.SRVR_SE_CD IS NULL THEN RSLT.SRVR_SE_CD
+	    			    ELSE USCM.SF_COMM_CD_NM(RSLT.SRVR_SE_CD)
+	    		   END) AS SRVR_SE_NM										/* 서버구분코드명 */
+	    		, PRDCT.GDS_GDNTC_REG_YN									/* 상품안내문등록여부 */
+	    		, COALESCE(MAX(RSLT.CMNC_DT), null) AS CMNC_DT 				/* 통신일시(최댓값) */
+	    		, ( SELECT LATEST_VER FROM VER ) AS API_LATEST_VER			/* API 최신 버전 */
+	    		, COALESCE(CM.API_CMNC_SCS_YN, 'N') AS API_CMNC_SCS_YN		/* API통신성공여부 */
+	    		, PRDCT.SAAS_PRDCT_API_VER_SN								/* SAAS제품API버전일련번호 */
+	    FROM	USCM.TBCM_SAAS_PRDCT_M PRDCT
+	    				LEFT OUTER JOIN USCM.TBCM_PRDCT_API_CMNCRSLT_L RSLT
+	    							 ON PRDCT.SAAS_PRDCT_ID = RSLT.SAAS_PRDCT_ID
+	    							AND RSLT.SRVR_SE_CD = 'A0060002'
 	    				LEFT OUTER JOIN USCM.TBCM_CMNC_MNG_L CM
-	    					 		 ON RSLT.SAAS_PRDCT_ID = CM.SAAS_PRDCT_ID
-	    					 		AND RSLT.SRVR_SE_CD = CM.SRVR_SE_CD
+	    							 ON RSLT.SAAS_PRDCT_ID = CM.SAAS_PRDCT_ID
+	    					 		AND RSLT.SRVR_SE_CD = CM.SRVR_SE_CD	
 	    WHERE	1 = 1
 	    AND 	PRDCT.USE_YN = 'Y'
-	    AND		RSLT.SRVR_SE_CD = 'A0060002'
 	    <if test="saasPrdctNm != null and saasPrdctNm != ''">
 	    AND 	PRDCT.SAAS_PRDCT_NM LIKE CONCAT('%', #{saasPrdctNm}, '%')
 	    </if>
 	    <if test="apiVerSn != null and apiVerSn != ''">
-	    AND 	RSLT.API_VER_SN = #{apiVerSn}
+	    AND		(CASE
+	    			WHEN RSLT.API_VER_SN IS NULL THEN ( SELECT LATEST_VER FROM VER )
+	    			ELSE RSLT.API_VER_SN
+	    		 END) = #{apiVerSn}
 	    </if>
 	    <if test="gdsGdntcRegYn != null and gdsGdntcRegYn != ''">
 	    AND 	PRDCT.GDS_GDNTC_REG_YN = #{gdsGdntcRegYn}
@@ -51,7 +56,7 @@
 					ELSE 'Y'
 				END) = #{apiCmncScsYn}
 	    </if>
-	    GROUP BY RSLT.SAAS_PRDCT_ID, PRDCT.SAAS_PRDCT_NM, RSLT.API_VER_SN, RSLT.SRVR_SE_CD, PRDCT.GDS_GDNTC_REG_YN, CM.API_CMNC_SCS_YN, PRDCT.SAAS_PRDCT_API_VER_SN
+	    GROUP BY PRDCT.SAAS_PRDCT_ID, PRDCT.SAAS_PRDCT_NM, RSLT.API_VER_SN, RSLT.SRVR_SE_CD, PRDCT.GDS_GDNTC_REG_YN, CM.API_CMNC_SCS_YN, PRDCT.SAAS_PRDCT_API_VER_SN
 	    ORDER BY PRDCT.SAAS_PRDCT_NM, RSLT.API_VER_SN DESC 
 	    <if test="( pageYn==null or pageYn!='N'.toString() )">
 	    LIMIT #{pageSize} OFFSET (#{currentPage} - 1) * #{pageSize}
@@ -60,30 +65,32 @@
 	
 	<!-- API 테스트 목록 수 조회 -->
 	<select id="selectApiTestTot" parameterType="ApiTestSVO" resultType="Integer">
-		
 		SELECT  /* ci.sc.cm.at.ApiTestMapper.select.selectApiTestTot - API 테스트 목록 수 조회 */ 
 				COUNT(1)
 		FROM (
 				WITH VER AS (
 					<include refid="LatestApiVersion"/>
 				)
-			    SELECT	  RSLT.SAAS_PRDCT_ID
+			    SELECT	  PRDCT.SAAS_PRDCT_ID
 			    		, RSLT.SRVR_SE_CD
 			    		, RSLT.API_VER_SN
-			    FROM	USCM.TBCM_PRDCT_API_CMNCRSLT_L RSLT
-		    				LEFT OUTER JOIN USCM.TBCM_SAAS_PRDCT_M PRDCT
-		    							 ON RSLT.SAAS_PRDCT_ID = PRDCT.SAAS_PRDCT_ID
+			    FROM	USCM.TBCM_SAAS_PRDCT_M PRDCT
+		    				LEFT OUTER JOIN USCM.TBCM_PRDCT_API_CMNCRSLT_L RSLT
+		    							 ON PRDCT.SAAS_PRDCT_ID = RSLT.SAAS_PRDCT_ID
+		    							AND RSLT.SRVR_SE_CD = 'A0060002'
 		    				LEFT OUTER JOIN USCM.TBCM_CMNC_MNG_L CM
-		    					 		 ON RSLT.SAAS_PRDCT_ID = CM.SAAS_PRDCT_ID
-		    					 		AND RSLT.SRVR_SE_CD = CM.SRVR_SE_CD
+		    							 ON RSLT.SAAS_PRDCT_ID = CM.SAAS_PRDCT_ID
+		    					 		AND RSLT.SRVR_SE_CD = CM.SRVR_SE_CD	
 			    WHERE	 1 = 1
 	    		AND 	PRDCT.USE_YN = 'Y'
-	    		AND		RSLT.SRVR_SE_CD = 'A0060002'
 			    <if test="saasPrdctNm != null and saasPrdctNm != ''">
 			    AND 	PRDCT.SAAS_PRDCT_NM LIKE CONCAT('%', #{saasPrdctNm}, '%')
 			    </if>
 			    <if test="apiVerSn != null and apiVerSn != ''">
-			    AND 	RSLT.API_VER_SN = #{apiVerSn}
+			    AND		(CASE
+			    			WHEN RSLT.API_VER_SN IS NULL THEN ( SELECT LATEST_VER FROM VER )
+			    			ELSE RSLT.API_VER_SN
+			    		) = #{apiVerSn}
 			    </if>
 			    <if test="gdsGdntcRegYn != null and gdsGdntcRegYn != ''">
 			    AND 	PRDCT.GDS_GDNTC_REG_YN = #{gdsGdntcRegYn}
@@ -95,7 +102,7 @@
 							ELSE 'Y'
 						END) = #{apiCmncScsYn}
 			    </if>
-			    GROUP BY  RSLT.SAAS_PRDCT_ID, RSLT.SRVR_SE_CD, RSLT.API_VER_SN
+			    GROUP BY  PRDCT.SAAS_PRDCT_ID, RSLT.SRVR_SE_CD, RSLT.API_VER_SN
 		) 
 	</select>
 	
@@ -111,18 +118,24 @@
 				, USCM.SF_COMM_CD_NM(PRDCT.SAAS_PRDCT_MKR_CD) AS SAAS_PRDCT_MKR_NM					/* SAAS제품제조사코드명 */
 				, PRDCT.SAAS_PRDCT_TYPE_CD															/* SAAS제품유형코드 */
 				, USCM.SF_COMM_CD_NM(PRDCT.SAAS_PRDCT_TYPE_CD) AS SAAS_PRDCT_TYPE_NM				/* SAAS제품유형코드명*/
-				, RSLT.SRVR_SE_CD																	/* 서버구분코드 */
-				, USCM.SF_COMM_CD_NM(RSLT.SRVR_SE_CD) AS SRVR_SE_NM									/* 서버구분코드명 */
-				, RSLT.API_VER_SN																	/* API버전일련번호 */
-				, ( <include refid="LatestApiVersion"/> ) AS PRDCT_LATEST_VER						/* 상품최신버전 */
-		FROM	USCM.TBCM_PRDCT_API_CMNCRSLT_L RSLT
-					INNER JOIN USCM.TBCM_SAAS_PRDCT_M PRDCT
-	    					ON RSLT.SAAS_PRDCT_ID = PRDCT.SAAS_PRDCT_ID
+				, COALESCE(RSLT.SRVR_SE_CD, 'A0060002') AS SRVR_SE_CD								/* 서버구분코드 */
+				, USCM.SF_COMM_CD_NM(COALESCE(RSLT.SRVR_SE_CD, 'A0060002')) AS SRVR_SE_NM			/* 서버구분코드명 */
+				, (CASE WHEN RSLT.API_VER_SN IS NULL THEN (<include refid="LatestApiVersion"/>)
+			    		ELSE RSLT.API_VER_SN
+			       END) AS API_VER_SN 																/* API버전일련번호 */
+				, (<include refid="LatestApiVersion"/>) AS PRDCT_LATEST_VER							/* 상품최신버전 */
+		FROM	USCM.TBCM_SAAS_PRDCT_M PRDCT
+					LEFT OUTER JOIN USCM.TBCM_PRDCT_API_CMNCRSLT_L RSLT
+	    						 ON RSLT.SAAS_PRDCT_ID = PRDCT.SAAS_PRDCT_ID
 	    WHERE	1 = 1
 	      AND 	PRDCT.USE_YN = 'Y'
 	      AND	PRDCT.SAAS_PRDCT_ID = #{saasPrdctId}
+	      <if test="srvrSeCd != null and srvrSeCd != ''">
 	      AND	RSLT.SRVR_SE_CD = #{srvrSeCd}
+	      </if>
+	      <if test="apiVerSn != null and apiVerSn != ''">
 	      AND	RSLT.API_VER_SN = #{apiVerSn}
+	      </if>
 	</select>
 	
 	

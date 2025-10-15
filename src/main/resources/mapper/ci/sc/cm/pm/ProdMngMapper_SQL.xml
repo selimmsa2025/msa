@@ -450,7 +450,7 @@
 		SELECT /* SQL_ID: ci.sc.cm.pm.ProdMngMapper.select.selectPrdctNmDupeTest -- 상품명 중복검사 */ 
 			COUNT(*) 
 		FROM USCM.TBCM_SAAS_PRDCT_M 
-		WHERE SAAS_PRDCT_NM = #{saasPrdctNm}
+		WHERE LOWER(SAAS_PRDCT_NM) = LOWER(#{saasPrdctNm})
 		  AND SAAS_PRDCT_MKR_CD = #{saasPrdctMkrCd}
 		  AND USE_YN = 'Y'
 		<if test="saasPrdctId != null and saasPrdctId != ''">

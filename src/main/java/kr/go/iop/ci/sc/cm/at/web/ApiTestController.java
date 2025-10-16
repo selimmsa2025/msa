@@ -290,6 +290,15 @@ public class ApiTestController {
 		return ResponseUtils.build(HttpStatus.OK, rtnMap, "성공");
 	}
 	
+	@GetMapping("/test/test")
+	public ApiResponseVO yyTestList10(@RequestParam(value = "test") boolean test) {
+		
+		HashMap<String, Object> rtnMap = new HashMap<>();
+		rtnMap.put("test", "Hiiiiiiiiiiii! testteste test 22");
+		
+		return ResponseUtils.build(HttpStatus.OK, rtnMap, "성공");
+	}
+	
 	
 	@GetMapping("/user/info/updated")
 	public ApiResponseVO yyTestList8(@RequestParam(value = "userId") String userId) {

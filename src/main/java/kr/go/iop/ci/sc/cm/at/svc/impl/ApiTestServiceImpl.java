@@ -344,7 +344,7 @@ public class ApiTestServiceImpl implements ApiTestService {
 	 * @return
 	 */
 	private URI buildGetUri(String baseUrl, Map<String, Object> queryParams) {
-	    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+	    UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl);
 	    queryParams.forEach((key, value) -> {
 	        if (value instanceof Collection<?> values) {
 	            values.forEach(v -> builder.queryParam(key, v));
@@ -511,32 +511,35 @@ public class ApiTestServiceImpl implements ApiTestService {
 		Map<String, String> headerMap = req.getHeaderContents();
 		Map<String, Object> reqBdyMap = req.getReqBdyContents();
 		
-		List<StdApiArtclDVO> artclList = selectApiArtclList(artclListReq);
+		AmDVO stndApiInfo = getStndApiInfo(req.getApiId(), req.getApiVerSn());
+		List<AmArtcDVO> artclList = stndApiInfo.getParamList();
 		
 		Map<String, String> nextHeaderMap = null;
 		Map<String, Object> nextReqBdyMap = null;
 		
-		for (StdApiArtclDVO artlInfo : artclList) {
-			
-			String atrbNm = artlInfo.getApiArtclAtrbNm();
-			String esntlYn = artlInfo.getApiArtclEsntlYn();
-			
-			String value = "";
-			
-			// 임시 주석
-//			if (ConstantInfo.API_ARTCL_SE_CD_HEADER.equals(artlInfo.getApiArtclSeCd())) {	// Header
-//				value = headerMap.get(atrbNm);
-//				if(ConstantInfo.Y_VALUE.equals(esntlYn) 
-//					&& ( !headerMap.containsKey(atrbNm) || value == null  || value.isBlank())) {
-//					throw new ApiBizException(HttpStatus.BAD_REQUEST, "필수 Header key 누락");
-//				}
-//			} else 
-			
-			if (ConstantInfo.API_ARTCL_SE_CD_REQUEST.equals(artlInfo.getApiArtclSeCd())) {	// Request Parameter
-				value = String.valueOf(reqBdyMap.get(atrbNm));
-				if(ConstantInfo.Y_VALUE.equals(esntlYn) && 
-						( !reqBdyMap.containsKey(atrbNm) || reqBdyMap.get(atrbNm) == null || StringUtils.isBlank(value))) {
-						throw new ApiBizException(HttpStatus.BAD_REQUEST, "필수 Request Parameter key 누락");
+		for (AmArtcDVO artlInfo : artclList) {
+			// response 제외
+			if(!ConstantInfo.API_ARTCL_SE_CD_RESPONSE.equals(artlInfo.getApiArtclSeCd())) {
+				String atrbNm = artlInfo.getApiArtclAtrbNm();
+				String esntlYn = artlInfo.getApiArtclEsntlYn();
+				
+				String value = "";
+				
+				// 임시 주석
+	//			if (ConstantInfo.API_ARTCL_SE_CD_HEADER.equals(artlInfo.getApiArtclSeCd())) {	// Header
+	//				value = headerMap.get(atrbNm);
+	//				if(ConstantInfo.Y_VALUE.equals(esntlYn) 
+	//					&& ( !headerMap.containsKey(atrbNm) || value == null  || value.isBlank())) {
+	//					throw new ApiBizException(HttpStatus.BAD_REQUEST, "필수 Header key 누락");
+	//				}
+	//			} else 
+				
+				if (ConstantInfo.API_ARTCL_SE_CD_REQUEST.equals(artlInfo.getApiArtclSeCd())) {	// Request Parameter
+					value = String.valueOf(reqBdyMap.get(atrbNm));
+					if(ConstantInfo.Y_VALUE.equals(esntlYn) && 
+							( !reqBdyMap.containsKey(atrbNm) || reqBdyMap.get(atrbNm) == null || StringUtils.isBlank(value))) {
+							throw new ApiBizException(HttpStatus.BAD_REQUEST, "필수 Request Parameter key 누락");
+					}
 				}
 			}
 		} 
@@ -547,7 +550,7 @@ public class ApiTestServiceImpl implements ApiTestService {
 		// 파라미터 그외의 값 들어올경우 필터링
 		Set<String> headerKeys = artclList.stream()
 				.filter(artcl -> ConstantInfo.API_ARTCL_SE_CD_HEADER.equals(artcl.getApiArtclSeCd()))
-				.map(StdApiArtclDVO::getApiArtclAtrbNm)
+				.map(AmArtcDVO::getApiArtclAtrbNm)
 				.collect(Collectors.toSet());
 		
 		// 인증내역 정보 검증 통과
@@ -559,7 +562,7 @@ public class ApiTestServiceImpl implements ApiTestService {
 		
 		Set<String> requestKeys = artclList.stream()
 				.filter(artcl -> ConstantInfo.API_ARTCL_SE_CD_REQUEST.equals(artcl.getApiArtclSeCd()))
-				.map(StdApiArtclDVO::getApiArtclAtrbNm)
+				.map(AmArtcDVO::getApiArtclAtrbNm)
 				.collect(Collectors.toSet());
 		
 		nextHeaderMap = filterMap((LinkedHashMap<String, String>) headerMap, headerKeys);
@@ -684,16 +687,20 @@ public class ApiTestServiceImpl implements ApiTestService {
 		}
 	}
 	
+	public AmDVO getStndApiInfo(String apiId, int apiVerSn) {
+		AmSVO amSvo = new AmSVO();
+		amSvo.setApiId(apiId);
+		amSvo.setApiVerSn(apiVerSn);
+		return apiMngService.selectStndApiInfo(amSvo);
+	}
+	
 	
 	@Override
 	public Map<String, Object> getTestArtclInfo(PrdctApiCmncRsltSVO req) {
 		String apiId = req.getApiId();
 		Integer apiVerSn = req.getApiVerSn();
 		
-		AmSVO amSvo = new AmSVO();
-		amSvo.setApiId(apiId);
-		amSvo.setApiVerSn(apiVerSn);
-		AmDVO stndApiInfo = apiMngService.selectStndApiInfo(amSvo);
+		AmDVO stndApiInfo = getStndApiInfo(apiId, apiVerSn);
 		
 		Map<String, Object> paramResult = new HashMap<>();
 		Map<String, String> headerMap = new HashMap<>();

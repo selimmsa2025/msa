@@ -38,7 +38,7 @@
 	    WHERE	1 = 1
 	    AND 	PRDCT.USE_YN = 'Y'
 	    <if test="saasPrdctNm != null and saasPrdctNm != ''">
-	    AND 	PRDCT.SAAS_PRDCT_NM LIKE CONCAT('%', #{saasPrdctNm}, '%')
+	    AND 	PRDCT.SAAS_PRDCT_NM ILIKE CONCAT('%', #{saasPrdctNm}, '%')
 	    </if>
 	    <if test="apiVerSn != null and apiVerSn != ''">
 	    AND		(CASE
@@ -84,7 +84,7 @@
 			    WHERE	 1 = 1
 	    		AND 	PRDCT.USE_YN = 'Y'
 			    <if test="saasPrdctNm != null and saasPrdctNm != ''">
-			    AND 	PRDCT.SAAS_PRDCT_NM LIKE CONCAT('%', #{saasPrdctNm}, '%')
+			    AND 	PRDCT.SAAS_PRDCT_NM ILIKE CONCAT('%', #{saasPrdctNm}, '%')
 			    </if>
 			    <if test="apiVerSn != null and apiVerSn != ''">
 			    AND		(CASE

@@ -123,6 +123,12 @@ public final class ConstantInfo {
 	//1001 API요청응답구분코드
 	public static final String API_DMND_RSPNS_REQ = "B0010001";
 	
+	//구독상태코드
+	public static final String SUB_REQ = "A0040001";  //구독요청
+	public static final String SUB_ACTIVE = "A0040002";  //구독
+	public static final String SUB_CANCELLED = "A0040003";  //구독취소
+	public static final String SUB_CANCEL_REQ = "A0040004";  //구독취소요청
+	public static final String SUB_EXPIRED = "A0040005";  //구독만료
 	
 	
 	private ConstantInfo() {

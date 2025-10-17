@@ -153,6 +153,7 @@
 			ON C.INSTITUTION_CODE = A.INST_USER_INTG_ID
 		<where>
 		    	AND B.USE_YN = 'Y'
+		    	AND A.PRDSBSC_STTS_CD IN ('A0040001', 'A0040002', 'A0040004')
 		    <if test="saasPrdctPvsnMthSeCd != null and saasPrdctPvsnMthSeCd != ''">
 		        AND B.SAAS_PRDCT_PVSN_MTH_SE_CD = #{saasPrdctPvsnMthSeCd}
 		    </if>
@@ -207,6 +208,7 @@
 			ON C.INSTITUTION_CODE = A.INST_USER_INTG_ID
 	  	<where>
 	    	  	AND B.USE_YN = 'Y'
+	    	  	AND A.PRDSBSC_STTS_CD IN ('A0040001', 'A0040002', 'A0040004')
 		    <if test="saasPrdctPvsnMthSeCd != null and saasPrdctPvsnMthSeCd != ''">
 		      	AND B.SAAS_PRDCT_PVSN_MTH_SE_CD = #{saasPrdctPvsnMthSeCd}
 		    </if>

@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import feign.FeignException;
 import kr.go.iop.ci.sc.cmmn.exception.ApiBizException;
+import kr.go.iop.ci.sc.config.info.ConstantInfo;
 import kr.go.iop.ci.sc.cp.cpm.mapper.ProdMapper;
 import kr.go.iop.ci.sc.cp.cpm.mapper.vo.ProdDVO;
 import kr.go.iop.ci.sc.cp.cpm.mapper.vo.ReviewDVO;
@@ -81,7 +82,7 @@ public class ProdServiceImpl implements ProdService {
 		boolean isSaasCallSuccess = false;
 		
 		//구독 요청일때는 구독시작일자 종료일자 null
-		if ("A0040001".equals(subscrSVO.getPrdsbscSttsCd())) {
+		if (ConstantInfo.SUB_REQ.equals(subscrSVO.getPrdsbscSttsCd())) {
 			subscrSVO.setPrdsbscBgngYmd("");
 			subscrSVO.setPrdsbscEndYmd("");
 		}
